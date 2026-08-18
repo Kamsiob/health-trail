@@ -8,6 +8,13 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 
 ---
 
+## 0. Cold start, do this in this order
+
+1. `gh issue view 321`, then this file. Nothing else.
+2. `tools/sweep.sh audit`, then **look at the captures**.
+3. Pick the next row of the table in section 2 that is still hand drawn, replace it with Material's component, `tools/verify.sh`, install, look, commit, push. One component per commit.
+4. **Do not** start by reading the old design docs, and do not re-measure the mockups.
+
 ## 1. State
 
 - Tree clean, all on `origin/main`. CI green at tip: `gh run list --branch main --limit 3`.
@@ -18,24 +25,37 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 - **The APK is the last thing, not the next thing.** Owner, 2026-08-17: "the APK is after the full app is complete. all surfaces and widgets and buttons and text and styling and spacing and everything is updated to the material 3 expressive."
 - Phone at baseline, stays plugged in: font scale 1.0, animator 1.0, no reader, night mode `no`.
 
-## 2. The work
+## 2. The work, and read this before touching anything
 
-**The interface is being rebuilt on Material 3 Expressive, and the rule that
-matters is this one:** the owner, 2026-08-17, after a day of me measuring PNGs
-with a pixel probe, "you're not actually doing what I'm telling you. develop the
-language and understanding of the components and use Google assets. get rid of
-the old stuff and build it from the ground up."
+**We are not updating, refining or converting the old design into the new one.
+The old design is deleted. The new one is built on Material 3 Expressive using
+Google's own components and assets, and our polish goes on top of them.**
 
-**So: use Material's components. Do not draw copies of them and do not trace the
-mockups.** The drawings are a reference for arrangement and color, never a thing
-to reproduce pixel by pixel. An audit on 2026-08-17 found 102 raw `Text` and 27
-`Surface` against Material's own components used once each: no `Card`, no
-`ListItem`, no `FilterChip`, no app bar, no `Scaffold`. That is why it read as an
-imitation.
+Owner, 2026-08-17, twice: "get rid of the old stuff and then just build it from
+the ground up", and "develop the language and understanding of the components
+and use Google assets where appropriate for material 3 expressive."
+
+**Building from the ground up is not reinventing from the ground up.** Those are
+different jobs and only the first one is ours:
+
+| This | Not this |
+|---|---|
+| `ListItem`, `Card`, `FilterChip`, `Scaffold`, `LargeFlexibleTopAppBar` | a hand built `Row` or `Box` that looks like one |
+| `MaterialTheme.colorScheme` roles | hex values typed into a screen |
+| `MaterialTheme.typography` and `shapes` | a second ladder beside Material's |
+| Material Symbols through `Symbols` | an authored glyph |
+| **Polish layered on top**: our color identity, our copy, our arrangement, our motion tokens | re-deriving the control itself |
+
+**Do not trace the mockups.** `docs/screenshots/m3v4-*` show arrangement, hierarchy
+and color identity. They are not a thing to reproduce pixel by pixel, and a day
+was lost on 2026-08-17 doing exactly that: measuring PNGs with a pixel probe and
+hand correcting components against them, one screen at a time. **If a component
+has to be measured against a picture, it is not part of the system yet: replace
+it with Material's.**
 
 **The `ColorScheme` is fully mapped already**, roles and the `surfaceContainer`
-ladder included, `ui/theme/Theme.kt`. Anything built on Material's components
-themes correctly the moment it is used. Read the scheme, not the hex.
+ladder, in `ui/theme/Theme.kt`. Anything built on Material's components themes
+correctly the moment it is used. Read the scheme, never the hex.
 
 **The back end does not change.** Repository, schema, change log, export
 container, decryptor, fixtures, `contract/DATA-CONTRACT.md`.

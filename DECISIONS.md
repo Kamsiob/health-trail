@@ -182,7 +182,7 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | B4 | The emulator. Resolved by dropping it, 2026-07-31 |
 | D146 | The welcome is remembered by the phone as well as by the notebook |
 
-**The index stops at D157 and the entries do not.** Everything from D158 on is in the body, newest first, and the file is searched by number rather than read. The ones the interface rebuild turns on: **D178** replacement not conversion, **D179** the foundation needed a pinned alpha, **D183** measure the drawing rather than judge it, **D185** the accordion is not replaced, **D186** a person's mark is their own color and the care team splits by a toggle, **D187** the spine is a path not a filter, **D188** three gaps and no more, **D189** the hint comes out of the field, **D190** white is the third reserved surface and the only one with an edge, **D191** `m3v4-0` draws the arranged Today and there are two of them, **D194** the retirements are scripted and three of them were not renames, **D195** the form's fold comes back because `m3v4-4` draws one.
+**The index stops at D157 and the entries do not.** Everything from D158 on is in the body, newest first, and the file is searched by number rather than read. The ones the interface rebuild turns on: **D178** replacement not conversion, **D179** the foundation needed a pinned alpha, **D183** measure the drawing rather than judge it, **D185** the accordion is not replaced, **D186** a person's mark is their own color and the care team splits by a toggle, **D187** the spine is a path not a filter, **D188** three gaps and no more, **D189** the hint comes out of the field, **D190** white is the third reserved surface and the only one with an edge, **D191** `m3v4-0` draws the arranged Today and there are two of them, **D194** the retirements are scripted and three of them were not renames, **D195** the form's fold comes back because `m3v4-4` draws one, **D196** the old design is deleted and the new one is Material's own components with our polish on top.
 
 ---
 
@@ -2989,6 +2989,24 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 **There was a third record, found after the fix, and it changes nothing but is worth the paragraph.** `DESIGN.md` section 14's row for this screen also said the role belongs behind "Add more", **and it gave the reason**: the role and up to six chips sat *between* the name and the number, so the number, which is why anybody adds a person, was the field furthest down. **That is a layout complaint, not an argument for hiding the role**, and putting the three fields in one group with the chips underneath answers it without hiding anything. So two records asked for the role to be folded, one recorded folding it being reverted, and the built screen now satisfies all three. Section 14 is corrected to say so.
 
 **Three records, one screen, and the only way to see it was to read all three.** The check that would have caught it does not exist and probably cannot: they were not contradictory statements, they were one statement, one reason, and one exception, written months apart in three files.
+
+---
+
+### D196. The old design is deleted and the new one is Material's own components, with our polish on top
+
+**Date:** 2026-08-17. **Owner ruling, said twice and written down the second time.**
+
+**The decision.** This is not a conversion, a refinement or an update of the old design. **The old design is deleted. The new interface is built out of Material 3 Expressive's own components and Google's own assets, and everything this app is goes on top of them.**
+
+**Ground up is not reinvented, and that distinction is the entire entry.** Material ships the control: the list item, the card, the chip, the app bar, the scaffold, the field, the switch, the navigation bar, the sheet, the symbols. We ship what makes this app itself: the section identity, the copy, what leads a screen, the trail's own drawing, the motion, and every rule in `docs/V4.md` 2.1 about what may never be said. **A hand built `Row` that looks like a list item is not ground up work, it is reinvention, and it costs twice: once to build and again every time it has to be corrected against a picture.**
+
+**What this cost before it was written down.** An audit on 2026-08-17 found 102 raw `Text` and 27 `Surface` in the interface against Material's own components used once each: no `Card`, no `ListItem`, no `FilterChip`, no app bar, no `Scaffold`. The `ColorScheme` had been fully mapped since #385, roles and the `surfaceContainer` ladder, and nothing read it. The result looked like an imitation of Material 3 Expressive because that is exactly what it was.
+
+**The mockups are a reference, not a specification.** `docs/screenshots/m3v4-*` settle arrangement, hierarchy and identity. **A day was lost measuring them with a pixel probe** and hand correcting components to match, screen by screen, which produced a run of small true fixes and no system. **The test: if a component has to be measured against a picture, it is not part of the system yet.** Replace it with Material's and let the theme carry it.
+
+**Three things stay hand drawn** because Material has no component for them and they are this app's own: the trail's route, a project's road, and a measure's line.
+
+**Revisit if.** Material ships a component for one of those three, or a Material component cannot express something the record genuinely needs, in which case the exception is written here rather than assumed.
 
 ---
 
