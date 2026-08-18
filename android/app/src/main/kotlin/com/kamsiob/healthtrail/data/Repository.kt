@@ -1812,6 +1812,27 @@ class Repository private constructor(
         val reason: String,
         val differences: List<Difference>,
         val seen: Boolean,
+        /**
+         * What the record is called, in the person's own words.
+         *
+         * **Which record, not only which column.** The screen said "Their role,
+         * kept: Senior intake caseworker" and never said whose role, so a
+         * notebook with fifteen people on its care team gave the person no way
+         * to tell which of them the merge had decided about. #389.
+         *
+         * Null where the row has no name of its own, which is honest: some
+         * rows genuinely have nothing a person would call them.
+         */
+        val what: String? = null,
+        /**
+         * Whose notebook the record belongs to.
+         *
+         * **A notebook can hold more than one person**, and a resolution about
+         * one of Margaret's medications and one of Harold's read identically
+         * without this. It is null for a row that belongs to the notebook
+         * rather than to anybody in it.
+         */
+        val whose: String? = null,
     )
 
     /**
@@ -1840,6 +1861,25 @@ class Repository private constructor(
      * that matters is the one that just happened.
      */
     suspend fun conflicts(): List<Resolution> = withContext(Dispatchers.IO) {
+        // Read once, rather than per resolution: a merge between two long
+        // notebooks can resolve hundreds of rows and every one of them would
+        // otherwise open the subject table again.
+        val subjectNames = buildMap {
+            // **The live view, so a removed person is not named.** A resolution
+            // about somebody who has since been taken out of the notebook still
+            // shows which record it was about; it just does not put their name
+            // back on a screen after the person removed it.
+            //
+            // Ordered even though this becomes a lookup map, because 8.4 is
+            // about the query rather than about what the caller does next, and
+            // an exception here would cost a reader the same reasoning twice.
+            db().database.rawQuery(
+                "SELECT id, display_name FROM live_subject ORDER BY id",
+                null,
+            ).use { c ->
+                while (c.moveToNext()) put(c.getString(0), c.getString(1))
+            }
+        }
         db().database.rawQuery(
             "SELECT seq, table_name, row_id, resolved_at, winner, reason, local_json, " +
                 "incoming_json, seen_at FROM conflict_log ORDER BY seq DESC",
@@ -1886,12 +1926,29 @@ class Repository private constructor(
                                     )
                                 },
                             seen = !cursor.isNull(8),
+                            // **The kept version names it**, because that is
+                            // the one the notebook now holds. The other one is
+                            // shown field by field below.
+                            what = HEADING_COLUMNS.firstNotNullOfOrNull { kept[it] }
+                                ?.takeIf { it.isNotBlank() },
+                            whose = kept["subject_id"]?.let { subjectNames[it] },
                         ),
                     )
                 }
             }
         }
     }
+
+    /**
+     * Where a row's own name lives, in the order the archive's own pages ask.
+     *
+     * The same list `ReadableArchive` uses for a record's heading, because a
+     * conflict notice and the readable copy must call the same record the same
+     * thing.
+     */
+    private val HEADING_COLUMNS = listOf(
+        "display_name", "title", "name", "question", "label", "text",
+    )
 
     /** How many resolutions the person has not looked at yet. */
     suspend fun unseenConflicts(): Int = withContext(Dispatchers.IO) {

@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.data
 
+import com.kamsiob.healthtrail.i18n.Bidi
 import android.database.sqlite.SQLiteDatabase
 import java.io.File
 
@@ -90,8 +91,28 @@ internal object ReadableRows {
         return columns
     }
 
-    /** The subject's name, for the front door, or null if there is not one yet. */
-    fun subjectName(rows: Map<String, List<Map<String, String?>>>): String? =
-        rows["subject"]?.firstOrNull()?.get("display_name")
-            ?: rows["subject"]?.firstOrNull()?.get("name")
+    /**
+     * Who the front door names, or null if the record names nobody yet.
+     *
+     * **Every subject, not the first one.** A notebook can hold more than one
+     * person and this took `first()`, so a three person archive opened under
+     * one person's name and a stranger read six hundred of somebody else's
+     * entries under it. The front page was asserting something the record does
+     * not say, which is the one thing the readable copy must never do. #389.
+     *
+     * **Byte identical for a single person**, which is what D165's round trip
+     * equality depends on: one name joins to itself.
+     *
+     * **The app's own separator rather than a comma**, because a comma is
+     * English punctuation and this string is written in whichever of the four
+     * languages the archive was made in. `subject.html` is where the names sit
+     * with everything else recorded about them; this is the front door saying
+     * whose notebook it is.
+     */
+    fun subjectName(rows: Map<String, List<Map<String, String?>>>): String? {
+        val names = rows["subject"].orEmpty()
+            .mapNotNull { it["display_name"] ?: it["name"] }
+            .filter { it.isNotBlank() }
+        return names.takeIf { it.isNotEmpty() }?.joinToString(Bidi.DOT)
+    }
 }

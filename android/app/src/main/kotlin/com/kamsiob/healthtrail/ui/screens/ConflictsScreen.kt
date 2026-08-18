@@ -121,6 +121,23 @@ fun ConflictsScreen(
                         .testTag(ConflictsTags.row(resolution.seq))
                         .padding(Space.cardPadding),
                 ) {
+                    // **Which record, and whose, before anything else.** #389.
+                    // This block used to open with "Their role" and never say
+                    // whose role: on a care team of fifteen, in a notebook that
+                    // can hold three people, that is a notice about nothing.
+                    // The name the notebook now holds, then the person whose
+                    // notebook it is.
+                    val naming = Bidi.join(resolution.what, resolution.whose)
+                    if (naming.isNotEmpty()) {
+                        // bidi-ok: joined by Bidi.join, which isolates each part.
+                        Text(
+                            text = naming,
+                            style = HealthTrail.type.rowTitle,
+                            color = colors.ink,
+                        )
+                        Spacer(Modifier.height(Space.xs))
+                    }
+
                     // **What was kept and why, before what it said.** The
                     // person's first question is whether the app did the right
                     // thing, not what the words were.
