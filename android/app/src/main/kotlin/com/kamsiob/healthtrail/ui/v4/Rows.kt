@@ -40,6 +40,7 @@ import com.kamsiob.healthtrail.ui.theme.TabHue
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
+import androidx.compose.ui.unit.Dp
 import com.kamsiob.healthtrail.ui.theme.Space
 
 /**
@@ -82,6 +83,19 @@ fun ListRow(
      * here re-derives it: a section's color says which part of the notebook
      * this is and never how the thing inside is going.
      */
+    /**
+     * How large the mark's tile is drawn.
+     *
+     * **The row size where a screen shows several kinds at once, the card size
+     * where every row is the same kind.** #388 finding 8: on the notebook a
+     * mark is identity, because seven sections are on the screen and the color
+     * is how somebody finds the documents without reading; on a list of one
+     * kind it is the same disc eight times down the page, and at 44dp it is the
+     * loudest thing on a screen whose content is the words. D198 item 4 still
+     * asks an entry list to carry the kind's color, so the color stays and the
+     * area is roughly halved.
+     */
+    markSize: Dp = Space.markTile,
     markHue: TabHue? = null,
     markTint: Color? = null,
     markWash: Color? = null,
@@ -147,7 +161,7 @@ fun ListRow(
             {
                 Box(
                     modifier = Modifier
-                        .size(Space.markTile)
+                        .size(markSize)
                         .clip(MaterialTheme.shapes.medium)
                         .background(
                             markHue?.base ?: markWash ?: colors.surfaceContainerHighest,
@@ -157,6 +171,7 @@ fun ListRow(
                     Icon(
                         painter = painterResource(mark),
                         contentDescription = null,
+                        modifier = Modifier.size(markSize * MARK_GLYPH),
                         tint = markHue?.onBase ?: markTint ?: colors.onSurfaceVariant,
                     )
                 }
@@ -243,6 +258,9 @@ private val BIDI_MARKS = setOf('\u2066', '\u2067', '\u2068', '\u2069')
 
 /** The squircle a row's mark sits in, measured off `m3v4-1`. */
 private val MARK_TILE = Space.markTile
+
+/** The drawing takes a little over half its tile, the same ratio every mark uses. */
+private const val MARK_GLYPH = 0.55f
 
 /**
  * The door into search, as `m3v4-1` draws it directly under the title.

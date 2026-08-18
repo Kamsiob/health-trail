@@ -2,6 +2,7 @@ package com.kamsiob.healthtrail.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,7 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.listGroupShape
 import com.kamsiob.healthtrail.ui.theme.hueFor
 
 /**
@@ -200,7 +202,7 @@ fun MedicationsScreen(
                     // and spends color in small places that mean something, and
                     // so does every approved drawing.
                     MedicationGroup(
-                        container = scheme.surfaceContainerLow,
+                        container = scheme.surfaceContainer,
                         medications = current,
                         openQuestions = openQuestions,
                         hue = hue,
@@ -221,7 +223,7 @@ fun MedicationsScreen(
                     // Quiet, because what is current is what the screen leads
                     // with. Present, because it is still part of the record.
                     MedicationGroup(
-                        container = scheme.surfaceContainerLow,
+                        container = scheme.surfaceContainer,
                         medications = stopped,
                         openQuestions = openQuestions,
                         hue = hue,
@@ -242,10 +244,19 @@ private fun MedicationGroup(
     hue: com.kamsiob.healthtrail.ui.theme.TabHue,
     onOpen: (Repository.Medication) -> Unit,
 ) {
+    // **A container the eye can find**, `docs/V4.md` 6.1 item 4. This was drawn
+    // in `surfaceContainerLow`, which in this palette is the canvas itself on
+    // light, so the group was invisible and eight medications sat on bare paper:
+    // `docs/TRAPS.md` names that exact value as the one a card disappears into.
+    // It is `surfaceContainer` with the hairline every other group in the app
+    // carries now, and the medium corner a run of rows wears rather than a
+    // card's, `listGroupShape`.
     Card(
         modifier = Modifier.fillMaxWidth(),
+        shape = listGroupShape,
         colors = CardDefaults.cardColors(containerColor = container),
         elevation = CardDefaults.cardElevation(defaultElevation = Space.none),
+        border = BorderStroke(Space.hairlineWidth, MaterialTheme.colorScheme.outlineVariant),
     ) {
         medications.forEachIndexed { index, medication ->
             MedicationRow(
@@ -256,7 +267,7 @@ private fun MedicationGroup(
             )
             if (index != medications.lastIndex) {
                 HorizontalDivider(
-                    modifier = Modifier.padding(start = Space.markTile + Space.ml),
+                    modifier = Modifier.padding(start = Space.markCard + Space.ml),
                     color = MaterialTheme.colorScheme.outlineVariant,
                 )
             }
@@ -322,10 +333,18 @@ private fun MedicationRow(
             // which says which part of the notebook this is and leaves the
             // reading surface alone. Saturated, D198: the pale version left a
             // page of rows reading as one color.
+            //
+            // **At the card's size rather than the row's, because every row on
+            // this screen is the same kind.** #388 finding 8: on the notebook a
+            // mark is identity because seven kinds are on screen at once; on a
+            // single-kind list it is the same disc eight times down the page,
+            // and at 44dp it is the loudest thing on a screen whose content is
+            // the names. D198 item 4 still asks an entry list to carry the
+            // kind's color, so the color stays and the area is roughly halved.
             HueMark(
                 hue = hue,
                 mark = Symbols.of(Repository.Section.MEDICATIONS),
-                size = Space.markTile,
+                size = Space.markCard,
             )
         },
         trailingContent = {

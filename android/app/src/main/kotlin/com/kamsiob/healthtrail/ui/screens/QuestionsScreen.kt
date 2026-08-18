@@ -234,6 +234,11 @@ private fun QuestionRow(
         title = Bidi.isolate(question.text),
         support = detail,
         mark = Symbols.askNextTime,
+        // **Every row on this screen is a question**, so the mark is the card
+        // size rather than the row size. #388 finding 8. It was 44dp beside a
+        // 44dp circle at the other end of every row, which bracketed each
+        // question in two discs and left the words the middle.
+        markSize = Space.markCard,
         markHue = hue,
         // **The one action worth taking from the list, as a mark.** A question
         // already asked has nothing to mark. The words live in the description,
