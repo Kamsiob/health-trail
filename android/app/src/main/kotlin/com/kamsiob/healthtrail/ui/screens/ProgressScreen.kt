@@ -36,6 +36,12 @@ import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.v4.StatBlock
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ExtendedFloatingActionButton
+import com.kamsiob.healthtrail.ui.components.Symbols
 
 object ProgressTags {
     const val NAME = "progress"
@@ -117,6 +123,22 @@ fun ProgressScreen(
         onBack = onBack,
         backLabel = strings[LocalSectionBackKey.current],
         modifier = modifier.testTag(SectionTags.root(ProgressTags.NAME)),
+        // **The way in floats over the list rather than sitting under it.**
+        // D200: it was the last `item` in the `LazyColumn`, and a section
+        // screen has no capture button in that corner to compete with.
+        fab = {
+            ExtendedFloatingActionButton(
+                onClick = onAddReading,
+                icon = {
+                    Icon(painter = painterResource(Symbols.add), contentDescription = null)
+                },
+                text = { Text(text = strings["progress.add"]) },
+                // The sentence sits on the button's own node, `docs/TRAPS.md`.
+                modifier = Modifier
+                    .testTag(ProgressTags.ADD)
+                    .semantics { contentDescription = strings["progress.add"] },
+            )
+        },
         eyebrow = strings["notebook.section.progress"],
         subtitle = strings["progress.subtitle"],
         section = Repository.Section.PROGRESS,
@@ -275,14 +297,6 @@ fun ProgressScreen(
             }
         }
 
-        item(key = "add") {
-            Spacer(Modifier.height(Space.m))
-            Action(
-                label = strings["progress.add"],
-                onClick = onAddReading,
-                modifier = Modifier.fillMaxWidth().testTag(ProgressTags.ADD), emphasis = ActionEmphasis.Main,
-            )
-        }
     }
 }
 

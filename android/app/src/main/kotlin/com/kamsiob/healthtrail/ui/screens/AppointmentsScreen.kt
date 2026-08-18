@@ -44,6 +44,11 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ExtendedFloatingActionButton
 
 object ApptTags {
     const val NAME = "appointments"
@@ -127,6 +132,33 @@ fun AppointmentsScreen(
         onBack = onBack,
         backLabel = strings[LocalSectionBackKey.current],
         modifier = modifier.testTag(SectionTags.root(ApptTags.NAME)),
+        // **The way in floats over the list rather than sitting under it.**
+        // D200. The empty state keeps its own way to start, above: on a screen
+        // with nothing on it the action is the content rather than an overlay.
+        // **Nothing floats over an empty screen**, because the empty state
+        // draws its own way to start and both carry the same tag. Two nodes
+        // under one test tag is `docs/TRAPS.md`'s first entry from the other
+        // direction.
+        fab = if (appointments.isEmpty()) {
+            null
+        } else {
+            {
+                ExtendedFloatingActionButton(
+                    onClick = onAdd,
+                    icon = {
+                        Icon(
+                            painter = painterResource(Symbols.add),
+                            contentDescription = null,
+                        )
+                    },
+                    text = { Text(text = strings["appts.add"]) },
+                    // The sentence sits on the button's own node.
+                    modifier = Modifier
+                        .testTag(ApptTags.ADD)
+                        .semantics { contentDescription = strings["appts.add"] },
+                )
+            }
+        },
         eyebrow = strings["notebook.section.appointments"],
         subtitle = strings["appts.subtitle"],
         section = Repository.Section.APPOINTMENTS,
@@ -218,14 +250,6 @@ fun AppointmentsScreen(
             }
         }
 
-        item {
-            Spacer(Modifier.height(Space.s))
-            Action(
-                label = strings["appts.add"],
-                onClick = onAdd,
-                modifier = Modifier.testTag(ApptTags.ADD),
-            )
-        }
     }
 }
 

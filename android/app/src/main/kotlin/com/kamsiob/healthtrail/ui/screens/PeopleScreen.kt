@@ -24,6 +24,11 @@ import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.labeledBlock
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ExtendedFloatingActionButton
 
 object PeopleTags {
     const val NAME = "people"
@@ -72,6 +77,22 @@ fun PeopleScreen(
         onBack = onBack,
         backLabel = strings[backLabelKey],
         modifier = modifier.testTag(PeopleTags.ROOT),
+        // **The way in floats over the list rather than sitting under it.**
+        // D200: it was the last `item` in the `LazyColumn`, and a section
+        // screen has no capture button in that corner to compete with.
+        fab = {
+            ExtendedFloatingActionButton(
+                onClick = onAdd,
+                icon = {
+                    Icon(painter = painterResource(Symbols.addPerson), contentDescription = null)
+                },
+                text = { Text(text = strings["people.add"]) },
+                // The sentence sits on the button's own node, `docs/TRAPS.md`.
+                modifier = Modifier
+                    .testTag(PeopleTags.ADD)
+                    .semantics { contentDescription = strings["people.add"] },
+            )
+        },
     ) {
         labeledBlock(
             leading = true,
@@ -94,15 +115,6 @@ fun PeopleScreen(
             },
         )
 
-        item {
-            Spacer(Modifier.height(Space.withinGroup))
-            Action(
-                label = strings["people.add"],
-                onClick = onAdd,
-                mark = Symbols.addPerson,
-                modifier = Modifier.testTag(PeopleTags.ADD),
-            )
-        }
     }
 }
 

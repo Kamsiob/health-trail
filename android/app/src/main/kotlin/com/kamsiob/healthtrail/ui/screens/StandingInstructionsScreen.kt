@@ -25,6 +25,11 @@ import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Page
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ExtendedFloatingActionButton
+import com.kamsiob.healthtrail.ui.components.Symbols
 
 object InstructionTags {
     fun violation(id: String) = "instruction_violation_$id"
@@ -107,6 +112,22 @@ fun StandingInstructionsScreen(
         onBack = onBack,
         backLabel = strings[LocalSectionBackKey.current],
         modifier = modifier.testTag(SectionTags.root(InstructionTags.NAME)),
+        // **The way in floats over the list rather than sitting under it.**
+        // D200: it was the last `item` in the `LazyColumn`, and a section
+        // screen has no capture button in that corner to compete with.
+        fab = {
+            ExtendedFloatingActionButton(
+                onClick = onAdd,
+                icon = {
+                    Icon(painter = painterResource(Symbols.add), contentDescription = null)
+                },
+                text = { Text(text = strings["instructions.add"]) },
+                // The sentence sits on the button's own node, `docs/TRAPS.md`.
+                modifier = Modifier
+                    .testTag(InstructionTags.ADD)
+                    .semantics { contentDescription = strings["instructions.add"] },
+            )
+        },
         eyebrow = strings["notebook.section.standing_instructions"],
         subtitle = strings["instructions.subtitle"],
         section = Repository.Section.STANDING_INSTRUCTIONS,
@@ -215,14 +236,6 @@ fun StandingInstructionsScreen(
             }
         }
 
-        item {
-            Spacer(Modifier.height(Space.s))
-            Action(
-                label = strings["instructions.add"],
-                onClick = onAdd,
-                modifier = Modifier.testTag(InstructionTags.ADD),
-            )
-        }
     }
 }
 

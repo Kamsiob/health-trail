@@ -49,6 +49,11 @@ import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.v4.Segments
+import com.kamsiob.healthtrail.ui.components.Symbols
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ExtendedFloatingActionButton
 
 object DocTags {
     const val NAME = "documents"
@@ -116,6 +121,33 @@ fun DocumentsScreen(
         onBack = onBack,
         backLabel = strings[LocalSectionBackKey.current],
         modifier = modifier.testTag(SectionTags.root(DocTags.NAME)),
+        // **The way in floats over the list rather than sitting under it.**
+        // D200. The empty state keeps its own way to start, above: on a screen
+        // with nothing on it the action is the content rather than an overlay.
+        // **Nothing floats over an empty screen**, because the empty state
+        // draws its own way to start and both carry the same tag. Two nodes
+        // under one test tag is `docs/TRAPS.md`'s first entry from the other
+        // direction.
+        fab = if (documents.isEmpty()) {
+            null
+        } else {
+            {
+                ExtendedFloatingActionButton(
+                    onClick = onAdd,
+                    icon = {
+                        Icon(
+                            painter = painterResource(Symbols.add),
+                            contentDescription = null,
+                        )
+                    },
+                    text = { Text(text = strings["docs.photograph"]) },
+                    // The sentence sits on the button's own node.
+                    modifier = Modifier
+                        .testTag(DocTags.ADD)
+                        .semantics { contentDescription = strings["docs.photograph"] },
+                )
+            }
+        },
         eyebrow = strings["notebook.section.documents"],
         subtitle = strings["docs.subtitle"],
         section = Repository.Section.DOCUMENTS,
@@ -278,17 +310,6 @@ fun DocumentsScreen(
             }
         }
 
-        item(key = "add") {
-            Spacer(Modifier.height(Space.m))
-            // **The camera is the filled action**, because photographing is how
-            // paper gets in here at all. Everything else on this screen is
-            // something the person already has.
-            Action(
-                label = strings["docs.photograph"],
-                onClick = onAdd,
-                modifier = Modifier.fillMaxWidth().testTag(DocTags.ADD), emphasis = ActionEmphasis.Main,
-            )
-        }
     }
 }
 

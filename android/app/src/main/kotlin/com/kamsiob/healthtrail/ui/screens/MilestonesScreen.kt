@@ -28,6 +28,11 @@ import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.Road
 import com.kamsiob.healthtrail.ui.v4.Stop
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ExtendedFloatingActionButton
 
 object MilestoneTags {
     const val NAME = "milestones"
@@ -84,6 +89,22 @@ fun MilestonesScreen(
         onBack = onBack,
         backLabel = strings[backLabelKey],
         modifier = modifier.testTag(MilestoneTags.ROOT),
+        // **The way in floats over the list rather than sitting under it.**
+        // D200: it was the last `item` in the `LazyColumn`, and a section
+        // screen has no capture button in that corner to compete with.
+        fab = {
+            ExtendedFloatingActionButton(
+                onClick = onAdd,
+                icon = {
+                    Icon(painter = painterResource(Symbols.add), contentDescription = null)
+                },
+                text = { Text(text = strings["milestones.add"]) },
+                // The sentence sits on the button's own node, `docs/TRAPS.md`.
+                modifier = Modifier
+                    .testTag(MilestoneTags.ADD)
+                    .semantics { contentDescription = strings["milestones.add"] },
+            )
+        },
     ) {
         if (milestones.isEmpty()) {
             item {
@@ -178,19 +199,5 @@ fun MilestonesScreen(
                 }
         }
 
-        item {
-            Spacer(Modifier.height(Space.s))
-            // **The one filled action, and it is the only way one gets made.**
-            // Nothing else in the app creates a milestone, which is deliberate:
-            // marking one is a decision, and a decision belongs to a moment the
-            // person chose rather than to a checkbox on some other form.
-            Action(
-                label = strings["milestones.add"],
-                onClick = onAdd,
-                emphasis = ActionEmphasis.Main,
-                mark = Symbols.add,
-                modifier = Modifier.testTag(MilestoneTags.ADD),
-            )
-        }
     }
 }
