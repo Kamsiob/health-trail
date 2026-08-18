@@ -1,8 +1,10 @@
 package com.kamsiob.healthtrail.ui.components
 
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -49,8 +51,8 @@ fun Chevron(
     //
     // **Still non-text and still unannounced.** The thing it sits inside is
     // the button, and that is what says where it goes.
-    Symbol(
-        symbol = if (pointsForward) Symbols.forward else Symbols.back,
+    Icon(
+        painter = painterResource(if (pointsForward) Symbols.forward else Symbols.back),
         contentDescription = null,
         modifier = modifier.size(width = width, height = height),
         tint = HealthTrail.colors.ink3,

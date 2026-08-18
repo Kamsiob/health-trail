@@ -1,18 +1,20 @@
 package com.kamsiob.healthtrail.ui.components
 
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.ShortNavigationBarItemDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ShortNavigationBar
 import androidx.compose.material3.ShortNavigationBarItem
+import androidx.compose.material3.ShortNavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.platform.LocalDensity
-import kotlin.math.min
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import kotlin.math.min
 
 object NavTags {
     const val BAR = "nav_bar"
@@ -74,8 +76,8 @@ fun BottomNav(
                 selected = selected,
                 onClick = { onSelect(destination) },
                 icon = {
-                    Symbol(
-                        symbol = Symbols.of(destination),
+                    Icon(
+                        painter = painterResource(Symbols.of(destination)),
                         // **Null, because the label beside it says the same
                         // word.** A reader that announces "Notebook, Notebook"
                         // is worse than one that announces it once, and the

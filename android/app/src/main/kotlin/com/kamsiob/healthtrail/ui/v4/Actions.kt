@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,8 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import com.kamsiob.healthtrail.ui.components.Symbol
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -95,8 +96,8 @@ fun Action(
             horizontalArrangement = Arrangement.spacedBy(Space.s),
         ) {
             mark?.let {
-                Symbol(
-                    symbol = it,
+                Icon(
+                    painter = painterResource(it),
                     contentDescription = null,
                     modifier = Modifier.size(Space.markInline),
                 )
@@ -167,6 +168,10 @@ fun IconAction(
         onClick = onClick,
         modifier = modifier.size(Space.touchTarget),
     ) {
-        Symbol(symbol = symbol, contentDescription = label, tint = tint)
+        Icon(
+            painter = painterResource(symbol),
+            contentDescription = label,
+            tint = tint,
+        )
     }
 }

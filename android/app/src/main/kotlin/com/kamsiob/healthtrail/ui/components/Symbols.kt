@@ -1,12 +1,6 @@
 package com.kamsiob.healthtrail.ui.components
 
 import androidx.annotation.DrawableRes
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import com.kamsiob.healthtrail.R
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
@@ -149,36 +143,4 @@ object Symbols {
         Destination.PROJECTS -> projects
         Destination.MORE -> more
     }
-}
-
-/**
- * One symbol, tinted.
- *
- * **The content description is the caller's and it is not optional to think
- * about.** A mark beside a word that already says the same thing takes null,
- * because a reader that says "Medications, Medications" is worse than one that
- * says it once. A mark that is the only thing naming its control takes a word.
- */
-@Composable
-fun Symbol(
-    @DrawableRes symbol: Int,
-    contentDescription: String?,
-    modifier: Modifier = Modifier,
-    // **`LocalContentColor`, not `Color.Unspecified`, and the difference is a
-    // white icon on a white surface.** `Icon` treats an unspecified tint as
-    // "draw the painter as authored", and every symbol here is authored in
-    // white so it can be tinted. The first build of the navigation bar drew
-    // four invisible glyphs for exactly this reason. Seen on the phone.
-    //
-    // Taking the content color also means a Material component that sets it,
-    // which is every one of them, colors the mark inside it without the call
-    // site repeating the role.
-    tint: Color = LocalContentColor.current,
-) {
-    Icon(
-        painter = painterResource(symbol),
-        contentDescription = contentDescription,
-        modifier = modifier,
-        tint = tint,
-    )
 }

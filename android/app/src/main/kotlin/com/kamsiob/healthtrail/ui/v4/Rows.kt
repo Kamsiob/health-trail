@@ -34,7 +34,6 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.ui.semantics.stateDescription
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.TabHue
-import com.kamsiob.healthtrail.ui.components.Symbol
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -247,8 +246,8 @@ fun SearchDoor(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
-        Symbol(
-            symbol = com.kamsiob.healthtrail.ui.components.Symbols.search,
+        Icon(
+            painter = painterResource(com.kamsiob.healthtrail.ui.components.Symbols.search),
             contentDescription = null,
             tint = HealthTrail.colors.ink2,
         )
@@ -316,8 +315,8 @@ fun ChoiceRow(
         // the whole row is the target, so a radio button beside it would be a
         // second thing to press that does the same job.
         if (selected) {
-            Symbol(
-                symbol = com.kamsiob.healthtrail.ui.components.Symbols.check,
+            Icon(
+                painter = painterResource(com.kamsiob.healthtrail.ui.components.Symbols.check),
                 contentDescription = null,
                 tint = colors.blue,
             )
@@ -379,8 +378,8 @@ fun SwitchRow(
                     .background(hue?.base?.copy(alpha = MARK_DISC_ALPHA) ?: colors.card),
                 contentAlignment = Alignment.Center,
             ) {
-                Symbol(
-                    symbol = it,
+                Icon(
+                    painter = painterResource(it),
                     contentDescription = null,
                     tint = hue?.ink ?: colors.ink2,
                     modifier = Modifier.size(Space.markInline),

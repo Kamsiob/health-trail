@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,10 +26,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import com.kamsiob.healthtrail.data.Attachments
-import com.kamsiob.healthtrail.ui.components.Symbol
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -84,7 +85,11 @@ fun PaperCard(
         // same shape every other group on the screen wears.
         Block(modifier = modifier) {
             Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                Symbol(symbol = Symbols.documents, contentDescription = null, tint = colors.ink3)
+                Icon(
+                    painter = painterResource(Symbols.documents),
+                    contentDescription = null,
+                    tint = colors.ink3,
+                )
                 // bidi-ok: the app's own sentence about a document with no
                 // photograph yet, never anything somebody typed.
                 Body(text = absent)

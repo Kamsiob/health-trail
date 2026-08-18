@@ -1,56 +1,57 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.Distance
 import com.kamsiob.healthtrail.time.Edtf
+import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.components.DateRow
+import com.kamsiob.healthtrail.ui.components.IconTile
+import com.kamsiob.healthtrail.ui.components.LatestWordCard
+import com.kamsiob.healthtrail.ui.components.RoadSize
+import com.kamsiob.healthtrail.ui.components.RoadStage
+import com.kamsiob.healthtrail.ui.components.RoadStrip
+import com.kamsiob.healthtrail.ui.components.SpineRow
+import com.kamsiob.healthtrail.ui.components.StandingCard
+import com.kamsiob.healthtrail.ui.components.Symbols
+import com.kamsiob.healthtrail.ui.components.Tile
+import com.kamsiob.healthtrail.ui.components.Waypoint
+import com.kamsiob.healthtrail.ui.components.wholeAppHue
+import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.Radius
+import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.ZoneId
-import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.DateRow
-import com.kamsiob.healthtrail.ui.theme.Radius
-import com.kamsiob.healthtrail.ui.components.Symbols
-import com.kamsiob.healthtrail.ui.components.Symbol
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Button
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.annotation.DrawableRes
-import androidx.compose.ui.Alignment
-import androidx.compose.foundation.layout.PaddingValues
-import com.kamsiob.healthtrail.ui.components.LatestWordCard
-import com.kamsiob.healthtrail.ui.components.RoadSize
-import com.kamsiob.healthtrail.ui.components.RoadStage
-import com.kamsiob.healthtrail.ui.components.RoadStrip
-import com.kamsiob.healthtrail.ui.components.StandingCard
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import com.kamsiob.healthtrail.ui.components.SpineRow
-import com.kamsiob.healthtrail.ui.components.Tile
-import com.kamsiob.healthtrail.ui.components.IconTile
-import com.kamsiob.healthtrail.ui.components.wholeAppHue
-import com.kamsiob.healthtrail.ui.components.Waypoint
-import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Space
-import com.kamsiob.healthtrail.ui.v4.Block
 
 object ProjectHomeTags {
     const val NAME = "project-home"
@@ -757,7 +758,10 @@ private fun ProjectAction(
 ) {
     val colors = HealthTrail.colors
     val content: @Composable ColumnScope.() -> Unit = {
-        Symbol(symbol = symbol, contentDescription = null)
+        Icon(
+            painter = painterResource(symbol),
+            contentDescription = null,
+        )
         Spacer(Modifier.height(Space.s))
         Text(
             text = label,
