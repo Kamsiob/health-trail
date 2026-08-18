@@ -78,6 +78,32 @@ showing() {
   "$ADB" shell cat /sdcard/sweep.xml 2>/dev/null | grep -qi -- "$1"
 }
 
+# Back out to a screen that actually has the navigation bar on it.
+#
+# **Every tap on the bar assumes the bar is there**, and the four destinations
+# are tapped by position rather than by word. Start the sweep on a detail screen
+# and x=133,y=2252 is not the Today tab, it is whatever row of the open list
+# happens to sit there: one run opened a trail entry, pressed back into the
+# trail, opened the same entry again, and reported all four destinations lost.
+# **A position is only a destination once the bar is under it.**
+#
+# The bar is the only place `Today` and `Projects` are both on screen.
+at_home() {
+  "$ADB" shell uiautomator dump /sdcard/sweep.xml >/dev/null 2>&1 || return 1
+  "$ADB" shell cat /sdcard/sweep.xml 2>/dev/null |
+    grep -q 'text="Today"' || return 1
+  "$ADB" shell cat /sdcard/sweep.xml 2>/dev/null | grep -q 'text="Projects"'
+}
+
+go_home() {
+  for _ in 1 2 3 4 5 6 7 8; do
+    at_home && return 0
+    "$ADB" shell input keyevent KEYCODE_BACK
+    sleep 1
+  done
+  at_home
+}
+
 # Put the list back where a search can start from, because **`KEYCODE_BACK`
 # returns the notebook at the top**. That is what made this tool lie: the route
 # scrolled once, captured the one section that came into view, went back, and
@@ -101,8 +127,7 @@ to_top() {
 on_notebook() {
   for _ in 1 2 3; do
     showing 'Search everything' && return 0
-    "$ADB" shell input keyevent KEYCODE_BACK
-    sleep 1
+    go_home || return 1
     nav notebook
     to_top
   done
@@ -161,6 +186,10 @@ echo "Capturing as $PREFIX-*"
 # the ones only that screen carries.
 dest() {
   local tab="$1" name="$2" proof="$3"
+  if ! go_home; then
+    echo "  $name  LOST: no navigation bar to tap"
+    return 1
+  fi
   nav "$tab"
   if ! showing "$proof"; then
     "$ADB" shell input keyevent KEYCODE_BACK
@@ -190,7 +219,7 @@ for pair in \
   "Progress:progress" \
   "Documents:documents" \
   "Money:money" \
-  "Standing instructions:instructions" \
+  "Instructions:instructions" \
   "Ask next time:questions" \
   "Emergency card:emergency"
 do
