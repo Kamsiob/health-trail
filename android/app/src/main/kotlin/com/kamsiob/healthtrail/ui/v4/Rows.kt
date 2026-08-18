@@ -14,6 +14,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,6 +35,7 @@ import androidx.compose.ui.semantics.stateDescription
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.TabHue
 import com.kamsiob.healthtrail.ui.components.Symbol
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -55,167 +61,135 @@ fun ListRow(
     /**
      * A tag on the support line itself, for a caller whose second line is a
      * fact something asserts on.
-     *
-     * The notebook's counts are the case: they are what its tests read, and a
-     * tag on the whole row would make the assertion pass on the title.
      */
     supportTestTag: String? = null,
     @DrawableRes mark: Int? = null,
-    markTint: Color = HealthTrail.colors.ink2,
-    markWash: Color = HealthTrail.colors.card,
-    /**
-     * What stands where the mark would, when the mark is not a symbol.
-     *
-     * A person's row carries their initials rather than a glyph, and initials
-     * are a mark for a person the way a symbol is a mark for a section. Passing
-     * this instead of [mark] keeps one row rather than growing a second one.
-     */
+    markTint: Color? = null,
+    markWash: Color? = null,
+    /** What stands where the mark would: a person's initials rather than a glyph. */
     leading: (@Composable () -> Unit)? = null,
-    /**
-     * A value the row is scanned by: a dose, a date, an amount.
-     *
-     * **Weighted with `fill = false`, so it cannot take the whole row and a
-     * short one still sits at its natural width.** An unweighted value measures
-     * at whatever it wants and leaves the title its minimum: a dose reading
-     * "500 mg, twice a day" left "Levothyroxine" rendering one letter per line.
-     *
-     * **Not the mono face**, and that is measured off the drawings rather than
-     * argued: `m3v4-0`, `m3v4-1`, `m3v4-3` and `m3v4-5` use mono for exactly
-     * two things, the date eyebrow and the time pill, both of them tracked
-     * capitals. **No row in any drawing sets its value in a typewriter.** A
-     * dose and a date read as the words they are, at reading size, and the
-     * primary ink is what separates a value from the quiet line above it.
-     */
+    /** A value the row is scanned by: a dose, a date, an amount. */
     value: String? = null,
-    /**
-     * Whether the value starts level with the title rather than centering
-     * against the whole row.
-     *
-     * **Opt in, and centered stays the default on purpose.** For the ordinary
-     * row, one line of title over one line of support, centering is right and
-     * top aligning would lift the value off the row. **It stops being right the
-     * moment the title wraps**: a bill called "Monthly room and board" runs to
-     * two lines with its date under it, and the amount sat level with the
-     * second line, beside the wrap rather than beside the name. Seen on the
-     * phone, rule 21, and carried forward here because the row it was found on
-     * is one of these now.
-     */
     valueAtTop: Boolean = false,
-    /**
-     * Where the value sits, when the row is not left to decide for itself.
-     *
-     * **Null lets the row decide by length**, which is right for a list whose
-     * values are all the same shape. **A list whose values vary passes the same
-     * answer for every row**, because half a column at the end and half of it
-     * under the title is a column that does not line up, and lining up is the
-     * whole reason a value is set in the mono face. The medications are the
-     * case: "5 mg, evenings" and "50 mcg, mornings, empty stomach" are the same
-     * kind of fact at two lengths.
-     */
+    /** Where the value sits, when the row is not left to decide for itself. */
     valueBelow: Boolean? = null,
-    /**
-     * The one thing to do about this row, as a mark at its end.
-     *
-     * **Unweighted, and that is the difference from [value].** A weighted slot
-     * reserves its share whether or not the mark needs it, which put a 48dp
-     * circle in the middle of the row with the title squeezed into the half
-     * beside it. Seen on the phone, rule 21.
-     */
+    /** The one thing to do about this row, as a mark at its end. */
     trailing: (@Composable () -> Unit)? = null,
     isDoor: Boolean = false,
     onClick: (() -> Unit)? = null,
     clickLabel: String? = null,
 ) {
-    Row(
+    val colors = MaterialTheme.colorScheme
+    val shown = value?.takeIf { it.isNotBlank() }
+    // A long value is a line of its own under the title rather than a column at
+    // the end that the title has to wrap around. Measured without the isolation
+    // marks, which have no width.
+    val below = shown != null &&
+        (valueBelow ?: (shown.count { it !in BIDI_MARKS } > VALUE_INLINE_MAX))
+
+    val listColors = ListItemDefaults.colors(
+        // **Transparent, because the group around it carries the surface.**
+        // A row inside a `Block` painting its own container would be a second
+        // surface on top of the one that already groups it.
+        containerColor = Color.Transparent,
+        headlineColor = colors.onSurface,
+        supportingColor = colors.onSurfaceVariant,
+        trailingIconColor = colors.onSurfaceVariant,
+    )
+
+    val headline: @Composable () -> Unit = {
+        Text(text = title, style = MaterialTheme.typography.titleMedium)
+    }
+    val supporting: (@Composable () -> Unit)? = if (support.isNullOrBlank() && !below) {
+        null
+    } else {
+        {
+            Column {
+                if (!support.isNullOrBlank()) {
+                    Text(
+                        text = support,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = supportTestTag?.let { Modifier.testTag(it) } ?: Modifier,
+                    )
+                }
+                if (below && shown != null) {
+                    Text(
+                        text = shown,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.onSurface,
+                    )
+                }
+            }
+        }
+    }
+    val lead: (@Composable () -> Unit)? = when {
+        leading != null -> leading
+        mark != null -> {
+            {
+                Box(
+                    modifier = Modifier
+                        .size(Space.markTile)
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(markWash ?: colors.surfaceContainerHighest),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(mark),
+                        contentDescription = null,
+                        tint = markTint ?: colors.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+        else -> null
+    }
+    val tail: (@Composable () -> Unit)? = when {
+        trailing != null -> trailing
+        shown != null && !below -> {
+            {
+                Text(
+                    text = shown,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurface,
+                )
+            }
+        }
+        isDoor -> {
+            {
+                Icon(
+                    painter = painterResource(Symbols.forward),
+                    contentDescription = null,
+                    tint = colors.outline,
+                )
+            }
+        }
+        else -> null
+    }
+
+    // **Material's own list item.** It owns the heights, the text style of each
+    // slot, the state layer under a press and the semantics that make a row one
+    // stop for a reader. This app drew all of that by hand and arrived at
+    // something that looked like a list item without being one.
+    ListItem(
+        headlineContent = headline,
         modifier = modifier
-            .fillMaxWidth()
-            .semantics(mergeDescendants = true) { }
-            .sizeIn(minHeight = Space.touchTarget)
             .then(
                 if (onClick == null) {
                     Modifier
                 } else {
-                    Modifier.clickable(role = Role.Button, onClickLabel = clickLabel, onClick = onClick)
+                    Modifier.clickable(
+                        role = Role.Button,
+                        onClickLabel = clickLabel,
+                        onClick = onClick,
+                    )
                 },
             )
-            .padding(horizontal = Space.ml, vertical = Space.rowVertical),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Space.sm),
-    ) {
-        if (leading != null) {
-            leading()
-        } else if (mark != null) {
-            Box(
-                modifier = Modifier
-                    .size(MARK_TILE)
-                    .clip(Radius.iconTile)
-                    .background(markWash),
-                contentAlignment = Alignment.Center,
-            ) {
-                Symbol(symbol = mark, contentDescription = null, tint = markTint)
-            }
-        }
-        // **A long value goes under the title rather than beside it.**
-        // Measured on the phone: an appointment's "August 18, 2026 at 10:15 AM"
-        // and a reading's "131.2 lb · May 8, 2026" are sentences rather than
-        // values, and at the end of the row they took half its width and broke
-        // mid-phrase, with the title wrapping around what was left. The slot at
-        // the end is for something short enough to scan down a column, which is
-        // what a dose and a bare date are; anything longer is a line of its own.
-        // Rule 20: the row absorbs this so no screen has to know.
-        val shown = value?.takeIf { it.isNotBlank() }
-        // **Measured without the isolation marks.** `Bidi.isolate` wraps a
-        // value in two invisible characters, so counting them would move the
-        // bound by two for every value the app isolates and by nothing for the
-        // ones it does not, which is a threshold that is different on different
-        // rows for a reason nobody could see.
-        val below = shown != null &&
-            (valueBelow ?: (shown.count { it !in BIDI_MARKS } > VALUE_INLINE_MAX))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = HealthTrail.type.rowTitle,
-                color = HealthTrail.colors.ink,
-            )
-            if (!support.isNullOrBlank()) {
-                Text(
-                    text = support,
-                    style = HealthTrail.type.bodyM,
-                    color = HealthTrail.colors.ink2,
-                    modifier = if (supportTestTag == null) {
-                        Modifier
-                    } else {
-                        Modifier.testTag(supportTestTag)
-                    },
-                )
-            }
-            if (below) {
-                Text(
-                    text = shown,
-                    style = HealthTrail.type.bodyM,
-                    color = HealthTrail.colors.ink,
-                )
-            }
-        }
-        shown?.takeIf { !below }?.let {
-            Text(
-                text = it,
-                style = HealthTrail.type.bodyM,
-                color = HealthTrail.colors.ink,
-                modifier = Modifier
-                    .weight(1f, fill = false)
-                    .then(if (valueAtTop) Modifier.align(Alignment.Top) else Modifier),
-            )
-        }
-        trailing?.invoke()
-        if (isDoor && trailing == null) {
-            Symbol(
-                symbol = com.kamsiob.healthtrail.ui.components.Symbols.forward,
-                contentDescription = null,
-                tint = HealthTrail.colors.ink3,
-            )
-        }
-    }
+            .semantics(mergeDescendants = true) { },
+        supportingContent = supporting,
+        leadingContent = lead,
+        trailingContent = tail,
+        colors = listColors,
+    )
 }
 
 /**
