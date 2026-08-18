@@ -31,7 +31,7 @@ Worked examples, best first: `ui/v4/Arrival.kt`, `ui/v4/Press.kt`,
 | Step 4 | #392 | **The mechanism half is done.** Every screen is on Material's own state layer through `Surface`, `Card`, `FilterChip` or `opensOnTap`. No screen animates a resting color by hand, animates a focus border, or passes `indication = null`. The arrangement tail is what is left and it belongs to #388. |
 | Step 5 | #390 | **Done.** All three callbacks wired, `KNOWN` in `check_uncalled_callbacks.py` is empty. |
 | Step 6 | #393 | **Done and verified end to end.** Three people in one notebook, no leakage. Every table has carried `subject_id` since Phase 0, so nothing in the schema changed. |
-| Step 7 | #394 | **Measured.** 750 tests, 15 failed. **13 are pre-existing**, proved against a worktree at `0f560b14`; 1 is #391; 1 was this session's and is fixed. |
+| Step 7 | #394 | **Measured twice.** 750 tests, 14 failed on 2026-08-18 after the polish phase, every one a class #394 already names: the 13 pre-existing plus #391. Nothing new. |
 | Step 8 | #389 | **Done.** All six items proved on the phone with three people. |
 | Step 9 | #388 | **Done.** The bar is separated, the selected destination is the app's own mark, every empty state is one designed block, and findings 2 through 8 are answered or resolved. D201, D202. |
 | Step 10 | #395 | **The release build works and is signed.** The APK is the next thing to deliver. |
