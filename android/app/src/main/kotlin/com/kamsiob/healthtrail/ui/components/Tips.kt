@@ -2,9 +2,9 @@ package com.kamsiob.healthtrail.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +17,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -46,22 +51,19 @@ object TipsTags {
 }
 
 /**
- * Onboarding that is always there, instead of onboarding that happened once.
+ * The lamp that opens what a page is for. D167 and #379.
  *
- * **The owner asked for it by name, #379:** a small button beside the section
- * name on every page, opening a panel that says what this page is for and how
- * to use it. His words, "always on demand onboarding".
+ * **Material's tonal icon button over Google's own lamp**, D196. This was a
+ * `Box` with a clip, a background, a hand rolled press scale and a bulb built
+ * out of a circle and a rounded bar: a drawing of a control rather than one.
  *
- * **It is the honest answer to a real problem this app has.** A stranger could
- * not tell what Projects was or what belonged in the Notebook, and the fix
- * that does not clutter every screen with explanation is to put the
- * explanation one tap away and leave the screen alone. Rule 20: the
- * complexity lives in the code, and where it cannot, it lives behind a door
- * rather than on the surface.
+ * **The gold comes from the scheme.** `secondaryContainer` is this theme's gold
+ * wash and `onSecondaryContainer` its gold ink, which is exactly the pair D167
+ * asked for, so nothing here names a color.
  *
- * **Never a badge, never a dot, never a nag.** It does not know whether it has
- * been read and it never asks to be. A person who never taps it loses nothing,
- * which is what separates this from the tours that interrupt.
+ * **A lamp rather than a question mark**, because "?" reads as help with the app
+ * and this is help with the page. The lamp is the one shape the whole culture
+ * already reads as "here is the idea".
  */
 @Composable
 fun TipsButton(
@@ -69,50 +71,18 @@ fun TipsButton(
     modifier: Modifier = Modifier,
 ) {
     val strings = LocalStrings.current
-    val colors = HealthTrail.colors
-    val motion = LocalMotion.current
-    val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (pressed) motion.pressScale else 1f,
-        animationSpec = motion.springy(),
-        label = "tipsPress",
-    )
-
-    Box(
+    val scheme = MaterialTheme.colorScheme
+    FilledTonalIconButton(
+        onClick = onOpen,
         modifier = modifier
-            .graphicsLayer { scaleX = scale; scaleY = scale }
-            .size(Space.touchTarget)
-            .clip(CircleShape)
-            .background(colors.goldWash)
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                onClickLabel = strings["tips.open"],
-                onClick = onOpen,
-            )
             .semantics { contentDescription = strings["tips.open"] }
             .testTag(TipsTags.BUTTON),
-        contentAlignment = Alignment.Center,
+        colors = IconButtonDefaults.filledTonalIconButtonColors(
+            containerColor = scheme.secondaryContainer,
+            contentColor = scheme.onSecondaryContainer,
+        ),
     ) {
-        // **A drawn mark rather than a letter**, because "?" reads as help
-        // with the app and this is help with the page. The lamp is the one
-        // shape the whole culture already reads as "here is the idea".
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(
-                modifier = Modifier
-                    .size(Space.tipsBulb)
-                    .clip(CircleShape)
-                    .background(colors.goldInk),
-            )
-            Spacer(Modifier.height(Space.tipsGap))
-            Box(
-                modifier = Modifier
-                    .size(width = Space.tipsBase, height = Space.tipsBaseThickness)
-                    .clip(Radius.pill)
-                    .background(colors.goldInk),
-            )
-        }
+        Icon(painter = painterResource(Symbols.tips), contentDescription = null)
     }
 }
 
@@ -162,21 +132,14 @@ fun TipsSheet(
                         .background(colors.goldWash),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Box(
-                            modifier = Modifier
-                                .size(Space.tipsBulbLarge)
-                                .clip(CircleShape)
-                                .background(colors.goldInk),
-                        )
-                        Spacer(Modifier.height(Space.tipsGap))
-                        Box(
-                            modifier = Modifier
-                                .size(width = Space.tipsBaseLarge, height = Space.tipsBaseThicknessLarge)
-                                .clip(Radius.pill)
-                                .background(colors.goldInk),
-                        )
-                    }
+                    // **The same lamp the button carries**, which is Google's
+                    // own. It was a circle and a rounded bar stacked in a
+                    // column, drawn twice at two sizes, and the two could drift.
+                    Icon(
+                        painter = painterResource(Symbols.tips),
+                        contentDescription = null,
+                        tint = colors.goldInk,
+                    )
                 }
                 Spacer(Modifier.width(Space.sm))
                 Text(

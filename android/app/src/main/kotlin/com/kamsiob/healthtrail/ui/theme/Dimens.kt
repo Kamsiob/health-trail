@@ -232,29 +232,13 @@ object Space {
     val fabSize: Dp = 56.dp
 
     /**
-     * The tips lamp, drawn rather than iconized. D167 and #379.
+     * The squircle the lamp sits in at the head of the tips sheet.
      *
-     * **Three measurements, named once**, because the mark appears at two
-     * sizes, on the button and in the sheet's header, and two copies of a
-     * drawing drift the moment one is nudged.
+     * **The mark inside it is Google's, D196**, so the measurements that used to
+     * describe a bulb and its base are gone: the drawing was a circle over a
+     * rounded bar, repeated at two sizes, and two copies of one mark drift the
+     * moment either is nudged.
      */
-    /**
-     * The pencil in a header corner, D173.
-     *
-     * **Fixed rather than scaled with the type.** The touch target around it
-     * grows with the person's font scale, as every target does; the mark inside
-     * stays legible at its drawn proportions instead of becoming a scribble at
-     * 2.0 and a speck at 0.85.
-     */
-    val editMark: Dp = 22.dp
-
-    val tipsBulb: Dp = 11.dp
-    val tipsBulbLarge: Dp = 13.dp
-    val tipsBase: Dp = 7.dp
-    val tipsBaseLarge: Dp = 8.dp
-    val tipsBaseThickness: Dp = 2.5.dp
-    val tipsBaseThicknessLarge: Dp = 3.dp
-    val tipsGap: Dp = 2.dp
     val tipsHeaderTile: Dp = 44.dp
     val tipsPointDot: Dp = 6.dp
     val tipsPointDotTop: Dp = 7.dp

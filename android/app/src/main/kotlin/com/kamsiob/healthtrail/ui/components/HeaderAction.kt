@@ -1,34 +1,20 @@
 package com.kamsiob.healthtrail.ui.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.Space
-import com.kamsiob.healthtrail.ui.v4.IconAction
 
 object HeaderActionTags {
     const val EDIT = "header_edit"
@@ -48,13 +34,14 @@ object HeaderActionTags {
  * **So the corner has one grammar everywhere.** Reading inward from the edge:
  * the edit mark sits furthest right, because it is the one the thumb reaches
  * for most and the corner is the easiest target on the screen; the lamp sits
- * beside it. A screen that has only one of them still puts that one in its own
- * place rather than sliding it over to the corner, so the lamp is always the
- * lamp's position and never sometimes the edit position.
+ * beside it, and search inside that. A screen that has only one of them still
+ * puts that one in its own place.
  *
- * **Both are circular and the same size**, which is what makes them read as one
- * family of controls rather than two unrelated buttons that happen to be near
- * each other.
+ * **Material's own icon buttons, D196.** These were three hand built boxes with
+ * a clip, a background, a hand rolled press scale and, in the pencil's case, a
+ * shape drawn on a `Canvas`. `IconButton` owns the 48dp target, the state layer
+ * and the ripple; the lamp's gold comes from the scheme through
+ * [TipsButton], not from a value typed here.
  */
 @Composable
 fun HeaderActions(
@@ -63,15 +50,11 @@ fun HeaderActions(
      * Opens search. Null on a screen that is not a way into looking for things.
      *
      * **Furthest from the corner, so the order the rest of the app learned does
-     * not move.** Reading inward from the edge the row is now pencil, lamp,
-     * search, which leaves the pencil and the lamp exactly where D173 put them
-     * and adds the new one on the inside.
+     * not move.** Reading inward from the edge the row is pencil, lamp, search.
      *
      * **A mark, because the box was clutter.** The owner, on Today, 2026-08-17:
-     * the full width search field "clutters the screen", and search belongs as
-     * "a search button in the top right, like an icon that matches". A door that
-     * takes a whole row of the most valuable space on the phone to say one word
-     * is the same argument `docs/V4.md` 4 used to delete the back footer. D192.
+     * a full width search field "clutters the screen", and search belongs as "a
+     * search button in the top right, like an icon that matches". D192.
      */
     onSearch: (() -> Unit)? = null,
     /** Opens what this page is for. Null on a screen with nothing to explain. */
@@ -83,46 +66,37 @@ fun HeaderActions(
     /**
      * The screen's own tag for its edit control.
      *
-     * **The tag follows the control rather than the position.** Five screens
-     * had their own tag on a button in the body; moving the button to the
-     * corner without bringing the tag would have left five instrumented tests
-     * looking for a node that no longer exists, and a green suite that had
-     * stopped checking the thing it names.
+     * **The tag follows the control rather than the position.** Five screens had
+     * their own tag on a button in the body; moving the button to the corner
+     * without bringing the tag would have left five instrumented tests looking
+     * for a node that no longer exists, and a green suite that had stopped
+     * checking the thing it names.
      */
     editTag: String? = null,
 ) {
     if (onSearch == null && onTips == null && onEdit == null) return
+    val strings = LocalStrings.current
     Row(
         modifier = modifier.testTag(HeaderActionTags.ROW),
         horizontalArrangement = Arrangement.spacedBy(Space.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // **The trailing slot is not held open, and the owner's instruction is
-        // why.** D173 reserved an empty box wherever a control was missing, so
-        // that the lamp sat in one position on every screen. On a screen with a
-        // lamp and no pencil that put the only visible control a slot in from
-        // the corner, floating in space with nothing beside it. The owner,
-        // 2026-08-16: it "should be aligned to the right side to mirror the
-        // alignment of the header on the left side".
-        //
-        // **A margin is a stronger alignment than a slot.** The header's title
-        // starts at the screen margin and the corner action now ends at it, so
-        // the two ends of the row agree. The learnability D173 was buying is
-        // still there in the order, which never changes: the pencil takes the
-        // corner when there is one, the lamp sits inside it.
-        //
-        // **The leading slot is still held**, because that is what keeps the
-        // pencil in the corner rather than letting it slide out when the lamp
-        // is absent.
         onSearch?.let { open ->
-            IconAction(
-                symbol = Symbols.search,
-                label = LocalStrings.current["today.search"],
+            IconButton(
                 onClick = open,
                 modifier = Modifier.testTag(HeaderActionTags.SEARCH),
-                tint = HealthTrail.colors.ink2,
-            )
+            ) {
+                Icon(
+                    painter = painterResource(Symbols.search),
+                    contentDescription = strings["today.search"],
+                )
+            }
         }
+        // **The leading slot is held**, because that is what keeps the pencil in
+        // the corner rather than letting it slide out when the lamp is absent.
+        // The trailing slot is not: the owner, 2026-08-16, asked the corner to
+        // end at the screen margin so the two ends of the header agree, and a
+        // margin is a stronger alignment than a reserved box.
         if (onTips != null) TipsButton(onOpen = onTips) else if (onEdit != null) HeldSlot()
         if (onEdit != null) {
             EditAction(onClick = onEdit, label = editLabel, tag = editTag)
@@ -144,11 +118,17 @@ private fun HeldSlot() {
  * is a different word on every screen, which means the corner has to be read
  * before it can be used; a pencil is the same mark everywhere and is read once.
  *
- * **Quieter than the lamp on purpose.** Gold is the app's accent and it is
- * spent on the capture button and on the lamp. Two gold circles side by side
- * would be two accents in one corner and neither would lead. The pencil takes
- * the neutral ground, which is the right weight for a control that is used
- * often and is never the reason somebody opened the screen.
+ * **Google's pencil rather than one drawn here.** This was a filled outline on a
+ * `Canvas`, laid out in fractions of the touch target, with two lines painted in
+ * the button's own ground to suggest the ferrule and the cut. It was a good
+ * drawing of the wrong alphabet: every other mark in the app is a Material
+ * Symbol, and the app authors no glyphs. D182 and D196.
+ *
+ * **Quieter than the lamp on purpose.** Gold is the app's accent and it is spent
+ * on the capture button and on the lamp. Two gold circles side by side would be
+ * two accents in one corner and neither would lead, so the pencil takes
+ * Material's plain icon button, which is the right weight for a control used
+ * often that is never the reason somebody opened the screen.
  *
  * **The spoken label is the screen's own.** A reader should hear "arrange the
  * cards" or "edit these notes" rather than "edit", because the mark is general
@@ -164,104 +144,18 @@ fun EditAction(
      *
      * **A parameter rather than a `testTag` in the caller's modifier.** Two
      * `testTag` calls in one chain do not compose: the later one silently wins,
-     * so the component's own tag would have overridden every screen's and the
-     * five tests moved here would have gone looking for nodes that never
-     * appeared. One tag, chosen once.
+     * so the component's own tag would have overridden every screen's.
      */
     tag: String? = null,
 ) {
     val strings = LocalStrings.current
-    val colors = HealthTrail.colors
-    val motion = LocalMotion.current
-    val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (pressed) motion.pressScale else 1f,
-        animationSpec = motion.springy(),
-        label = "editPress",
-    )
     val spoken = label ?: strings["action.edit"]
-
-    Box(
+    IconButton(
+        onClick = onClick,
         modifier = modifier
-            .graphicsLayer { scaleX = scale; scaleY = scale }
-            .size(Space.touchTarget)
-            .clip(CircleShape)
-            .background(colors.sand)
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                onClickLabel = spoken,
-                onClick = onClick,
-            )
             .semantics { contentDescription = spoken }
             .testTag(tag ?: HeaderActionTags.EDIT),
-        contentAlignment = Alignment.Center,
     ) {
-        PencilMark(tint = colors.ink, ground = colors.sand)
-    }
-}
-
-/**
- * A drawn pencil, because the app has no icon set and never wanted one.
- *
- * **The first attempt read as an eyedropper**, and the owner said so. It was
- * three round-capped strokes: a thick tube on the diagonal with a rounded end
- * and a bulb at the tip, which is the silhouette of a dropper rather than a
- * pencil. Round caps were the whole mistake.
- *
- * **A pencil is recognized by its corners.** A flat eraser end cut square
- * across, straight parallel sides, a band where the ferrule is, and a wedge
- * narrowing to an actual point. So it is one filled outline rather than
- * strokes, with two lines across it: the ferrule, and the cut where the wood
- * ends and the graphite begins.
- *
- * Laid out along the diagonal in fractions of the given size, so it keeps its
- * proportions when the touch target around it grows with the font scale.
- */
-@Composable
-private fun PencilMark(tint: Color, ground: Color) {
-    Canvas(modifier = Modifier.size(Space.editMark)) {
-        val s = size.minDimension
-
-        // The axis runs from the point at lower left to the eraser at upper
-        // right. Everything below is a distance along it, or across it.
-        fun on(t: Float) = Offset(s * (0.14f + 0.72f * t), s * (0.86f - 0.72f * t))
-        val across = s * 0.075f
-        fun edge(t: Float, side: Float) = on(t).let { Offset(it.x + across * side, it.y + across * side) }
-
-        val point = on(0f)
-        val shoulder = 0.19f
-        val ferrule = 0.82f
-        val end = 1f
-
-        val body = Path().apply {
-            moveTo(point.x, point.y)
-            edge(shoulder, 1f).let { lineTo(it.x, it.y) }
-            edge(end, 1f).let { lineTo(it.x, it.y) }
-            edge(end, -1f).let { lineTo(it.x, it.y) }
-            edge(shoulder, -1f).let { lineTo(it.x, it.y) }
-            close()
-        }
-        drawPath(body, color = tint)
-
-        // The ferrule, and the cut where the wood ends. Painted in the
-        // button's own ground rather than cleared: `BlendMode.Clear` on a
-        // canvas with no offscreen layer punches through to whatever is behind
-        // the window, which is black. Two gaps in the ground color are what
-        // make the shape legible at 22dp.
-        val hairline = s * 0.055f
-        drawLine(
-            color = ground,
-            start = edge(ferrule, 1f),
-            end = edge(ferrule, -1f),
-            strokeWidth = hairline,
-        )
-        drawLine(
-            color = ground,
-            start = edge(shoulder, 1f),
-            end = edge(shoulder, -1f),
-            strokeWidth = hairline * 0.8f,
-        )
+        Icon(painter = painterResource(Symbols.edit), contentDescription = null)
     }
 }
