@@ -184,6 +184,7 @@ fun ChaptersScreen(
         }
 
         labeledBlock(
+            leading = true,
             label = null,
             rows = listOf {
                 ListRow(

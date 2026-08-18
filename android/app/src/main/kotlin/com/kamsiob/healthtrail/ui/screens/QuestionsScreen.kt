@@ -119,6 +119,7 @@ fun QuestionsScreen(
 
         byRole.forEach { (role, inRole) ->
             labeledBlock(
+                leading = true,
                 // A role is the person's own word for who answers this, so it
                 // keeps its own case. "For anyone" is the app's own label.
                 label = role ?: strings["questions.group.anyone"],

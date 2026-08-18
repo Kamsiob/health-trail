@@ -94,6 +94,7 @@ fun MedicationsScreen(
         }
 
         labeledBlock(
+            leading = true,
             label = null,
             rows = current.map { medication ->
                 { MedicationRow(medication, openQuestions[medication.id] ?: 0, hue, onOpen) }

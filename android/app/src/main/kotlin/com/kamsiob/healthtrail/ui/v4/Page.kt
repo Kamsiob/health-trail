@@ -30,6 +30,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Text
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.Composable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Box
@@ -227,6 +229,14 @@ fun Page(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val scheme = MaterialTheme.colorScheme
 
+    // **The page publishes its section so its own groups can wear it.** A
+    // screen that belongs to a part of the notebook should look like it does,
+    // and until now the identity was spent only on 44dp mark tiles: measured
+    // 2026-08-17, 5.7% of a screen carried any color at all and the rest was
+    // two near identical neutrals. The owner, twice: the same boring color on
+    // every screen. `docs/V4.md` 2.1 allows one colored group per screen and
+    // the section screens were never taking it.
+    CompositionLocalProvider(LocalPageSection provides section) {
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = scheme.background,
@@ -385,7 +395,17 @@ fun Page(
             }
         }
     }
+    }
 }
+
+/**
+ * Which part of the notebook the page around this belongs to, or null.
+ *
+ * **So a group can wear its section without every call site being told.** The
+ * identity lives in one place, `hueFor`, and the first group on a page reads it
+ * from here rather than from a color typed into the screen.
+ */
+val LocalPageSection = compositionLocalOf<Repository.Section?> { null }
 
 /** How long the refresh indicator is held so the gesture is seen to land. */
 private const val REFRESH_HELD_MS = 450L
@@ -437,6 +457,13 @@ fun LazyListScope.labeledBlock(
     labelColor: Color? = null,
     /** A tag on the label itself, for a caller whose test asserts on it. */
     labelTag: String? = null,
+    /**
+     * Whether this is the group the page leads with.
+     *
+     * **The one that wears the section's color.** One colored group per screen,
+     * 2.1, and it goes to the group somebody came to read.
+     */
+    leading: Boolean = false,
 ) {
     if (rows.isEmpty()) return
     item {
@@ -450,7 +477,15 @@ fun LazyListScope.labeledBlock(
                     modifier = labelTag?.let { tag -> Modifier.testTag(tag) } ?: Modifier,
                 )
             }
-            Block(padding = Space.none) {
+            // **The leading group wears its section**, which is the one
+            // colored group `docs/V4.md` 2.1 allows a screen, and what stops a
+            // section page being a column of identical neutrals.
+            val section = LocalPageSection.current
+            Block(
+                tone = if (leading && section != null) BlockTone.Section else BlockTone.Quiet,
+                padding = Space.none,
+                hue = section?.let { hueFor(it) },
+            ) {
                 rows.forEachIndexed { index, row ->
                     row()
                     if (index != rows.lastIndex) RowDivider()

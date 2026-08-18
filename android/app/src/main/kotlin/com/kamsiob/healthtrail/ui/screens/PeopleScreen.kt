@@ -73,6 +73,7 @@ fun PeopleScreen(
         modifier = modifier.testTag(PeopleTags.ROOT),
     ) {
         labeledBlock(
+            leading = true,
             label = strings["people.showing"],
             rows = showing.map { subject ->
                 { PersonRow(subject = subject, isShowing = true, onClick = null) }
