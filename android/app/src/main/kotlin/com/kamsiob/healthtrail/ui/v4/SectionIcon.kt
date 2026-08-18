@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.components.Symbols
 import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme

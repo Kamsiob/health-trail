@@ -1,9 +1,5 @@
 package com.kamsiob.healthtrail.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +12,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,9 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -47,11 +42,8 @@ import java.time.LocalDate
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
-import com.kamsiob.healthtrail.ui.components.focusRingAlpha
-import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 
 object MeasurementTags {
@@ -556,24 +548,21 @@ private fun NameSomethingElse(
 @Composable
 private fun PresetRow(preset: TemplateCatalog.Preset, onClick: () -> Unit) {
     val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.card)
-    val ring by focusRingAlpha(interaction)
 
-    Column(
+    // **Material's surface owns the container, the press and the focus ring.**
+    // #392, and the tonal color replaces `card`. docs/V4.md 2.1.
+    Surface(
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.cardLarge)
-            .background(surface)
-            .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.cardLarge)
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                role = Role.Button,
-                onClick = onClick,
-            )
-            .testTag(MeasurementTags.preset(preset.id))
+            .testTag(MeasurementTags.preset(preset.id)),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+    ) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(Space.cardPadding),
     ) {
         // bidi-ok: a catalog label, in the app's own words rather than the person's.
@@ -583,6 +572,7 @@ private fun PresetRow(preset: TemplateCatalog.Preset, onClick: () -> Unit) {
             // bidi-ok: a catalog label, in the app's own words rather than the person's.
             Text(text = preset.cadence, style = HealthTrail.type.bodyS, color = colors.ink2)
         }
+    }
     }
 }
 

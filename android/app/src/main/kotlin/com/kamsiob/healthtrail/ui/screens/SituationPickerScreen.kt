@@ -1,10 +1,6 @@
 package com.kamsiob.healthtrail.ui.screens
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
@@ -16,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,17 +21,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.semantics.Role
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.focusRingAlpha
-import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Block
@@ -334,25 +326,21 @@ private fun SituationCard(
     onClick: () -> Unit,
 ) {
     val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.card)
-    val ring by focusRingAlpha(interaction)
 
-    Column(
+    // **Material's surface owns the container, the press and the focus ring.**
+    // #392, and the tonal color replaces `card`. docs/V4.md 2.1.
+    Surface(
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.cardLarge)
-            .background(surface)
-            .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.cardLarge)
-            .clickable(
-                interactionSource = interaction,
-                // The row's own surface is the press feedback, per 5.14.
-                indication = null,
-                role = Role.Button,
-                onClick = onClick,
-            )
-            .testTag(SituationPickerTags.row(situation.id))
+            .testTag(SituationPickerTags.row(situation.id)),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+    ) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(Space.cardPadding),
     ) {
         Text(
@@ -376,5 +364,6 @@ private fun SituationCard(
                 color = colors.ink2,
             )
         }
+    }
     }
 }

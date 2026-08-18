@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -178,7 +179,11 @@ private fun BloomChoice(
         label = "bloom",
     )
 
-    Row(
+    // **Material's surface owns the pill and the press.** #392. The bloom's own
+    // rise stays: it is the one motion `DESIGN.md` 10 lets overshoot, and it is
+    // placement rather than a state layer.
+    Surface(
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             // The lambda overload, so the slide happens in layout rather than
@@ -186,19 +191,16 @@ private fun BloomChoice(
             // it is right: six pills recomposing together is six times the work
             // for a movement that could be a placement.
             .offset { IntOffset(0, rise.roundToPx()) }
-            .clip(BloomShape)
-            .background(surface)
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                onClick = onClick,
-            )
-            .padding(horizontal = Space.m, vertical = Space.s)
             .semantics(mergeDescendants = true) {
                 contentDescription = label
                 onClick { onClick(); true }
             }
             .testTag(CaptureTags.option(kind)),
+        shape = BloomShape,
+        color = MaterialTheme.colorScheme.surfaceContainerLowest,
+    ) {
+    Row(
+        modifier = Modifier.padding(horizontal = Space.m, vertical = Space.s),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -218,6 +220,7 @@ private fun BloomChoice(
             iconSize = BLOOM_DRAWING,
             modifier = Modifier.clearAndSetSemantics { },
         )
+    }
     }
 }
 

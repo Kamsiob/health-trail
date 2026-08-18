@@ -1,8 +1,5 @@
 package com.kamsiob.healthtrail.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,24 +8,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.Symbols
-import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
@@ -143,21 +137,21 @@ private fun StarterCard(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.card)
 
+    // **Material's surface owns the container and the press.** #392, and the
+    // tonal color replaces `card`. docs/V4.md 2.1. This one had no focus ring
+    // at all, which Material's own state layer now gives it for free.
+    Surface(
+        onClick = onChoose,
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(AddInstructionTags.starter(starter.id)),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+    ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(Radius.cardLarge)
-            .background(surface)
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                role = Role.Button,
-                onClick = onChoose,
-            )
-            .testTag(AddInstructionTags.starter(starter.id))
             .padding(Space.cardPadding),
     ) {
         // bidi-ok: a catalog label, in the app's own words rather than the person's.
@@ -189,5 +183,6 @@ private fun StarterCard(
             style = HealthTrail.type.label,
             color = colors.blue,
         )
+    }
     }
 }

@@ -5,7 +5,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
@@ -34,10 +34,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.v4.EmptyDrawing
 import com.kamsiob.healthtrail.ui.v4.RouteDash
 import com.kamsiob.healthtrail.ui.v4.SpineRow
-import com.kamsiob.healthtrail.ui.components.focusRingAlpha
-import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Field
@@ -280,23 +277,28 @@ private fun ResultRow(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.card)
-    val ring by focusRingAlpha(interaction)
 
+    // **Material's own surface owns the container, the press and the focus
+    // ring.** This was a Column with a clip, a background painted by hand, a
+    // border whose alpha was animated by hand, and an indication = null
+    // clickable: four separate things that had to agree, in a file that is one
+    // of thirty that were each keeping them in step on their own. #392.
+    //
+    // **Tonal rather than white.** The old resting color was `card`, which is
+    // where the app's leftover white cards came from: docs/V4.md 2.1 makes a
+    // group a flat block on the canvas, and the surrounding components had
+    // already gone tonal while every tappable card stayed white.
+    Surface(
+        onClick = onOpen,
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(SearchTags.result(hit.id)),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+    ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(Radius.cardLarge)
-            .background(surface)
-            .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.cardLarge)
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                role = Role.Button,
-                onClick = onOpen,
-            )
-            .testTag(SearchTags.result(hit.id))
             .padding(Space.cardPadding),
     ) {
         // When and where, in mono, above the title. The same eyebrow the trail
@@ -340,6 +342,7 @@ private fun ResultRow(
                         overflow = TextOverflow.Ellipsis,
                     )
         }
+    }
     }
 }
 

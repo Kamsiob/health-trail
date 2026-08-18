@@ -3,7 +3,6 @@ package com.kamsiob.healthtrail.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +12,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
@@ -31,10 +32,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.v4.RouteSwatch
 import com.kamsiob.healthtrail.ui.v4.WaypointDot
 import com.kamsiob.healthtrail.ui.v4.Waypoint
-import com.kamsiob.healthtrail.ui.components.focusRingAlpha
-import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.Trail
 import com.kamsiob.healthtrail.ui.v4.Action
@@ -402,24 +400,25 @@ private fun LinkRow(
     note: String,
 ) {
     val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.card)
-    val ring by focusRingAlpha(interaction)
 
-    Row(
+    // **Material's surface owns the container, the press and the focus ring.**
+    // #392. This was a clip, a background painted from a hand animated color, a
+    // border whose alpha was animated separately, and an indication = null
+    // clickable: four things that had to agree, kept in step by hand in thirty
+    // files. The tonal color replaces `card`, which is where the app's leftover
+    // white cards came from. docs/V4.md 2.1.
+    Surface(
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .semantics(mergeDescendants = true) { }
-            .clip(Radius.cardLarge)
-            .background(surface)
-            .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.cardLarge)
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                role = Role.Button,
-                onClick = onClick,
-            )
-            .testTag(testTag)
+            .testTag(testTag),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+    ) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(Space.cardPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -433,42 +432,41 @@ private fun LinkRow(
             Text(text = note, style = HealthTrail.type.bodyS, color = colors.ink2)
         }
     }
+    }
 }
 
 /** The date, which is a control rather than a label. Rule 17. */
 @Composable
 private fun EditableRow(label: String, testTag: String, onClick: () -> Unit) {
     val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.sand)
-    val ring by focusRingAlpha(interaction)
     val strings = LocalStrings.current
 
-    Row(
+    // **Material's surface owns the container, the press and the focus ring.**
+    // #392. A pill is `CircleShape` rather than a percent radius out of the
+    // second ladder: on a row with a floor under its height the two draw the
+    // same shape, and one of them is Compose's own.
+    Surface(
+        onClick = onClick,
         modifier = Modifier
             .semantics(mergeDescendants = true) { }
-            .clip(Radius.pill)
-            .background(surface)
-            .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.pill)
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                role = Role.Button,
-                onClick = onClick,
-            )
             .testTag(testTag)
             // **The 48dp floor, per `DESIGN.md` 12.** Mono is 11sp, so the
             // padding alone left this at about 39dp: the first control on the
             // screen, and the one rule 17's "editable forever" depends on, was
             // the smallest target in the app. #361.
-            .sizeIn(minHeight = Space.touchTarget)
-            .padding(horizontal = Space.m, vertical = Space.sm),
+            .sizeIn(minHeight = Space.touchTarget),
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+    ) {
+    Row(
+        modifier = Modifier.padding(horizontal = Space.m, vertical = Space.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // bidi-ok: every caller isolates before handing it here.
         Eyebrow(text = label, color = colors.ink)
         Spacer(Modifier.width(Space.s))
         Text(text = strings["entry.date.change"], style = HealthTrail.type.label, color = colors.blue)
+    }
     }
 }
 

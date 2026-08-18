@@ -1,9 +1,6 @@
 package com.kamsiob.healthtrail.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -18,6 +15,7 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
@@ -46,8 +43,6 @@ import com.kamsiob.healthtrail.ui.v4.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.v4.PickerOption
 import com.kamsiob.healthtrail.ui.v4.RouteSwatch
 import com.kamsiob.healthtrail.ui.components.Symbols
-import com.kamsiob.healthtrail.ui.components.focusRingAlpha
-import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -475,25 +470,21 @@ private fun FileHere(
     modifier: Modifier = Modifier,
 ) {
     val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val resting = if (emphasized) colors.blueWash else colors.sand
-    val surface by pressedSurface(interaction, resting)
-    val ring by focusRingAlpha(interaction)
+    val scheme = MaterialTheme.colorScheme
 
-    Row(
+    // **Material's surface owns the container, the press and the focus ring.**
+    // #392. The emphasized thread keeps its accent wash, which is the one thing
+    // here that carries meaning: it is the thread the app has guessed at.
+    Surface(
+        onClick = onClick,
         modifier = modifier
             .semantics(mergeDescendants = true) { }
-            .sizeIn(minHeight = Space.touchTarget)
-            .clip(Radius.tile)
-            .background(surface)
-            .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.tile)
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                role = Role.Button,
-                onClick = onClick,
-            )
-            .padding(horizontal = Space.sm, vertical = Space.s),
+            .sizeIn(minHeight = Space.touchTarget),
+        shape = MaterialTheme.shapes.small,
+        color = if (emphasized) scheme.primaryContainer else scheme.surfaceContainer,
+    ) {
+    Row(
+        modifier = Modifier.padding(horizontal = Space.sm, vertical = Space.s),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         RouteSwatch(
@@ -506,6 +497,7 @@ private fun FileHere(
             style = if (emphasized) HealthTrail.type.label else HealthTrail.type.bodyM,
             color = if (emphasized) colors.blueDeep else colors.ink,
         )
+    }
     }
 }
 
