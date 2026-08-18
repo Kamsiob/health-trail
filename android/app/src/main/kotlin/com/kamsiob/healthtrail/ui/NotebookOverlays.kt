@@ -19,7 +19,7 @@ import java.time.LocalDate
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.Destination
+import com.kamsiob.healthtrail.ui.v4.Destination
 import com.kamsiob.healthtrail.ui.screens.headingFor
 import com.kamsiob.healthtrail.ui.screens.IncidentScreen
 import com.kamsiob.healthtrail.ui.screens.IncidentsScreen

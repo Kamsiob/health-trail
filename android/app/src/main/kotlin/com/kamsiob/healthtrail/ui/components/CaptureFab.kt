@@ -19,6 +19,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
+import com.kamsiob.healthtrail.ui.v4.NavTags
 
 /**
  * The gold capture button, in the trailing corner. `DESIGN.md` sections 7 and 8.

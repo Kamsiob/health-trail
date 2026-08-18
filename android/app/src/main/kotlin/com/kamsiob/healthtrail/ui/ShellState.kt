@@ -7,7 +7,7 @@ import com.kamsiob.healthtrail.data.Digest
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.time.Edtf
-import com.kamsiob.healthtrail.ui.components.Destination
+import com.kamsiob.healthtrail.ui.v4.Destination
 import com.kamsiob.healthtrail.ui.screens.AppointmentDraft
 import com.kamsiob.healthtrail.ui.screens.BillDraft
 import com.kamsiob.healthtrail.ui.screens.CaptureDraft

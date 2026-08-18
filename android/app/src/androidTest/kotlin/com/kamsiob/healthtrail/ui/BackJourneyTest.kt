@@ -15,8 +15,8 @@ import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kamsiob.healthtrail.MainActivity
 import com.kamsiob.healthtrail.data.Repository
-import com.kamsiob.healthtrail.ui.components.Destination
-import com.kamsiob.healthtrail.ui.components.NavTags
+import com.kamsiob.healthtrail.ui.v4.Destination
+import com.kamsiob.healthtrail.ui.v4.NavTags
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
 import com.kamsiob.healthtrail.ui.screens.CaptureFormTags
 import com.kamsiob.healthtrail.ui.screens.CaptureTags

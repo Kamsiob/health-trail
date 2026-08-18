@@ -1,4 +1,4 @@
-package com.kamsiob.healthtrail.ui.components
+package com.kamsiob.healthtrail.ui.v4
 
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import kotlin.math.min
+import com.kamsiob.healthtrail.ui.components.Symbols
 
 object NavTags {
     const val BAR = "nav_bar"

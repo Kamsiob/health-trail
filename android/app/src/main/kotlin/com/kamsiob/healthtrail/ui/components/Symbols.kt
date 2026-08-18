@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import com.kamsiob.healthtrail.R
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
+import com.kamsiob.healthtrail.ui.v4.Destination
 
 /**
  * The icon vocabulary. Material Symbols Rounded, filled, at 24dp. D182.

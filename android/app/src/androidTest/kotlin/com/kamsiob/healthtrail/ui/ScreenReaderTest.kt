@@ -20,9 +20,9 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
-import com.kamsiob.healthtrail.ui.components.BottomNav
+import com.kamsiob.healthtrail.ui.v4.BottomNav
 import com.kamsiob.healthtrail.ui.components.CaptureFab
-import com.kamsiob.healthtrail.ui.components.Destination
+import com.kamsiob.healthtrail.ui.v4.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
 import com.kamsiob.healthtrail.ui.screens.ChangeSituationScreen
 import com.kamsiob.healthtrail.ui.screens.MilestonesScreen
