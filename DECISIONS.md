@@ -12,7 +12,7 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 
 ## Index
 
-**Search this file for a D number. Never read it through.** 160 entries, newest first in the body below.
+**Search this file for a D number. Never read it through.** 193 entries. The body is grouped by date and newest first inside each group.
 
 | # | What it decided |
 |---|---|
@@ -65,17 +65,17 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | D47 | Arabic on the device found what no check could |
 | D48 | Nine decisions were lost to an edit that silently did nothing |
 | D49 | The guards were never wired, and D29 diagnosed the wrong cause |
-| D56 | One current build stays on the phone, because the owner tests on it |
-| D57 | Another application on the same phone is out of bounds |
-| D58 | What makes a translated language shippable, which is not what #102 said |
-| D59 | The gate says the app is free, and asks for support in the same breath |
-| D60 | The capture button was crowding two of the four destinations |
 | D50 | I ran a blocklisted command, and the reasoning felt sufficient at the time |
 | D51 | The export keeps Argon2id, and Bouncy Castle provides it |
 | D52 | Chinese uses the system face, and looking for that found that Chinese did not work at all |
 | D53 | The screenshot script guarded the wrong thing, and a private notification reached a capture |
 | D54 | TalkBack ran, and the thing it was going to find had already been fixed by a test |
 | D55 | The test the emulator decision rested on did not exist |
+| D56 | One current build stays on the phone, because the owner tests on it |
+| D57 | Another application on the same phone is out of bounds |
+| D58 | What makes a translated language shippable, which is not what #102 said |
+| D59 | The gate says the app is free, and asks for support in the same breath |
+| D60 | The capture button was crowding two of the four destinations |
 | D61 | The export was never portable, and every test said it was |
 | D62 | A password keyboard is not a mask |
 | D63 | What the digest is allowed to say, and what it is not |
@@ -150,8 +150,6 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | D132 | Two contract documents disagreed, and the precedence list settled it rather than the owner |
 | D133 | A vector belongs to the contract, and the mapping it pins is held to the schema |
 | D134 | The trail filters by kind, forgets on the way out, and says how much it is hiding |
-| B5 | RESOLVED 2026-08-07. The guard is installed, live, and has refused a real command |
-| B5 | The destructive command guard needs to be installed from user settings, and only the owner can do it. Opened 2026-08-02 |
 | D135 | Removal is reached from the thing itself, and the long press is deleted |
 | D136 | A setting's first days list is a project, and Today points at it |
 | D137 | An in content action is a pill sized to its label, and the way back is the only full width outlined bar |
@@ -162,27 +160,55 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | D142 | The grid files are the authority on measurement, and the built screens do not match them |
 | D143 | A dated record keeps its stale pointers, and a later session must not fix them |
 | D144 | Branch cleanup, and why `git branch --merged` is the wrong instrument here |
-| D152 | The removal ledger grows a second table, for a frozen symbol inside a live file |
-| D151 | A screen where you write something down is inside the section, and wears its tab |
-| D150 | A restored notebook is on a new phone, and the phone says so |
-| D149 | Mono never touches a date, and the type ladder's own row said otherwise |
 | D145 | A care thread can be started from scratch, because fourteen situations is a starting set |
-| D148 | The third version currency check, which D121 left enabled |
-| D148 | An event writer updates its parent's state in the same transaction |
-| D147 | A form asks one question at a time; correcting a record shows all of it at once |
-| D157 | The gallery offers the real card, not a line of type describing it |
-| D156 | A project's road says its stage names, and a card shows the one it is at |
-| D155 | A long press is allowed where it names the visible control that does the same thing |
-| D154 | The type ladder is lifted app wide, because the owner said the text is hard to read |
-| D153 | Today has two card sizes, square and full width, and the stored column keeps three |
-| B6 | `NotebookShell` reached the JVM's 64KB method limit. Resolved 2026-08-13 |
-| B1 | Commit signing. Resolved 2026-07-31 |
-| B2 | Board automations. Resolved by doing it a different way |
-| B3 | Hosted privacy policy. Resolved, then corrected |
-| B4 | The emulator. Resolved by dropping it, 2026-07-31 |
 | D146 | The welcome is remembered by the phone as well as by the notebook |
-
-**The index stops at D157 and the entries do not.** Everything from D158 on is in the body, newest first, and the file is searched by number rather than read. The ones the interface rebuild turns on: **D178** replacement not conversion, **D179** the foundation needed a pinned alpha, **D183** measure the drawing rather than judge it, **D185** the accordion is not replaced, **D186** a person's mark is their own color and the care team splits by a toggle, **D187** the spine is a path not a filter, **D188** three gaps and no more, **D189** the hint comes out of the field, **D190** white is the third reserved surface and the only one with an edge, **D191** `m3v4-0` draws the arranged Today and there are two of them, **D194** the retirements are scripted and three of them were not renames, **D195** the form's fold comes back because `m3v4-4` draws one, **D196** the old design is deleted and the new one is Material's own components with our polish on top.
+| D147 | A form asks one question at a time; correcting a record shows all of it at once |
+| D148 | The third version currency check, which D121 left enabled |
+| D149 | Mono never touches a date, and the type ladder's own row said otherwise |
+| D150 | A restored notebook is on a new phone, and the phone says so |
+| D151 | A screen where you write something down is inside the section, and wears its tab |
+| D152 | The removal ledger grows a second table, for a frozen symbol inside a live file |
+| D153 | Today has two card sizes, square and full width, and the stored column keeps three |
+| D154 | The type ladder is lifted, app wide, because the owner said the text is hard to read |
+| D155 | A long press is allowed where it names the visible control that does the same thing |
+| D156 | A project's road says its stage names, and a card shows the one it is at |
+| D157 | The gallery offers the real card, not a line of type describing it |
+| D158 | A door to the wrong room is not better than a wall, so the built fix was backed out |
+| D159 | A place is something the person can name, and naming it is a move |
+| D160 | The release key lives outside the repository, and a missing key builds unsigned rather than failing |
+| D161 | The release variant had never been built, and the rules it needs are narrow on purpose |
+| D163 | The tab is Projects again, and the Notebook's categories are finally drawn |
+| D164 | The project home is one fixed order and a vertical road |
+| D165 | The round trip is proven on the minified build, and 1.0 was allowed to depend on it |
+| D166 | What 1.0 means, and the two judgment calls that closed it |
+| D167 | The interface is rebuilt on the round four language: neutral canvas, shape variety, spring physics |
+| D168 | The polish pass: arrival, settling, and a tick under the thumb |
+| D169 | Arranging behaves like the phone, and the digest opens what it counted |
+| D170 | Today is rebuilt, because tokens cannot make a screen |
+| D172 | The approved mockup was the baseline, and it was not being read |
+| D173 | One corner grammar, and the v4 baseline replaces the old spec |
+| D174 | Bricolage Grotesque is removed, and the app ships two typefaces |
+| D175 | One interaction grammar, and the app's is a spring rather than a ripple |
+| D176 | The eyebrow keeps its job and loses the typeface, and mono is figures only |
+| D178 | The interface is replaced on Material 3 Expressive, and the back end is not touched |
+| D179 | Material 3 Expressive is not in a stable material3, so the build takes one alpha and pins it |
+| D180 | RTL stops being a gate. Version one is American English and nothing else is verified |
+| D181 | The app is set in Roboto, because the approved mockups are and it was not |
+| D182 | The icons are Material Symbols, the group is a tonal block, and the row breathes |
+| D183 | The drawing's measurements, taken rather than judged: the margin, the air, the ladder |
+| D184 | Material's own controls replace the hand-drawn ones, and the back footer is deleted |
+| D185 | The sand accordion is not swapped for a new accordion. It is what each screen stops needing |
+| D186 | A person's mark is their own color, and the care team splits by a toggle rather than by folds |
+| D187 | The spine is for a path, not for a filter, so the person screen has none |
+| D188 | Three gaps and no more, taken from Material's own research rather than judged |
+| D189 | The hint comes out of the field, because placeholders are harmful |
+| D190 | White is the third reserved surface, and it is the only one in the app with an edge |
+| D191 | `m3v4-0` draws the arranged Today, not the fallback one, and both exist |
+| D194 | The retirements are scripted and read as a diff, and three of them were not renames |
+| D195 | The form's fold comes back, because `m3v4-4` draws one and D185 said that is what would bring it |
+| D196 | The old design is deleted and the new one is Material's own components, with our polish on top |
+| D197 | The date picker stays hand drawn, and it is the fourth exception |
+| D198 | Color lives in the marks, saturated, and no page is one color |
 
 ---
 
@@ -2989,6 +3015,39 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 **There was a third record, found after the fix, and it changes nothing but is worth the paragraph.** `DESIGN.md` section 14's row for this screen also said the role belongs behind "Add more", **and it gave the reason**: the role and up to six chips sat *between* the name and the number, so the number, which is why anybody adds a person, was the field furthest down. **That is a layout complaint, not an argument for hiding the role**, and putting the three fields in one group with the chips underneath answers it without hiding anything. So two records asked for the role to be folded, one recorded folding it being reverted, and the built screen now satisfies all three. Section 14 is corrected to say so.
 
 **Three records, one screen, and the only way to see it was to read all three.** The check that would have caught it does not exist and probably cannot: they were not contradictory statements, they were one statement, one reason, and one exception, written months apart in three files.
+
+---
+
+### D198. Color lives in the marks, saturated, and no page is one color
+
+**Date:** 2026-08-18. **Owner, twice, and the second time named the screen:** "there's not enough efficient use of colors that are neither too obnoxious nor boring", then "the Notebook page is dreary and ugly, the colors are overwhelmingly depressing... there could never be a page that is overwhelmingly one color."
+
+**Measured before it was said.** 5.7% of a screen carried any color; 92% was two near-identical beiges. Every mark in the app sat in its hue's palest `wash`, so twelve sections drew twelve near-white discs on beige.
+
+**The law, applied app-wide rather than per screen:**
+
+1. **A mark is painted from `TabHue.base` with `TabHue.onBase` on top.** `onBase` is computed from luminance, so both themes clear contrast without anybody choosing.
+2. **Surfaces stay neutral.** A page is read on its surfaces and found by its marks. A full-height container in a section wash is a wall, not an accent.
+3. **One tonal block per page**, and never full height. On Today it is the hero; on the notebook it is what needs the person.
+4. **Every list of entries carries its kind's mark in its kind's color**, through `entryHue`/`entryMark`: a call is care team, a visit is appointments, a reading is progress. One vocabulary, learned once.
+5. **Identity, never state.** Rule 2. `hueFor` is the owner's mapping and is not re-derived. No color says how anything is going.
+6. **A color never carries meaning alone.** The mark and the words beside it say what the color says, so it survives grayscale and every color vision difference.
+
+**What it replaced.** Eighteen call sites passed a loose ink and a loose wash. They pass a `TabHue` pack now (`markHue`), so the next change to how a mark looks is one line. Three identities that belong to no section became packs too: `goldHue`, `alertHue`, `accentHue`.
+
+**What would reopen it.** A screen where the saturated disc fights the content rather than finding it. The answer then is the disc's size, not its saturation.
+
+---
+
+### D197. The date picker stays hand drawn, and it is the fourth exception
+
+**Date:** 2026-08-18. **Decided under rule 10** while working the `ui/components` ledger, #387, which listed "DatePicker to Material's own date picker".
+
+**It cannot be Material's.** Rule 17 is load bearing: dates are stored as EDTF, displayed at exactly the precision expressed, and **unknown is a first-class value that saves**. Material's `DatePicker` returns one day in milliseconds. It cannot express "sometime in April", "2025", or "nobody wrote it down", and those are the ordinary answers for a record written from memory.
+
+**So the exception list is four, not three.** The trail's route, a project's road, a measure's line, and the picker that lets a person say how much they actually know. Everything else on that ledger still converts.
+
+**What would reopen it.** Material shipping a picker with a precision model. Nothing on the roadmap suggests one.
 
 ---
 
