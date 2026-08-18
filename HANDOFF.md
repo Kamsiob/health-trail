@@ -11,6 +11,10 @@ Fragments, no filler. Rewritten to current truth, never appended to. History goe
 ## 0. Cold start
 
 1. `gh issue view 321`, then this file. Nothing else.
+   **The board has 95 open issues and 10 are current work**: they are the
+   `FINISH THE APP` milestone, numbered Step 3 through Step 10 in the order
+   to do them. `gh issue list --milestone "FINISH THE APP"`. Everything else
+   on the board is parked or past.
 2. `tools/sweep.sh audit`, **look at the captures**.
 3. Take the next screen. **New file, built from Material's components outward, old file deleted in the same commit.** One screen per commit: `tools/verify.sh`, install, look on the phone, commit, push.
 4. Do **not** read the old design docs first. Do **not** re-measure the mockups.
@@ -230,7 +234,7 @@ Read on demand, never in bulk.
 
 | Need | Read |
 |---|---|
-| What to do next | `gh issue view 321`, then this file |
+| What to do next | `gh issue view 321`, then this file. Then `gh issue list --milestone "FINISH THE APP"` |
 | The design and the polish bar | **`docs/V4.md`** |
 | What the approved design looks like | `docs/screenshots/m3v4-{0..5}-light.png`. **Open them** |
 | What will bite me | `docs/TRAPS.md`, **one section**, from its own table |
