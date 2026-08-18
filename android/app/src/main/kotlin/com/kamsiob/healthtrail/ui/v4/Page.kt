@@ -378,10 +378,17 @@ fun Page(
                     ),
                     verticalArrangement = Arrangement.spacedBy(itemSpacing),
                 ) {
-                    hero?.let { lead -> item { lead() } }
+                    // **Every part of every page arrives rather than being
+                    // there already.** `docs/V4.md` 6.1 item 8, and it is the
+                    // half of the bar that had been deferred every session.
+                    // Here rather than at eighty six call sites, for the same
+                    // reason the press state is on the components: a treatment
+                    // applied by hand reaches the screens somebody remembered.
+                    val arriving = ArrivingScope(this)
+                    hero?.let { lead -> arriving.item { lead() } }
 
                     subtitle?.let { line ->
-                        item {
+                        arriving.item {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(Space.s),
@@ -406,7 +413,7 @@ fun Page(
                         }
                     }
 
-                    content()
+                    arriving.content()
 
                     item { Spacer(Modifier.height(Space.xxl)) }
                 }

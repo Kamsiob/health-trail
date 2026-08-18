@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 /**
  * Motion, from DESIGN.md section 6. Two spring personalities and three
@@ -95,6 +97,26 @@ interface Motion {
     /** How far a pressed surface shrinks. 1f when motion is reduced. */
     val pressScale: Float
 
+    /**
+     * How far a part of a screen travels on its way in. `docs/V4.md` 6.1 item
+     * 8, and the token is here rather than in the component so the reduced
+     * motion setting reaches it the way it reaches everything else.
+     *
+     * **Small enough to be felt rather than watched.** About a line of body
+     * text, so a card looks like it settled rather than like it flew in from
+     * somewhere off the screen. Zero when motion is reduced.
+     */
+    val arrivalRise: Dp
+
+    /**
+     * The gap between one part of a screen landing and the next.
+     *
+     * **The stagger is the point.** Everything moving together is one block
+     * sliding, which reads as a transition; a short offset per part is what
+     * makes a page read as being laid down. Zero when motion is reduced.
+     */
+    val arrivalStaggerMillis: Long
+
     val isReduced: Boolean
 }
 
@@ -114,6 +136,12 @@ private const val ARRANGE_TILT_DEGREES = 0.7f
 
 /** One half of the tilt. Slow enough to read as breathing rather than shaking. */
 private const val ARRANGE_TILT_MILLIS = 130
+
+/** How far a part of a screen rises into place. About a line of body text. */
+private val ARRIVAL_RISE = 12.dp
+
+/** The gap between one part landing and the next. */
+private const val ARRIVAL_STAGGER_MILLIS = 28L
 
 object FullMotion : Motion {
     override fun <T> standard(): FiniteAnimationSpec<T> =
@@ -145,6 +173,10 @@ object FullMotion : Motion {
     // card reads as nothing happening at all.
     override val pressScale: Float = 0.985f
 
+    override val arrivalRise: Dp = ARRIVAL_RISE
+
+    override val arrivalStaggerMillis: Long = ARRIVAL_STAGGER_MILLIS
+
     override val isReduced: Boolean = false
 }
 
@@ -172,6 +204,12 @@ object ReducedMotion : Motion {
     // **No scale at all.** A shrink is motion, and this mode has none of it;
     // the press still answers through Material's own state layer.
     override val pressScale: Float = 1f
+
+    // **No rise and no stagger.** The parts are simply there, which is what
+    // reduced motion promises: not a shorter animation, none.
+    override val arrivalRise: Dp = 0.dp
+
+    override val arrivalStaggerMillis: Long = 0L
 
     override val isReduced: Boolean = true
 }

@@ -2612,6 +2612,34 @@ Anything only the owner can resolve. Each entry states exactly what he needs to 
 
 **The original note, from when B5 was open:** The four entries before it are all resolved and are kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed. **B5 does not stop the work.** A fresh session can build everything on the list without it, exactly as the last two sessions did, on rule 6 followed by hand.
 
+### B6. OPEN 2026-08-18. The phone is locked behind a PIN and no device work can continue
+
+**What happened.** `gh issue view 389` item 5 asks that a second Android user
+profile on the same device be installed to and restored from the same archive,
+proving the archive carries no device or profile identity. That was done and it
+passed: the profile was created, the app installed there, the archive written
+into that profile's own storage through its own MediaStore, restored, and all
+three people came back with the full record. The profile was removed afterward
+and the device is back to one user.
+
+**Switching users re-locked the phone**, and it has a PIN this session does not
+have. `docs/TRAPS.md` section 1 already records that there is no way past a
+secure keyguard from here, #316: it fails every instrumented class with
+`IllegalStateException: No compose hierarchies found in the app`, and it stops
+`adb shell input` from reaching the app at all.
+
+**What the owner needs to do.** Unlock the phone. Nothing else.
+
+**What it stops.** Everything that needs the device: the seed, the capture
+sweep, `tools/walk.sh`, the instrumented suite for step 7 and #391, and looking
+at step 9's work on the screen. Everything that does not need the device
+continues: compiling, lint, the 218 unit tests, the 30 checks, and the release
+build for step 10.
+
+**What it does not stop.** The work itself. Step 9's changes are written and
+verified as far as they can be without a screen, and each one says in its commit
+message exactly what has not been looked at yet.
+
 ### B5. RESOLVED 2026-08-07. The guard is installed, live, and has refused a real command
 
 **Opened 2026-08-02. Closed by observation rather than by anybody reporting it done.**
