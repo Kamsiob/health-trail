@@ -61,6 +61,9 @@ import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Page
 import java.time.Instant
 import java.time.ZoneId
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Card
 
 object TrailTags {
     const val NAME = "trail"
@@ -788,15 +791,7 @@ private fun RouteRow(
  * not true.
  */
 @Composable
-internal fun nodeColor(kind: String): Color {
-    val colors = HealthTrail.colors
-    return when (kind) {
-        "call" -> colors.gold
-        "visit" -> colors.blue
-        "incident" -> colors.alert
-        else -> colors.ink3
-    }
-}
+internal fun nodeColor(kind: String): Color = entryHue(kind).base
 
 /**
  * One entry, as the trail shows it: a mono eyebrow carrying the date and what
@@ -834,24 +829,30 @@ private fun TrailRow(
     val kind = strings[kindNameKey(entry.kind)]
     val title = entry.title?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) } ?: kind
 
+    // **A container the eye can find**, `docs/V4.md` 6.1 item 4. The row drew
+    // itself on a transparent background, so sixteen hundred entries were bare
+    // text on the canvas with a dotted line beside them and nothing to say
+    // where one stopped and the next began. Material's card is the surface, and
+    // its own state layer is the answer to the touch.
+    Card(
+        onClick = onOpen,
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = Space.none),
+        // The tap, the tag and the reader's one stop on one node,
+        // `docs/TRAPS.md`. A reader that stopped twice per entry would stop
+        // three thousand times in this notebook.
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(TrailTags.entry(entry.id))
+            .semantics(mergeDescendants = true) { },
+    ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(Radius.cardLarge)
-            .background(surface)
-            .clickable(
-                interactionSource = interaction,
-                // The surface is the answer to the touch, per 5.14. A ripple on
-                // top would be a second, louder answer to the same tap.
-                indication = null,
-                role = Role.Button,
-                onClick = onOpen,
-            )
-            .testTag(TrailTags.entry(entry.id))
-            // One stop for the reader. The eyebrow and the line are one thing,
-            // and a reader that stopped twice per entry would stop three
-            // thousand times in this notebook.
-            .semantics(mergeDescendants = true) { }
             .padding(vertical = Space.s, horizontal = Space.sm),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -900,7 +901,7 @@ private fun TrailRow(
             Eyebrow(text = strings["trail.unfiled"])
         }
     }
-
+    }
 }
 
 /**

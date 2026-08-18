@@ -50,6 +50,9 @@ import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import java.time.ZoneId
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.material3.MaterialTheme
 
 object ProjectHomeTags {
     const val NAME = "project-home"
@@ -348,7 +351,17 @@ fun ProjectHomeScreen(
                 // them, which is exactly what rule 15 says uniform weight
                 // costs. The icons sit above the labels, as the drawing has
                 // them, so three verbs of different lengths still line up.
-                Row(horizontalArrangement = Arrangement.spacedBy(Space.s)) {
+                // **One height for the three, and that is the whole defect.**
+                // A `Row` aligns its children to the top and lets each one be
+                // as tall as its own content, so "Log a call" fits on one line
+                // and stood shorter than the two that wrap. Three verbs of
+                // equal rank drawn at three different heights is the eye being
+                // told they are not equal. `IntrinsicSize.Min` measures the
+                // tallest and the members fill it.
+                Row(
+                    modifier = Modifier.height(IntrinsicSize.Min),
+                    horizontalArrangement = Arrangement.spacedBy(Space.s),
+                ) {
                     ProjectAction(
                         label = strings["project.log_call"],
                         symbol = Symbols.call,
@@ -356,6 +369,7 @@ fun ProjectHomeScreen(
                         onClick = onLogCall,
                         modifier = Modifier
                             .weight(1f)
+                            .fillMaxHeight()
                             .testTag(ProjectHomeTags.LOG_CALL),
                     )
                     ProjectAction(
@@ -365,6 +379,7 @@ fun ProjectHomeScreen(
                         onClick = onAddDate,
                         modifier = Modifier
                             .weight(1f)
+                            .fillMaxHeight()
                             .testTag(ProjectHomeTags.ADD_DATE),
                     )
                     ProjectAction(
@@ -374,6 +389,7 @@ fun ProjectHomeScreen(
                         onClick = onUpdateStanding,
                         modifier = Modifier
                             .weight(1f)
+                            .fillMaxHeight()
                             .testTag(ProjectHomeTags.UPDATE_STANDING),
                     )
                 }
@@ -763,11 +779,14 @@ private fun ProjectAction(
         Spacer(Modifier.height(Space.s))
         Text(
             text = label,
-            style = HealthTrail.type.label,
+            style = MaterialTheme.typography.labelLarge,
             textAlign = TextAlign.Center,
         )
     }
-    val shape = Radius.button
+    // **Material's own shape, at the Expressive corner.** `Radius.button` was
+    // the app's second ladder; `shapes.large` is what this scheme sets for a
+    // container this size, and the rounder corner is the Expressive one.
+    val shape = MaterialTheme.shapes.large
     val padding = PaddingValues(horizontal = Space.sm, vertical = Space.m)
     if (filled) {
         Button(
@@ -780,7 +799,12 @@ private fun ProjectAction(
             ),
             contentPadding = padding,
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, content = content)
+            Column(
+                modifier = Modifier.fillMaxHeight(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                content = content,
+            )
         }
     } else {
         FilledTonalButton(
@@ -793,7 +817,12 @@ private fun ProjectAction(
             ),
             contentPadding = padding,
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, content = content)
+            Column(
+                modifier = Modifier.fillMaxHeight(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                content = content,
+            )
         }
     }
 }
