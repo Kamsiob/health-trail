@@ -4,69 +4,92 @@ Current state. Nothing else. Read with `gh issue view 321`; neither repeats the 
 
 Fragments, no filler. Rewritten to current truth, never appended to. History goes to `docs/RUN-LOG.md` (never read to orient) or a commit message.
 
-**Last rewritten:** 2026-08-18, second Material rebuild session.
+**Last rewritten:** 2026-08-18, the FINISH THE APP session.
 
 ---
 
 ## 0. Cold start
 
 1. `gh issue view 321`, then this file. Nothing else.
-   **The board has 95 open issues and 10 are current work**: they are the
-   `FINISH THE APP` milestone, numbered Step 3 through Step 10 in the order
-   to do them. `gh issue list --milestone "FINISH THE APP"`. Everything else
-   on the board is parked or past.
-2. `tools/sweep.sh audit`, **look at the captures**.
-3. Take the next screen. **New file, built from Material's components outward, old file deleted in the same commit.** One screen per commit: `tools/verify.sh`, install, look on the phone, commit, push.
-4. Do **not** read the old design docs first. Do **not** re-measure the mockups.
+   `gh issue list --milestone "FINISH THE APP"`. Steps 3 to 10, in order.
+2. **The phone is locked behind a PIN and the owner has to unlock it.**
+   `DECISIONS.md` B6. Until then nothing device-shaped runs: no seed, no
+   sweep, no `tools/walk.sh`, no instrumented suite, no looking at a screen.
+   Check first: `adb shell dumpsys window | grep isKeyguardShowing`.
+3. Once it is unlocked: `tools/sweep.sh audit`, **look at the captures**.
+4. Take the next thing. **New file from Material's components outward, old
+   file deleted in the same commit.** One unit per commit: `tools/verify.sh`,
+   install, look on the phone, commit, push.
+5. Do **not** read the old design docs first. Do **not** re-measure the mockups.
 
-Worked examples, in order of quality: `TodayField.kt`, `Notebook.kt`, `OneThread.kt`, `MedicationList.kt`.
+Worked examples, in order of quality: `ui/v4/Arrival.kt`, `ui/v4/Press.kt`,
+`ui/v4/MonthGrid.kt`, `screens/MedicationList.kt`, `screens/Notebook.kt`.
 
 ## 1. State
 
-- Tree clean, all on `origin/main`. 218 unit, **30 checks**, lint green.
-- **`ui/components` is 14 files**, down from 36. Retired onto `ui/v4` or
-  deleted this session: `EdgeScrubber`, `ScopedSearch`, `ConfirmRemoveSheet`,
-  `Dictate` (with `Symbols.dictate` off Google's own set), `StickyHeader`,
-  `Hero`, `LatestWordCard`, `ReferenceLine`, `StandingCard`, `DateRow`,
-  `Stages`, `SectionIcon`; `Entrance`, `Chevron` and `TabChip` deleted as dead;
-  `DraftSavers`, `FabClearance`, `ViewPreference`, `BottomNav`, `Share`,
-  `CalendarHandoff`, `CaptureFab`, `EmptyDrawing` moved without redrawing.
-- **What is left**: `ChipPicker`, `HeaderAction`, `MonthGrid`, `Thumbnail`,
-  `Tips`, then `RoadStrip` and `Spine` (the road and the route stay drawn; what
-  is a `Box` around them does not), then **`Press` last**. `Symbols` and
-  `DatePicker` stay. `Confirm`, `StepRow`, `Tile` and `PinnedGroup` are the
-  frozen tail, D199: leave all four.
-- **After any `git mv` out of `ui/components`, compile immediately.** Four times
-  tonight a file left behind referenced the moved one with no import, because a
-  same-package reference needs none until the package moves underneath it.
-- **Count callers by use, not by import.** `TabChip` had three importers and no
-  caller; nine dead imports were removed in one commit. Kotlin does not error on
-  an unused import, so nothing else says so.
-- **The folder cannot empty, and D199 settles what the target is instead.**
-  Three frozen files import from `ui/components`, and a frozen file is never
-  called, never extended and never fixed. **The test is whether any live file
-  imports from it, not whether the folder is empty.** `StepRow` and `Tile` have
-  no live caller at all and now have ledger rows; do not rewrite either.
-- **Before retiring a component, ask who calls it excluding the three frozen
-  files**: `ProjectDetailScreen.kt`, `CaptureSheet.kt`, `PinnedGroup.kt`.
-- **Instrumented: not run end to end.** Read counts from the XML, never a
-  gradle exit code: the run below exited 0 with a failure in it.
-  - 2026-08-18, second session: `MedicationsScreenTest` 4, `RemovalIsVisibleTest` 18, `ReaderStopsTest` 4 with **1 failed**.
-  - Earlier: `TodayFieldScreenTest` 40, `NotebookScreenTest` 14, `ScreenReaderTest` 109, `AddCardOffersTest` 11, `MedicationQuestionJourneyTest` **2 failed**.
-- **#391, `ReaderStopsTest` expects 12 notebook rows carrying their purpose in
-  one stop and finds 10.** Pre-existing, not from the retirement work: the test
-  renders `NotebookScreen` directly and nothing on its path changed. Rule 19
-  makes it a gate.
-- **Known failure**: `MedicationQuestionJourneyTest` dies at `capture_form_more_medications`. Not from this session's changes; it now reaches further than it used to.
-- **#390, three live screens take a callback and never call it.** Held by
-  `check_uncalled_callbacks.py`, which names them rather than counting them, so
-  the list can only shrink. A fourth, `MedicationRow`'s `onOpen`, was found and
-  fixed: no row on the medications list opened at all.
-- **No APK yet.** Owner: the APK is after the app is complete.
-- **Not started**: more than one person per notebook; restore tested across profiles.
-- Phone at baseline, plugged in: font 1.0, animator 1.0, no reader, night mode `no`.
+- Tree clean, all on `origin/main`. 218 unit, **30 checks**, lint green,
+  `tools/verify.sh` exit 0.
+- **Steps 3, 5, 6 and 8 are done. Step 4 is done as far as `Press` reaches.
+  Step 9 has its motion half. Steps 7 and 10 are blocked on the phone.**
+- **`ui/components` is 8 files and none of them has a live caller.** #387's
+  test is "does any live file import from it", D199, and the answer is no.
+  What is left: `Symbols` (the catalog, live and staying), `DatePicker`
+  (staying, D197), and the frozen tail `Confirm`, `PinnedGroup`, `Press`,
+  `Spine`, `StepRow`, `Tile`. Every one has a `docs/REMOVAL-LEDGER.md` row.
+- **Retired this session**: `HeaderAction` and `RoadStrip` moved with nothing
+  to redraw; `Thumbnail`, `MonthGrid` and `Tips` rewritten on Material's
+  `Surface`; `Spine` moved to `ui/v4/Route.kt`; `Press` replaced by
+  `ui/v4/Press.kt`, which is one modifier over Material's `ripple`.
+- **Every screen is on Material's own state layer.** `Surface`, `Card`,
+  `FilterChip` or `opensOnTap`. No screen animates a resting color by hand,
+  animates a focus border's alpha, or passes `indication = null` any more.
+- **Every page arrives.** `ui/v4/Arrival.kt`, applied inside `Page` through a
+  delegating `LazyListScope`, so it reaches every page rather than the ones
+  somebody remembered. Rise and stagger are `Motion` tokens; both are zero
+  under `ReducedMotion`.
+- **Three subjects live on the phone**: Margaret Ellison with 669 entries,
+  Harold Ellison, Ruth. Put there for #389 and worth keeping.
+- **The release APK builds and is signed.** `assembleRelease` exit 0,
+  13,058,170 bytes, `CN=Health Trail, O=Kamsiob, C=US`. #395 says it ships
+  only after step 9, so it is proof the path works rather than the delivery.
+- **Instrumented: not run this session.** The phone locked before it could be.
+  Read counts from the XML, never a gradle exit code.
+- **#391 stands**: `ReaderStopsTest` expects 12 notebook rows carrying their
+  purpose in one stop and finds 10. Pre-existing.
+- **Known failure**: `MedicationQuestionJourneyTest` dies at
+  `capture_form_more_medications`. Predates the Material work.
+- Phone: font 1.0, animator 1.0, no reader, night mode was `no` and the
+  screenshot tool reported `custom_bedtime` late in the session. **Locked.**
 
-## 2. The direction, and it is not negotiable
+## 2. What is left, in the order to do it
+
+1. **Unlock the phone.** Everything below needs it except the last line.
+2. **Step 9, `gh issue view 388`.** The motion half is done. Six visual
+   findings are on the issue with the capture each was seen on: the care team
+   drawing fifteen cards for a scanned list, its sparse row, the notebook and
+   More having no lead, Today's incidents card void, the floating button
+   covering content on two screens, and two ways to add on the appointments
+   month view. **None of them is fixed, and none was fixed blind on purpose:**
+   rule 21 says look at it on the phone, and the phone was locked.
+   Then the three deliberate passes: dark through the app's own Appearance
+   setting, font scale 2.0 with the longest catalog, the screen reader. Rule
+   19: record the prior value before changing it and restore it exactly.
+3. **Step 7, `gh issue view 394`.** The full instrumented suite, counts read
+   from the XML. #391 is inside it.
+4. **Step 10, `gh issue view 395`.** The APK, after step 9.
+5. Still open on motion: the container transform between a row and the screen
+   it opens, and a transition between the four destinations. The second is
+   the most-felt motion in the app and is one `AnimatedContent` in
+   `NotebookShell`.
+
+## 3. Blocked
+
+**B6: the phone is locked behind a PIN.** `DECISIONS.md`. It locked when
+#389's second Android user profile test switched users and switched back,
+which the issue asked for and which passed. `docs/TRAPS.md` section 1 already
+records that there is no way past a secure keyguard from here, #316.
+
+## 4. The direction, and it is not negotiable
 
 **The old design is deleted. The new one is built out of Material 3 Expressive's own components and Google's assets. D196.**
 
@@ -98,57 +121,19 @@ Worked examples, in order of quality: `TodayField.kt`, `Notebook.kt`, `OneThread
 
 The trail's route, a project's road, a measure's line (`Trace`), and `DatePicker` (D197: Material's cannot express EDTF precision or unknown, rule 17).
 
-## 3. What is left, and the order
+## 5. Superseded: what was left, and it is section 2 now
 
-1. **The rest of `ui/components`**, `gh issue view 387`. 32 files, and read D199
-   first. Live callers, counted excluding the three frozen files:
+The component ledger, the screen counts and the polish list that used to sit
+here were the state before the FINISH THE APP session. **Section 2 is the live
+list.** `gh issue view 387` carries what happened to each component and
+`gh issue view 388` carries the six visual findings with the capture each was
+seen on.
 
-   | Next, biggest hand built first | Live callers |
-   |---|---|
-   | `Dictate` 244 (needs the Material mic symbol) | 3 |
-   | `Tips` 216, the sheet half | 7 |
-   | `MonthGrid` 201 | 3 |
-   | `ChipPicker` 185 | 5 |
-   | `DateRow` 168 | 1 |
-   | `Thumbnail` 162 | 5 |
-   | `HeaderAction` 161 | 5 |
-   | `StickyHeader` 147 | 1 |
-   | `TabChip` 137, `Share` 134, `Hero` 123, `StandingCard` 117, `LatestWordCard` 115, `SectionIcon` 115, `CalendarHandoff` 107, `Stages` 96, `ReferenceLine` 99, `ViewPreference` 73, `Chevron` 69, `FabClearance` 53, `DraftSavers` 31 | 1 to 4 each |
-   | `RoadStrip` 372, `Spine` 401 | the road and the route stay drawn; what is a `Box` around them does not |
+## 6. Blocked, and section 3 is the live one
 
-   **`Press` 254 is last**, and it shrinks as the screens do: 32 live files use
-   `openableByTap` or `pressedSurface`, and every one of them should be on
-   Material's own state layer instead. `BottomNav` moves without redrawing.
-   `Symbols` stays, it is the catalog. `DatePicker` stays, D197.
-   **`StepRow` and `Tile` are frozen-tail: leave both.**
-2. **The remaining screens still on old bones.** Measured rather than guessed,
-   2026-08-18: **78 of 86 screens carry at least one of the five tokens, about
-   29,000 lines.** The grep is a proxy and the tail lies: forty of those carry
-   one or two stray `HealthTrail.colors` references and are otherwise Material.
-   **The genuinely old ones are the top twenty by hit count**, led by
-   `IncidentScreen` 621L, `StandingInstructionsScreen` 477L,
-   `MeasurementScreen` 861L, `UnfiledTrayScreen` 531L, `TrailScreen` 953L,
-   `ProjectDetailScreen` (frozen, skip), `SearchScreen` 354L, `PrepScreen`
-   510L, `EntryScreen` 476L, `TodayScreen` 551L. Re-run the count with the
-   script in `docs/RUN-LOG.md` rather than reading this list as fixed.
-3. **The polish pass**, `docs/V4.md` 6, every screen against the 10/10 bar. #388.
-   The add-control sweep is done, D200. **Still open from the first audit, and
-   each one was seen on a capture rather than guessed:** Today's incidents card
-   has a blank void between its label and its count; Today carries two tonal
-   blocks where `docs/V4.md` 6.1 item 3 allows one; the notebook and More have
-   no lead at all, item 1; More's row marks are gray where every other list
-   carries the kind's hue, D198; the care team draws fifteen separate cards for
-   a list that is scanned, rule 22.
-4. **More than one person per notebook.**
-5. **The full instrumented suite clean**, read from the XML.
-6. **Backup and restore across multiple people and profiles.** #389.
-7. **The APK.** Last.
+**Section 3.** One thing is blocked and it is the phone.
 
-## 4. Blocked
-
-**Nothing is blocked.**
-
-## 5. Rules that get broken
+## 7. Rules that get broken
 
 1. `tools/verify.sh` is the only honest runner (compiles instrumented sources, runs lint).
 2. **Read test counts from the XML, never a gradle exit code.** `android/app/build/outputs/androidTest-results/connected/debug/TEST-*.xml`.
@@ -158,7 +143,7 @@ The trail's route, a project's road, a measure's line (`Trace`), and `DatePicker
 6. **Look at the screen before closing anything.**
 7. A check passing is not the design being done.
 
-## 6. Traps that cost real time (full set: `docs/TRAPS.md`)
+## 8. Traps that cost real time (full set: `docs/TRAPS.md`)
 
 - **The caller's `testTag`, the tap and the reader's sentence must be on one node.** Put `combinedClickable` and `semantics { contentDescription }` on the `Card`'s own modifier, not on a column inside it. Twenty two tests read an empty description off the node they were handed.
 - **This scheme's `surfaceContainerLow` is the canvas in light.** A card drawn on it is invisible. Use `surfaceContainer`.
@@ -188,9 +173,13 @@ The trail's route, a project's road, a measure's line (`Trace`), and `DatePicker
 - **Do not compile while the instrumented suite runs.**
 - The destructive-command hook matches prose. Some verbs cannot be written into a file. #323.
 
-## 7. The phone
+## 9. The phone
 
 - Pixel 8, `39151FDJH00506`, Android 17, USB. **A development device, not the owner's daily driver.**
+- **Locked behind a PIN as of 2026-08-18**, `DECISIONS.md` B6. Switching
+  Android user profiles re-locks it and there is no way past a secure keyguard
+  from here, #316. **Check before planning any device work**:
+  `adb shell dumpsys window | grep isKeyguardShowing`.
 - `adb` is not on `PATH`: `/home/Kamsiob/Android/Sdk/platform-tools/adb`.
 - Baseline: font 1.0, animator 1.0, touch exploration 0, night mode `no`. Rule 19 lets these change **only** if the prior value is recorded first and restored exactly.
 - **Never screenshot**: the share sheet, the calendar app, any screen with a password field.
@@ -205,7 +194,7 @@ Fixture variants:
 
 **The arranged fixture is the one that puts a chart in Today's lead.**
 
-## 8. Commands
+## 10. Commands
 
     tools/sweep.sh audit                # seed once, walk every screen, capture each
     tools/sweep.sh --no-seed audit      # reuse what is on the phone
@@ -224,11 +213,11 @@ Reading an archive needs no phone:
 
 **The key is at `~/.kamsiob/health-trail-release.jks`**, `android/keystore.properties` points at it, neither is in git. No key present builds unsigned rather than failing. **A debug build and a release build cannot upgrade each other**: export first.
 
-## 9. Below the interface, and none of it changes
+## 11. Below the interface, and none of it changes
 
 Foundation, four destinations, all section screens, 13 of 20 detail screens. Archive: two-layer container v3, readable copy, standalone decryptor in CI, format published byte for byte, stranger test passed. Merge as well as replace, with a conflict screen. Export, wipe, restore round trip proven on the signed minified build, D165.
 
-## 10. Reading ladder
+## 12. Reading ladder
 
 Read on demand, never in bulk.
 
@@ -248,7 +237,7 @@ Precedence: verified code > `docs/V4.md` (visual) > this file > `DECISIONS.md` >
 
 `DESIGN.md` is superseded by `docs/V4.md` on anything visual. It still holds the accessibility gate, section 12.
 
-## 11. Facts a session re-derives if they are not written down
+## 13. Facts a session re-derives if they are not written down
 
 - **A classfile listing is not an API.** Kotlin's `internal` lives in the metadata, so `javap` shows it public. Only compiling against it answers "can this build call it". D179.
 - 63 remote branches survive, all ancestors of `main`. **Never `git branch --merged`** here: squash-merge gives new shas. D144.
@@ -256,7 +245,7 @@ Precedence: verified code > `docs/V4.md` (visual) > this file > `DECISIONS.md` >
 - D143: ten cross-references point at `DESIGN.md` sections that no longer exist. **They stay.**
 - #308 is reopened. Its class shares state through one installed app; a green run proves nothing.
 
-## 12. Live lists that must not be lost
+## 14. Live lists that must not be lost
 
 **Screens composed rather than drawn** (rule 12): `gh issue list --label needs-design-review`. No second copy here.
 
