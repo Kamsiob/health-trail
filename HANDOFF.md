@@ -279,6 +279,10 @@ file as four tiles with the housekeeping moved to a top-bar overflow. Both are
 composed from existing components; the grid draws screens 02 and 05 and carries
 neither. D205, D206.
 
+**And #404**: one tracked thing's own screen, and Progress as a lead plus rows.
+The grid draws screen 24 and carries neither how it is reached nor what happens
+to the rest of the page. #398.
+
 **Reachable only from a test, not from any seed** (each on its own issue): paperwork an incident produced; the care team card's sparse rung and the trail spine's gap markers; the digest's corrected and removed counts; #273's two template hands; **the month review's `Hero` block**, which draws only when a month holds a milestone, and no month in the `year2` fixture does. Checked June, April and March on 2026-08-18 rather than assumed.
 
 **`EmptyDrawing` has no live drawing caller left.** `SectionEmpty` draws the
