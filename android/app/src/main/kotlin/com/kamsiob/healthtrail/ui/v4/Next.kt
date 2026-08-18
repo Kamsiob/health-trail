@@ -178,7 +178,15 @@ fun NextBlock(
                                         .background(colors.blue)
                                         .padding(FACE_RING),
                                 ) {
-                                    Avatar(name = face.name, hue = face.hue, size = FACE)
+                                    Avatar(
+                                        name = face.name,
+                                        hue = face.hue,
+                                        size = FACE,
+                                        // **On the lead's own colored surface**,
+                                        // which is the one place a saturated
+                                        // mark would fight what it is drawn on.
+                                        solid = false,
+                                    )
                                 }
                             }
                         }

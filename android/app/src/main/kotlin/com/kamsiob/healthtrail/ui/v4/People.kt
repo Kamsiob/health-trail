@@ -66,8 +66,20 @@ fun Avatar(
     hue: TabHue,
     modifier: Modifier = Modifier,
     size: Dp = Space.avatarRow,
-    /** Filled in the hue's own base with the letters knocked out, as the drawing sets the lead. */
-    solid: Boolean = false,
+    /**
+     * Filled in the hue's own base with the letters knocked out.
+     *
+     * **This is what a mark is**, D198 rule 1: `TabHue.base` with
+     * `TabHue.onBase` on top, saturated, at the size a mark actually is. It
+     * defaulted to the pale wash, so two call sites asked for the real thing
+     * and seven got the faint one: the care team was fifteen barely tinted
+     * discs, which is the reading the owner called dull on every other list
+     * that had the same defect.
+     *
+     * False is for an avatar sitting **on** a colored surface, where the base
+     * would fight the container it is drawn on.
+     */
+    solid: Boolean = true,
 ) {
     Box(
         modifier = modifier
