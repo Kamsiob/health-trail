@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.ui.v4
 
+import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.FileProvider
@@ -37,6 +38,20 @@ object Share {
     fun documentIntent(
         context: Context,
         fileName: String,
+        /**
+         * What the document is called, for the mail subject line and for the
+         * share sheet's own preview.
+         *
+         * **A mail app opened with an empty subject before this**, which is
+         * the least polished thing a share can do: a sibling in another state
+         * receives "(no subject)" carrying somebody's emergency card.
+         *
+         * **The person's name is deliberately not in it.** A subject line is
+         * logged by mail servers and shown on a lock screen; the body is
+         * neither. The name is in the document, which is where it belongs, and
+         * "Emergency card" is enough for anybody to know what they were sent.
+         */
+        subject: String,
         text: String,
         chooserTitle: String,
     ): Intent? {
@@ -65,6 +80,18 @@ object Share {
                     // a sibling reading it on a phone should not have to open a
                     // file to see what they were sent.
                     putExtra(Intent.EXTRA_TEXT, text)
+                    // **The subject, which is what a mail app fills its own
+                    // line with**, and `EXTRA_TITLE`, which is what the share
+                    // sheet shows above the app icons on Android 10 and later.
+                    // Without them the sheet showed a file name and the mail
+                    // draft showed nothing.
+                    putExtra(Intent.EXTRA_SUBJECT, subject)
+                    putExtra(Intent.EXTRA_TITLE, subject)
+                    // **The clip data carries the grant and the label.** The
+                    // flag alone grants the URI to the chosen app; the clip is
+                    // what the system reads to preview the attachment, and it
+                    // is the documented way to pass both together.
+                    clipData = ClipData.newUri(context.contentResolver, subject, uri)
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 },
                 chooserTitle,
@@ -91,6 +118,8 @@ object Share {
         context: Context,
         sourceFile: File,
         fileName: String,
+        /** What the picture is called, for the sheet's preview and a mail subject. */
+        subject: String,
         chooserTitle: String,
     ): Intent? {
         val directory = File(context.cacheDir, DIRECTORY).apply { mkdirs() }
@@ -110,6 +139,9 @@ object Share {
                     // and the photo apps rather than only a file manager.
                     type = "image/*"
                     putExtra(Intent.EXTRA_STREAM, uri)
+                    putExtra(Intent.EXTRA_SUBJECT, subject)
+                    putExtra(Intent.EXTRA_TITLE, subject)
+                    clipData = ClipData.newUri(context.contentResolver, subject, uri)
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 },
                 chooserTitle,

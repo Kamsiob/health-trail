@@ -30,6 +30,7 @@ import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.theme.hueForMeasure
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.Page
@@ -103,6 +104,9 @@ fun ProgressScreen(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
+    // **The section's hue, for the parts of the screen that belong to the
+    // section rather than to one measure**: the header's eyebrow and the empty
+    // state. Each measure carries its own, D204.
     val hue = hueFor(Repository.Section.PROGRESS)
 
     val byMeasure = readings.groupBy { it.measureId }
@@ -198,7 +202,7 @@ fun ProgressScreen(
                         "first" to EventDateText.render(strings, heroReadings.firstOrNull()?.occurredEdtf),
                         "last" to EventDateText.render(strings, heroReadings.lastOrNull()?.occurredEdtf),
                     ),
-                    hue = hue,
+                    hue = hueForMeasure(hero.id),
                     modifier = Modifier.testTag(ProgressTags.measure(hero.id)),
                     count = strings("progress.readings", "count" to heroReadings.size),
                     footnote = listOfNotNull(latest?.date, strings["progress.nochart"])
@@ -223,7 +227,7 @@ fun ProgressScreen(
                         "first" to EventDateText.render(strings, heroReadings.firstOrNull()?.occurredEdtf),
                         "last" to EventDateText.render(strings, heroReadings.lastOrNull()?.occurredEdtf),
                     ),
-                    hue = hue,
+                    hue = hueForMeasure(hero.id),
                     modifier = Modifier.testTag(ProgressTags.measure(hero.id)),
                     unit = latest?.unit,
                     count = strings("progress.readings", "count" to heroReadings.size),
@@ -269,7 +273,7 @@ fun ProgressScreen(
                         "first" to EventDateText.render(strings, forMeasure.firstOrNull()?.occurredEdtf),
                         "last" to EventDateText.render(strings, forMeasure.lastOrNull()?.occurredEdtf),
                     ),
-                    hue = hue,
+                    hue = hueForMeasure(measure.id),
                     modifier = Modifier.testTag(ProgressTags.measure(measure.id)),
                     unit = if (measure.isText) null else latest?.unit,
                     count = strings("progress.readings", "count" to forMeasure.size),

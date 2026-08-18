@@ -109,6 +109,7 @@ import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.TabHue
 import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.theme.hueForMeasure
 import com.kamsiob.healthtrail.ui.v4.Avatar
 import com.kamsiob.healthtrail.ui.v4.AvatarOverflow
 import com.kamsiob.healthtrail.ui.v4.Trace
@@ -893,7 +894,7 @@ private fun LeadSlot(
 
     TodayWidget(
         tab = tab,
-        hue = hueForCard(card.type),
+        hue = hueForCard(card.type, card.sourceId),
         // **Raw parts, joined once.** `Bidi.join` isolates every part it is
         // given, so handing it a string that was already joined wraps the whole
         // thing again and the marks nest: the reader's sentence came out
@@ -939,7 +940,7 @@ private fun LeadSlot(
             // promotes a chart to the lead, and the lead could not draw one for
             // a while: the screen the design asks for could not exist.
             tall = true,
-            hue = hueForCard(card.type),
+            hue = hueForCard(card.type, card.sourceId),
         )
 
         if (editing && canMoveDown) {
@@ -992,7 +993,7 @@ private fun CardFor(
 
     TodayWidget(
         tab = tab,
-        hue = hueForCard(card.type),
+        hue = hueForCard(card.type, card.sourceId),
         // **Raw parts, joined once**, for the same reason as the lead.
         description = Bidi.join(
             listOf(strings[cardTabKey(card.type)], answer?.sourceName) + answerParts(
@@ -1094,7 +1095,7 @@ private fun CardFor(
             // has, because a person choosing "full width" is asking for the card
             // rather than a taller version of the small one.
             tall = size == CardSize.WIDE,
-            hue = hueForCard(card.type),
+            hue = hueForCard(card.type, card.sourceId),
         )
     }
 }
@@ -2283,7 +2284,17 @@ private fun answerParts(
  * being offered wears the hue it will wear once it is on Today. D157.
  */
 @Composable
-internal fun hueForCard(type: String): TabHue = when (type) {
+internal fun hueForCard(type: String, sourceId: String? = null): TabHue = when {
+    // **A measure card wears the measure's own color, D204**, so the thing
+    // somebody tracks is the same color on Today as it is on the Progress
+    // screen. Without the source it is still the section's, which is what a
+    // card whose measure has not been chosen yet has to be.
+    type == "measure" && sourceId != null -> hueForMeasure(sourceId)
+    else -> hueForCardType(type)
+}
+
+@Composable
+private fun hueForCardType(type: String): TabHue = when (type) {
     "next_up" -> hueFor(Repository.Section.APPOINTMENTS)
     "medications" -> hueFor(Repository.Section.MEDICATIONS)
     "ask_next_time" -> hueFor(Repository.Section.ASK_NEXT_TIME)

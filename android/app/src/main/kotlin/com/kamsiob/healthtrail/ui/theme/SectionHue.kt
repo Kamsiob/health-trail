@@ -92,6 +92,40 @@ fun alertHue(): TabHue = HealthTrail.colors.let {
     TabHue(base = it.alert, ink = it.alertInk, wash = it.alertWash)
 }
 
+/**
+ * The hue one tracked thing wears, everywhere it appears.
+ *
+ * **The owner, 2026-08-18:** "on the page for the things that are being
+ * tracked each thing should be a different color. nothing crazily colored.
+ * just look at the rest of the app for inspiration." D204.
+ *
+ * **The six section hues and nothing else.** They are the palette's identity
+ * colors, they were spread against three vision models and hold at 11.1 with
+ * no pair collapsing, D89, and reaching outside them for a seventh would be
+ * inventing a color to solve a counting problem. `gold`, `leaf` and `alert`
+ * are semantic and locked by D171: gold is capture, leaf is resolved, alert is
+ * an emergency. A measure is none of those.
+ *
+ * **Identity, never state, and this is where that rule earns its keep.** Rule
+ * 2 forbids color coding by value, and a per-measure color is the shortest
+ * path to breaking it: if a hue could be picked from a reading, the app would
+ * be saying something about the reading. It is derived from the measure's own
+ * id and from nothing else, so it is the same color on the day the first
+ * reading is written and on the day the six hundredth is.
+ *
+ * **The id rather than the position in the list.** A measure keeps its color
+ * when another is added above it, which is what makes the color worth
+ * learning. `String.hashCode` is specified rather than implementation
+ * defined, so the same notebook restored onto another phone draws the same
+ * colors.
+ */
+@Composable
+fun hueForMeasure(measureId: String): TabHue {
+    val hues = HealthTrail.colors.tabHues
+    val index = ((measureId.hashCode() % hues.size) + hues.size) % hues.size
+    return hues[index]
+}
+
 /** The single accent. Every action, and only actions. */
 @Composable
 fun accentHue(): TabHue = HealthTrail.colors.let {

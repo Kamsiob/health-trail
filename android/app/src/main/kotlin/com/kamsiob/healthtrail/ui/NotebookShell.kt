@@ -1136,6 +1136,9 @@ fun NotebookShell(
                             fallback = strings["readable.fallback"],
                         ),
                         text = text,
+                        // The document's own name, so a mail draft opens with a
+                        // subject rather than an empty line.
+                        subject = incident.title,
                         chooserTitle = strings["readable.share.title"],
                     )
                     sharingIncident = null
@@ -1170,6 +1173,9 @@ fun NotebookShell(
                             fallback = strings["readable.fallback"],
                         ),
                         text = text,
+                        // The document's own name, so a mail draft opens with a
+                        // subject rather than an empty line.
+                        subject = strings["readable.card.title"],
                         chooserTitle = strings["readable.share.title"],
                     )
                     sharingCard = false
@@ -1194,6 +1200,9 @@ fun NotebookShell(
                             fallback = strings["readable.fallback"],
                         ),
                         text = text,
+                        // The document's own name, so a mail draft opens with a
+                        // subject rather than an empty line.
+                        subject = sheet.appointment.title,
                         chooserTitle = strings["readable.share.title"],
                     )
                     sharingPrep = null
@@ -1223,6 +1232,9 @@ fun NotebookShell(
                             fallback = strings["readable.fallback"],
                         ),
                         text = text,
+                        // The document's own name, so a mail draft opens with a
+                        // subject rather than an empty line.
+                        subject = month,
                         chooserTitle = strings["readable.share.title"],
                     )
                     sharingReview = null

@@ -214,6 +214,7 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | D201 | The navigation bar is its own surface, deeper than the page, so it never blends into the content above it |
 | D202 | The current destination wears the app's own mark tile, not Material's oval, and it is ink rather than gold |
 | D203 | A tonal action is drawn in the blue wash, and the one that records a failure is drawn in the alert wash |
+| D204 | Each tracked thing keeps its own hue, from the six identity colors, derived from its id and never from a reading |
 
 ---
 
@@ -3116,6 +3117,40 @@ live path on the old design language.
 frozen file, and it does not make a second live copy of anything. If a frozen
 screen is ever retired for real, its components go with it in the same commit
 and the ledger says so.
+
+### D204. Each tracked thing keeps its own hue, from the six identity colors, derived from its id and never from a reading
+
+**2026-08-18.** The owner: "on the page for the things that are being tracked
+each thing should be a different color. nothing crazily colored. just look at
+the rest of the app for inspiration."
+
+**The six section hues and nothing else.** They exist to carry identity, they
+were spread against three vision models and hold at 11.1 with no pair
+collapsing under protanopia or deuteranopia, D89, and reaching outside them
+for a seventh would be inventing a color to solve a counting problem. `gold`,
+`leaf` and `alert` stay locked by D171: gold is capture, leaf is resolved,
+alert is an emergency. A measure is none of those.
+
+**Identity, never state, and this is the rule that had to be got right.**
+Rule 2 forbids color coding by value, and a per-measure color is the shortest
+path to breaking it: a hue picked from a reading would be the app saying
+something about the reading. `hueForMeasure` takes the measure's id and
+nothing else. It cannot see a value, so it cannot comment on one.
+
+**The id rather than the position in the list.** A measure keeps its color
+when another is added above it, which is what makes the color worth learning,
+and `String.hashCode` is specified rather than implementation defined, so a
+notebook restored onto another phone draws the same colors.
+
+**Today follows the same mapping.** A measure card on Today with a source id
+wears that measure's hue rather than the Progress section's, so the thing
+somebody tracks is one color everywhere it appears. A card whose measure has
+not been chosen yet keeps the section's, because there is no identity to
+carry yet.
+
+**Sixteen presets and six hues means some share.** That is accepted rather
+than solved: a person tracks two to four things, the colors they see are
+distinct, and the alternative is a palette invented for a case nobody has.
 
 ### D203. A tonal action is drawn in the blue wash, and the one that records a failure is drawn in the alert wash
 

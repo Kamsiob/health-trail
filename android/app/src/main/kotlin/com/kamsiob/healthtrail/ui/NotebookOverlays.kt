@@ -272,6 +272,9 @@ internal fun MilestoneOverlays(
                         context = context,
                         sourceFile = store.fileFor(sha),
                         fileName = Share.paperFileName(fresh.title),
+                        // The document's own name, which is what somebody
+                        // called their own paper.
+                        subject = fresh.title,
                         chooserTitle = strings["document.save.chooser"],
                     )
                     if (intent != null) {

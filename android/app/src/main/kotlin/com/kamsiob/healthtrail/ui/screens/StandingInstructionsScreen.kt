@@ -38,7 +38,6 @@ object InstructionTags {
     const val ADD = "standing_instructions_add"
     const val MEANING = "standing_instructions_meaning"
     fun row(id: String) = "standing_instruction_$id"
-    fun tag(id: String) = "standing_instruction_tag_$id"
 }
 
 /**
@@ -423,41 +422,28 @@ private fun InstructionRow(
             color = colors.ink,
         )
 
-        // **Always present.** A federal tag is `leaf` toned because it is
-        // something the family can stand on; a request is `ink3` because it is
-        // not. Neither is red: an unbacked request is not a warning, it is
-        // simply a different kind of thing, and coloring it as a problem would
-        // be the app editorializing.
-        if (tag != null) {
-            Spacer(Modifier.height(Space.sm))
-            Column(modifier = Modifier.testTag(InstructionTags.tag(instruction.id))) {
-                Eyebrow(
-                    // bidi-ok: a catalog label, in the app's own words rather
-                    // than the person's.
-                    text = tag.label,
-                    color = if (instruction.tag == "federal") {
-                        colors.leafInk
-                    } else {
-                        colors.ink2
-                    },
-                )
-                // **The explainer does not belong on this card.** The owner,
-                // 2026-08-18: "get rid of the backed by federal rules
-                // paragraph. It's out of place there." It is seventy words of
-                // general explanation sitting inside a card about one thing
-                // this family asked for, between the request and how the place
-                // answered, which is the part somebody opened the screen to
-                // read.
-                //
-                // **The label stays**, because it is one line, it differs per
-                // instruction, and it is what the section's own subtitle
-                // promises: "whether any rule backs it up".
-                //
-                // **The explanation is not lost.** `AddInstructionScreen`
-                // draws it where somebody is choosing what to ask for, which
-                // is where it is worth seventy words.
-            }
-        }
+        // **The tag line is off the card entirely, 2026-08-18.** The owner,
+        // after the paragraph went: "it still says backed by federal rules or
+        // whatever. get rid of that line as well."
+        //
+        // **What kept it here was rule 2, and the wording is what carries that
+        // now.** A template's own wording says what it rests on: the federal
+        // one reads "Federal rules for nursing homes require the facility to
+        // notify the representative of an accident or injury", which states the
+        // basis in the sentence somebody actually reads. The label was that
+        // claim a second time, in capitals, between the request and how the
+        // place answered.
+        //
+        // **Nothing here asserts a right the record does not have.** The app
+        // still never says what follows from an instruction, and the tag's own
+        // explainer, which is the part that says assisted living and home care
+        // agencies are not covered, is on `AddInstructionScreen` at the moment
+        // somebody chooses what to ask for.
+        //
+        // **The tag is still stored and still exported.** What changed is
+        // one screen's rendering of it, not the record. `InstructionTags.tag`
+        // went with the block it tagged, because a tag nothing draws is a tag
+        // the next screen reuses by accident.
 
         // **How they answered, always said one way or the other.** A blank
         // here would read as though nobody responded, and being told nothing
