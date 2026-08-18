@@ -20,11 +20,19 @@ Worked examples, in order of quality: `TodayField.kt`, `Notebook.kt`, `OneThread
 ## 1. State
 
 - Tree clean, all on `origin/main`. 218 unit, **30 checks**, lint green.
-- **`ui/components` is 31 files.** Retired this session: `EdgeScrubber` to
-  `ui/v4/Rail.kt`, `ScopedSearch` to `ui/v4/Search.kt`, `ConfirmRemoveSheet` to
-  `ui/v4/Confirm.kt`, `Dictate` to `ui/v4/Dictate.kt` with the microphone now
-  `Symbols.dictate` off Google's own set. `Entrance` deleted outright: nothing
-  called it.
+- **`ui/components` is 23 files**, down from 36. Retired this session onto
+  `ui/v4`: `EdgeScrubber` to `Rail.kt`, `ScopedSearch` to `Search.kt`,
+  `ConfirmRemoveSheet` to `Confirm.kt`, `Dictate` to `Dictate.kt` with the
+  microphone now `Symbols.dictate` off Google's own set, `StickyHeader`, `Hero`,
+  `LatestWordCard` and `ReferenceLine`. **Deleted:** `Entrance`, which nothing
+  called, and `Chevron`, which was 69 lines wrapping one `Icon` and is written
+  at its four call sites instead. **Moved without redrawing:** `DraftSavers`,
+  `FabClearance`, `ViewPreference`, `BottomNav`.
+- **What is left with live callers**, biggest first: `Tips` 7, `Thumbnail` 5,
+  `HeaderAction` 5, `ChipPicker` 5, `MonthGrid` 3, `SectionIcon` 3, `Stages` 3,
+  `CaptureFab` 3, `EmptyDrawing` 3, `TabChip` 3, `Share` 2, `CalendarHandoff` 2,
+  `DateRow` 1, `StandingCard` 1, and the road and the route. **`Press` is last**
+  and shrinks as everything else comes across.
 - **`Page` has a `fab` slot and all ten section lists are on it**, D200. The
   add control used to be the last `item` of the `LazyColumn` on every one of
   them, so adding a question meant scrolling past thirty six. `Page` reserves
