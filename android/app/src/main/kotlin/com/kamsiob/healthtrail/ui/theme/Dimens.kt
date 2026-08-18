@@ -229,7 +229,7 @@ object Space {
      * with it, which is why call sites use start and end rather than left and
      * right.
      */
-    val fabSize: Dp = 48.dp
+    val fabSize: Dp = 56.dp
 
     /**
      * The tips lamp, drawn rather than iconized. D167 and #379.
@@ -281,7 +281,7 @@ object Space {
     val bloomMark: Dp = 32.dp
     val bloomDrawing: Dp = 20.dp
     val fabGap: Dp = 12.dp
-    val fabScrollClearance: Dp = 48.dp + 12.dp + 16.dp
+    val fabScrollClearance: Dp = 56.dp + 12.dp + 16.dp
     /**
      * The height above which a closed notebook leaves the screen half empty.
      *
@@ -389,6 +389,15 @@ object Radius {
 
     /** Rounder while it is held, which is where the morph goes. D167. */
     val fabCornerPressed = 22.dp
+
+    /**
+     * The corner it reaches when the capture sheet is open.
+     *
+     * Half the button's side, which is a circle: the control has become the way
+     * out of the thing it opened, and the roundest shape in the app is the one
+     * that says so.
+     */
+    val fabCornerOpen = 28.dp
 
     /** The reference line, `.refline` at 7px in the Projects grid. */
     val referenceLine = RoundedCornerShape(7.dp)
