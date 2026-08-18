@@ -12,7 +12,7 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 
 - Tree clean, all on `origin/main`. CI green at tip: `gh run list --branch main --limit 3`.
 - 218 unit, 29 repo checks, lint, all green. **The instrumented suite has not been run clean end to end since the Today work**: it died at 430 on the Compose alpha, and the class that failed passes alone. Run it and read the counts before believing anything about it.
-- **Fifteen retirement passes landed 2026-08-17.** `ui/components` is at 37 files from 57. Every one verified with `tools/verify.sh` and pushed on its own commit.
+- **Fifteen retirement passes landed 2026-08-17.** `ui/components` is at **40 files from 57**, counted with `git ls-tree` rather than estimated: three of the commit messages say 37 or 38 and are off by two or three, because they counted the deletions rather than the directory. Every one verified with `tools/verify.sh` and pushed on its own commit.
 - **The full instrumented suite was run to 314 of 750 with 0 failures and then stopped**, because at its pace it needed another ninety minutes with the phone held. **Running it clean end to end is the next session's first job.** The three screens the last pass touched were covered by 36 tests, 0 failed.
 - **The app was swept on the phone after the eleventh** and the captures are in `docs/screenshots/audit-*`. One defect came out of it and is fixed: a long value in a `ListRow` now sits under the title.
 - **The APK is the last thing, not the next thing.** Owner, 2026-08-17: "the APK is after the full app is complete. all surfaces and widgets and buttons and text and styling and spacing and everything is updated to the material 3 expressive."
@@ -39,7 +39,7 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
   `MoreChip`, `Field` on Material's outlined field, `Page` with the band, the
   rail, pull to refresh, the tips lamp, the edit pencil and the arrival spring.
 
-**What is left in `ui/components`, measured 2026-08-17 by caller count:**
+**What is left in `ui/components`, 40 files, measured by caller count:**
 
 | Calls | What | Becomes |
 |---|---|---|
