@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -175,6 +176,13 @@ fun ListRow(
                 text = it,
                 style = MaterialTheme.typography.labelMedium,
                 color = colors.onSurfaceVariant,
+                // **Left, and said out loud rather than assumed.** At font
+                // scale 2.0 a locator long enough to wrap came back centered,
+                // so the second line sat under the middle of the first and the
+                // row had two left edges. `docs/V4.md` 6.1 item 6: one left
+                // edge down the screen. Seen on the phone at 2.0.
+                textAlign = TextAlign.Start,
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }

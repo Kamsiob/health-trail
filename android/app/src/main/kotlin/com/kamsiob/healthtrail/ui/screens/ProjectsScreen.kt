@@ -48,6 +48,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.v4.Block
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 
 /** Where this screen's parts sit in the arrival stagger. `ui/v4/Arrival.kt`. */
@@ -373,14 +374,34 @@ private fun ProjectLead(
             .testTag(ProjectTags.LEAD)
             // **One stop for a reader, on the node that takes the tap**, which
             // is `docs/TRAPS.md`'s first entry.
-            .semantics(mergeDescendants = true) {
+            // **One node, not two.** `mergeDescendants` does not absorb a
+            // child that set its own semantics, and the road inside this block
+            // does exactly that, so a reader found the card and then found the
+            // road again and heard the same sentence twice. `clearAndSetSemantics`
+            // collapses the whole block, which is what `DateRow` already does
+            // for the same reason. `docs/TRAPS.md`: the tap and the reader's
+            // sentence belong on one node.
+            .clearAndSetSemantics {
+                // **The name once, not twice.** The road's own sentence opens
+                // with the project's name, so passing the name separately as
+                // well made a reader say "Medicaid application for long term
+                // care, Medicaid application for long term care, 4 stages".
+                // Heard in the semantics tree, which is what a reader walks.
+                // 6.2's last step: anything read twice is a defect.
+                val road = stages.takeIf { it.size >= 2 }
+                    ?.let { roadSentence(project.name, it, strings) }
+                // **The stage once too.** The support line says "In review, 2
+                // of 3" and the road's sentence says "Stage 2 of 3, In review",
+                // so a reader heard the position twice in one breath. The eye
+                // keeps both, because on screen they are a line of text and a
+                // drawing; the ear gets the road's sentence, which is the one
+                // that names the whole shape.
                 contentDescription = Bidi.join(
                     strings[if (dated) "projects.lead.eyebrow" else "projects.lead.no_date"],
-                    project.name,
+                    if (road == null) project.name else null,
                     dateLine,
-                    support,
-                    stages.takeIf { it.size >= 2 }
-                        ?.let { roadSentence(project.name, it, strings) },
+                    if (road == null) support else card?.holder,
+                    road,
                 )
                 onClick(label = strings["projects.open"]) { onOpen(); true }
             },
