@@ -20,9 +20,15 @@ Worked examples, in order of quality: `TodayField.kt`, `Notebook.kt`, `OneThread
 ## 1. State
 
 - Tree clean, all on `origin/main`. 218 unit, **30 checks**, lint green.
-- **`ui/components` is 32 files.** Retired this session: `EdgeScrubber` to
+- **`ui/components` is 31 files.** Retired this session: `EdgeScrubber` to
   `ui/v4/Rail.kt`, `ScopedSearch` to `ui/v4/Search.kt`, `ConfirmRemoveSheet` to
-  `ui/v4/Confirm.kt`. `Entrance` deleted outright: nothing called it.
+  `ui/v4/Confirm.kt`, `Dictate` to `ui/v4/Dictate.kt` with the microphone now
+  `Symbols.dictate` off Google's own set. `Entrance` deleted outright: nothing
+  called it.
+- **`Page` has a `fab` slot and all ten section lists are on it**, D200. The
+  add control used to be the last `item` of the `LazyColumn` on every one of
+  them, so adding a question meant scrolling past thirty six. `Page` reserves
+  the clearance, so no screen restates it.
 - **The folder cannot empty, and D199 settles what the target is instead.**
   Three frozen files import from `ui/components`, and a frozen file is never
   called, never extended and never fixed. **The test is whether any live file
@@ -113,6 +119,13 @@ The trail's route, a project's road, a measure's line (`Trace`), and `DatePicker
    510L, `EntryScreen` 476L, `TodayScreen` 551L. Re-run the count with the
    script in `docs/RUN-LOG.md` rather than reading this list as fixed.
 3. **The polish pass**, `docs/V4.md` 6, every screen against the 10/10 bar. #388.
+   The add-control sweep is done, D200. **Still open from the first audit, and
+   each one was seen on a capture rather than guessed:** Today's incidents card
+   has a blank void between its label and its count; Today carries two tonal
+   blocks where `docs/V4.md` 6.1 item 3 allows one; the notebook and More have
+   no lead at all, item 1; More's row marks are grey where every other list
+   carries the kind's hue, D198; the care team draws fifteen separate cards for
+   a list that is scanned, rule 22.
 4. **More than one person per notebook.**
 5. **The full instrumented suite clean**, read from the XML.
 6. **Backup and restore across multiple people and profiles.** #389.
