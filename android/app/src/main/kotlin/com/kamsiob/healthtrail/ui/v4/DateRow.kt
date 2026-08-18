@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.material3.Surface
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -57,26 +60,61 @@ fun DateRow(
     modifier: Modifier = Modifier,
     source: String? = null,
     prominent: Boolean = false,
+    /** Whether this draws its own tonal card, or sits inside somebody else's. */
+    flat: Boolean = false,
 ) {
     val hue = goldHue()
     val scheme = MaterialTheme.colorScheme
 
-    Card(
-        onClick = onOpen,
-        shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.cardColors(
-            containerColor = hue.wash,
-            contentColor = scheme.onSurface,
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = Space.none),
-        // One node, one sentence: the caller composed it, and everything inside
-        // is silenced rather than read out twice. `docs/TRAPS.md`.
-        modifier = modifier
-            .fillMaxWidth()
-            .clearAndSetSemantics { contentDescription = description },
-    ) {
+    // **Flat draws no container of its own**, because its caller already is
+    // one. D206 puts where it stands and the next date inside a single block:
+    // they were two tonal cards a gap apart, and the second was drawn louder
+    // than the first, so the screen had two possible leads and `docs/V4.md`
+    // 6.1 item 1 says that is no lead at all. A wash card nested in a wash
+    // card is also the defect item 4 names, a container drawn in the color of
+    // what is under it.
+    //
+    // **The press still answers either way.** Rule 16: a control that does
+    // nothing under a finger reads as broken, so flat is a transparent
+    // `Surface` with Material's own state layer rather than a bare `Column`.
+    val shell: @Composable (@Composable () -> Unit) -> Unit = { body ->
+        if (flat) {
+            Surface(
+                onClick = onOpen,
+                color = Color.Transparent,
+                contentColor = scheme.onSurface,
+                // **Square, because a rounded clip eats the words.** Looked at
+                // on the phone: with the block's own padding placing this row's
+                // text hard against the surface's left edge, a large corner
+                // radius clipped the first letter of the top line and the last,
+                // so "RENEWAL" rendered as "ENEWAL". The container around it
+                // owns the corners; this one only needs to take the press.
+                shape = RectangleShape,
+                modifier = modifier
+                    .fillMaxWidth()
+                    .clearAndSetSemantics { contentDescription = description },
+            ) { body() }
+        } else {
+            Card(
+                onClick = onOpen,
+                shape = MaterialTheme.shapes.extraLarge,
+                colors = CardDefaults.cardColors(
+                    containerColor = hue.wash,
+                    contentColor = scheme.onSurface,
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = Space.none),
+                // One node, one sentence: the caller composed it, and everything
+                // inside is silenced rather than read out twice. `docs/TRAPS.md`.
+                modifier = modifier
+                    .fillMaxWidth()
+                    .clearAndSetSemantics { contentDescription = description },
+            ) { body() }
+        }
+    }
+
+    shell {
         Row(
-            modifier = Modifier.padding(Space.ml),
+            modifier = Modifier.padding(if (flat) Space.none else Space.ml),
             horizontalArrangement = Arrangement.spacedBy(Space.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {

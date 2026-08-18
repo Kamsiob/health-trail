@@ -180,16 +180,16 @@ class ProjectHomeScreenTest {
             compose.runOnUiThread { lead.value = shape }
             compose.waitForIdle()
             compose.onNodeWithTag(ProjectHomeTags.STANDING).assertIsDisplayed()
-            // **The date leads now, and the order is still fixed**, which is
-            // what D164 actually promised: one order on every project, so a
-            // person who learned one is not lost on the next. #386 changed
-            // which block is first, because m3v4-2 opens with the decision and
-            // the days left, and on a process that takes a year that is the
-            // one time critical fact. The rest of D164's sequence is intact
-            // and this test still holds it.
+            // **The answer leads and the date sits under it**, D206. D164
+            // promised one fixed order on every project and that promise is
+            // what this test holds; #386 put the date first, and D206 put it
+            // back under the standing, because most of these projects have no
+            // date at all and the screen opened on "No date written down yet"
+            // above everything it did know. The rest of D164's sequence is
+            // intact.
             assertTrue(
-                "on lead=$shape the date no longer leads",
-                topOf(ProjectHomeTags.DATE) < topOf(ProjectHomeTags.STANDING),
+                "on lead=$shape the answer no longer leads",
+                topOf(ProjectHomeTags.STANDING) < topOf(ProjectHomeTags.DATE),
             )
             assertTrue(
                 "on lead=$shape the verbs are not under the answer",
@@ -252,37 +252,49 @@ class ProjectHomeScreenTest {
      * none of them unfolds anything in place. The accordion contract, dead.
      */
     @Test
-    fun theFileRowsAllNavigate() {
+    fun theFileTilesAllNavigate() {
         var steps = 0
         var trail = 0
         var papers = 0
         var people = 0
-        var setup = 0
         show(
             "standing",
             onOpenSteps = { steps++ },
             onOpenTrail = { trail++ },
             onOpenPaperwork = { papers++ },
             onOpenPeople = { people++ },
-            onOpenSetup = { setup++ },
         )
 
-        for ((tag, _) in listOf(
-            ProjectHomeTags.STEPS to "steps",
-            ProjectHomeTags.TRAIL to "trail",
-            ProjectHomeTags.PAPERS to "papers",
-            ProjectHomeTags.PEOPLE to "people",
-            ProjectHomeTags.SETUP to "setup",
+        // **Four tiles, not five rows.** D206: a tile is for a fixed set of
+        // destinations, rule 22, and setup is housekeeping rather than a
+        // destination, so it went to the corner with the name and the removal.
+        for (tag in listOf(
+            ProjectHomeTags.STEPS,
+            ProjectHomeTags.TRAIL,
+            ProjectHomeTags.PAPERS,
+            ProjectHomeTags.PEOPLE,
         )) {
             scrollTo(tag)
             compose.onNodeWithTag(tag).performClick()
         }
 
-        assertEquals("the steps row did not navigate", 1, steps)
-        assertEquals("the trail row did not navigate", 1, trail)
-        assertEquals("the papers row did not navigate", 1, papers)
-        assertEquals("the people row did not navigate", 1, people)
-        assertEquals("the setup row did not navigate", 1, setup)
+        assertEquals("the steps tile did not navigate", 1, steps)
+        assertEquals("the trail tile did not navigate", 1, trail)
+        assertEquals("the papers tile did not navigate", 1, papers)
+        assertEquals("the people tile did not navigate", 1, people)
+    }
+
+    /** Setup, the name and the removal all live in the corner now. D206. */
+    @Test
+    fun theCornerHoldsTheHousekeeping() {
+        var setup = 0
+        show("standing", onOpenSetup = { setup++ })
+
+        compose.onNodeWithTag(ProjectHomeTags.MORE).performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(ProjectHomeTags.SETUP).performClick()
+
+        assertEquals("setup did not open from the corner", 1, setup)
     }
 
     /** The empty latest word still names its own question. Unchanged from the old contract. */

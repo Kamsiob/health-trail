@@ -108,6 +108,20 @@ fun ListRow(
     valueBelow: Boolean? = null,
     /** The one thing to do about this row, as a mark at its end. */
     trailing: (@Composable () -> Unit)? = null,
+    /**
+     * A quiet locator above the title, and what makes this a three-line row.
+     *
+     * **Material top-aligns the leading mark once a row is three lines**, which
+     * is the whole reason this exists. The owner, 2026-08-18, on the projects
+     * list: "the text doesn't align with the icon". A two-line row whose title
+     * wraps centers the mark between the two lines of the title, so the disc
+     * floats in the middle of the words instead of starting with them.
+     *
+     * **Sentence case, never a tag.** GOV.UK spent two years on uppercase
+     * status tags in exactly this position and moved off them: they read badly
+     * and people tried to click them. Sources on #399.
+     */
+    overline: String? = null,
     isDoor: Boolean = false,
     onClick: (() -> Unit)? = null,
     clickLabel: String? = null,
@@ -153,6 +167,15 @@ fun ListRow(
                     )
                 }
             }
+        }
+    }
+    val over: (@Composable () -> Unit)? = overline?.takeIf { it.isNotBlank() }?.let {
+        {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.labelMedium,
+                color = colors.onSurfaceVariant,
+            )
         }
     }
     val lead: (@Composable () -> Unit)? = when {
@@ -221,6 +244,7 @@ fun ListRow(
                 },
             )
             .semantics(mergeDescendants = true) { },
+        overlineContent = over,
         supportingContent = supporting,
         leadingContent = lead,
         trailingContent = tail,

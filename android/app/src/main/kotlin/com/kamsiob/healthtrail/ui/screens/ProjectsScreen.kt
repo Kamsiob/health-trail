@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.arrives
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.hueFor
@@ -45,7 +46,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Card
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.RowDivider
+import com.kamsiob.healthtrail.ui.v4.Block
 import androidx.compose.ui.semantics.contentDescription
+
+/** Where this screen's parts sit in the arrival stagger. `ui/v4/Arrival.kt`. */
+private const val ARRIVAL_LIST = 1
 
 object ProjectTags {
     const val ROOT = "projects_root"
@@ -132,6 +138,17 @@ fun ProjectsScreen(
 
         LazyColumn(
             modifier = Modifier
+                // **The page arrives rather than cutting into place**,
+                // `docs/V4.md` 6.1 item 8. Every interior screen has had this
+                // since `Page` grew it, and the four destinations never did, so
+                // the one screen the owner opens most was the one that cut.
+                // "Something's missing", 2026-08-18, and this was part of it.
+                //
+                // **On the list itself and not on each item**, because a lazy
+                // list composes a row when it scrolls into view and a per-item
+                // arrival animates every row under the thumb. Off entirely
+                // under reduced motion, from `LocalMotion`, rule 19.
+                .arrives(ARRIVAL_LIST)
                 .fillMaxSize()
                 .systemBarsPadding()
                 .testTag(ProjectTags.ROOT)
@@ -228,21 +245,31 @@ fun ProjectsScreen(
             // named before any research was read. The road is a map on the lead
             // and on the project's own screen, and its information travels into
             // the row as words: "In review · 2 of 3". D205.
+            //
+            // **A group is one container, not loose rows on the canvas.** The
+            // owner, looking at the first pass: "everything kind of meshes
+            // together ... I'm not feeling the Material 3 Expressive". Rows
+            // drawn straight onto the page have no edge, which is 6.1 item 4,
+            // and containment is most of what the expressive language is doing
+            // when it looks deliberate. `Block` is Material's own card with the
+            // scheme's hairline on it, and it is what the file under a project
+            // has always used.
             if (rest.isNotEmpty()) {
                 item {
                     Eyebrow(text = strings["projects.group.live"])
                     Spacer(Modifier.height(Space.withinGroup))
-                }
-                for (project in rest) {
-                    item(key = project.id) {
-                        ProjectRow(
-                            project = project,
-                            card = cards[project.id],
-                            onOpen = { onOpen(project) },
-                        )
+                    Block(padding = Space.none) {
+                        rest.forEachIndexed { index, project ->
+                            if (index > 0) RowDivider(inset = true)
+                            ProjectRow(
+                                project = project,
+                                card = cards[project.id],
+                                onOpen = { onOpen(project) },
+                            )
+                        }
                     }
+                    Spacer(Modifier.height(Space.betweenGroups))
                 }
-                item { Spacer(Modifier.height(Space.betweenGroups)) }
             }
 
             // **Finished is not hidden and never reads as an achievement
@@ -255,17 +282,18 @@ fun ProjectsScreen(
                         modifier = Modifier.testTag(ProjectTags.FINISHED_FOLD),
                     )
                     Spacer(Modifier.height(Space.withinGroup))
-                }
-                for (project in finished) {
-                    item(key = project.id) {
-                        ProjectRow(
-                            project = project,
-                            card = cards[project.id],
-                            onOpen = { onOpen(project) },
-                        )
+                    Block(padding = Space.none) {
+                        finished.forEachIndexed { index, project ->
+                            if (index > 0) RowDivider(inset = true)
+                            ProjectRow(
+                                project = project,
+                                card = cards[project.id],
+                                onOpen = { onOpen(project) },
+                            )
+                        }
                     }
+                    Spacer(Modifier.height(Space.betweenGroups))
                 }
-                item { Spacer(Modifier.height(Space.betweenGroups)) }
             }
 
             // **Not while the screen is empty.** The empty state already
@@ -448,19 +476,21 @@ private fun ProjectRow(
     // **A finished one trades the holder for the ending**, because "done" and
     // "set aside" are the difference between two closed files and nobody
     // remembers which was which a year later.
+    // **Where it is goes above the name, who has it goes below.** The stage is
+    // a quiet locator and the holder is the fact somebody acts on, so the name
+    // sits between them and anchors the row.
     val support = if (project.isFinished) {
-        Bidi.join(
-            strings["projects.status.${project.status}"],
-            stageLine(stages, strings),
-        )
+        strings["projects.status.${project.status}"]
     } else {
-        Bidi.join(
-            card?.holder ?: project.waitingOn?.takeIf { it.isNotBlank() },
-            stageLine(stages, strings),
-        )
+        card?.holder ?: project.waitingOn?.takeIf { it.isNotBlank() } ?: ""
     }
 
+    // **Three lines, and that is a layout decision as much as a content one.**
+    // Material top-aligns a row's leading mark once the row is three lines; at
+    // two, a title that wraps leaves the disc floating between the words. The
+    // owner named it: "the text doesn't align with the icon".
     ListRow(
+        overline = stageLine(stages, strings),
         title = Bidi.isolate(project.name),
         support = support.takeIf { it.isNotBlank() },
         mark = Symbols.projects,

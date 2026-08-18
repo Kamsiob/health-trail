@@ -14,6 +14,18 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Card
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -52,6 +64,15 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.material3.MaterialTheme
 import com.kamsiob.healthtrail.ui.theme.hueFor
 
+/**
+ * How present the rule between the answer and its date is.
+ *
+ * **A hairline, not a border.** It separates two questions inside one block;
+ * drawn at full strength it would read as two blocks again, which is the thing
+ * D206 merged them to stop.
+ */
+private const val DATE_RULE_ALPHA = 0.35f
+
 object ProjectHomeTags {
     const val NAME = "project-home"
     const val ROAD = "project-home-road"
@@ -73,6 +94,8 @@ object ProjectHomeTags {
     const val REOPEN = "project-home-reopen"
     const val RETURN = "project-home-return"
     const val REMOVE = "project-home-remove"
+    /** The corner that holds setup, the name and removing it. D206. */
+    const val MORE = "project-home-more"
 }
 
 /**
@@ -193,11 +216,49 @@ fun ProjectHomeScreen(
         backLabel = strings["section.back.projects"],
         modifier = modifier.testTag(SectionTags.root(ProjectHomeTags.NAME)),
         eyebrow = strings["notebook.section.projects"],
-        subtitle = when {
-            project.templateId != null -> strings["projects.from_a_template"]
-            else -> strings["projects.own"]
-        },
+        // **No subtitle, and that is the point.** "Started from a template. The
+        // steps are a starting point, and this one is yours to change" sat
+        // above everything on the screen, said nothing about this project, and
+        // is the app explaining its own organizing scheme in the most valuable
+        // space it has, which is rule 20. It lives in setup now, where somebody
+        // asking where the steps came from is already looking. D206.
         badge = stages.lastOrNull { it.isReached }?.name?.takeIf { !project.isFinished },
+        // **Housekeeping is in the corner, not in the record.** Setup, the name
+        // and removing it were a menu row and two loose tonal pills at the foot
+        // of the scroll, which is three things on the page that are not what
+        // the page is about. Material's own overflow is where a person looks
+        // for them. D206.
+        actions = {
+            var menuOpen by remember { mutableStateOf(false) }
+            Box {
+                IconButton(
+                    onClick = { menuOpen = true },
+                    modifier = Modifier.testTag(ProjectHomeTags.MORE),
+                ) {
+                    Icon(
+                        painter = painterResource(Symbols.more),
+                        contentDescription = strings["project.more"],
+                    )
+                }
+                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                    DropdownMenuItem(
+                        text = { Text(strings["project.setup.open"]) },
+                        onClick = { menuOpen = false; onOpenSetup() },
+                        modifier = Modifier.testTag(ProjectHomeTags.SETUP),
+                    )
+                    DropdownMenuItem(
+                        text = { Text(strings["projects.rename"]) },
+                        onClick = { menuOpen = false; onRename() },
+                        modifier = Modifier.testTag(ProjectHomeTags.RENAME),
+                    )
+                    DropdownMenuItem(
+                        text = { Text(strings["remove.action"]) },
+                        onClick = { menuOpen = false; onRemove() },
+                        modifier = Modifier.testTag(ProjectHomeTags.REMOVE),
+                    )
+                }
+            }
+        },
     ) {
         // == The redesign, 2026-08-16, D164. ==================================
         //
@@ -219,17 +280,19 @@ fun ProjectHomeScreen(
         // Nothing reorders itself, nothing unfolds in place, and every door
         // looks like a door.
 
-        // -- 0. The greeting, kept: lapse tolerance is law. -------------------
-            // **The date leads, which is where `m3v4-2` puts it.** D164
-            // fixed this screen's order and that order stands; what moved is
-            // which block is first. The drawing opens with the decision and
-            // the days left, because on a process that takes a year the one
-            // time critical fact is when somebody else's clock runs out.
-            // Everything below it keeps D164's sequence exactly. #386.
-            item {
-            // **The date is a row under the answer, at the same place on
-            // every project.** Tappable when there is one, per rule 17: the
-            // date is editable forever from the thing itself.
+        // -- 0. The date, which now sits under the answer rather than over it.
+        //
+        // **D164 fixed this screen's order and D206 fixes what comes first.**
+        // The date led for a while, on the reasoning that a process taking a
+        // year has one time critical fact. What that missed is that most of
+        // these projects have no date at all, so the screen opened on "No date
+        // written down yet" above everything else it knew. Where it stands is
+        // the answer this screen exists to give, and it is always there.
+        //
+        // The date row itself is unchanged and so is everything below it.
+        val dateBlock: @Composable () -> Unit = {
+            // **Tappable when there is one, per rule 17**: the date is editable
+            // forever from the thing itself.
             if (nextDate != null && countdown != null && dateKind != null) {
                 DateRow(
                     countdown = countdown,
@@ -241,6 +304,8 @@ fun ProjectHomeScreen(
                     onOpen = onOpenDate,
                     openLabel = strings["project.open_date"],
                     prominent = false,
+                    // The answer's own block is the container now. D206.
+                    flat = true,
                     modifier = Modifier.testTag(ProjectHomeTags.DATE),
                 )
             } else {
@@ -253,26 +318,9 @@ fun ProjectHomeScreen(
                         .padding(vertical = Space.xs),
                 )
             }
-            Spacer(Modifier.height(Space.sectionGap))
-            }
+        }
 
         val away = if (project.isFinished) null else monthsAway(entries)
-        if (away != null) {
-            item {
-                StandingCard(
-                    eyebrow = strings["project.return"],
-                    holder = strings(returnKey(away), "count" to away.count),
-                    since = returnLine(entries, standing, strings),
-                    modifier = Modifier.testTag(ProjectHomeTags.RETURN),
-                    actions = {
-                        Action(
-                            label = strings["project.return.confirm"],
-                            onClick = onUpdateStanding,
-                        )
-                    },
-                )
-            }
-        }
 
         // -- 1. The answer. A closed project answers with how it ended. -------
         if (project.isFinished) {
@@ -310,14 +358,44 @@ fun ProjectHomeScreen(
             }
         } else {
             item {
-                // **One block, not three cards fighting.** The eyebrow names
-                // the question, the holder answers it at display weight, the
-                // date sits under it as the one line with a clock in it. The
-                // old screen made "where it stands", "the next date" and "the
-                // latest word" three siblings and then shuffled them; a person
-                // opening any project now reads down: standing, date, verbs,
-                // road, word. Law 1: one thing leads.
-                Column(modifier = Modifier.testTag(ProjectHomeTags.STANDING)) {
+                // **One block, and "while you were away" is inside it now.**
+                // D206. Those were two blocks one gap apart saying the same
+                // thing: one said "it has been a month, last written down June
+                // 29", the other said "the county, waiting on the bank
+                // statements, March 21". A person reading down met the same
+                // fact twice before reaching anything they could act on.
+                //
+                // **The eyebrow names the question, the holder answers it at
+                // display weight, and how long it has stood there sits under
+                // it.** Where the file has gone quiet, the block says so in its
+                // own voice and offers the one thing to do about it.
+                //
+                // **Rule 13 is untouched.** The sentence is about the file, not
+                // about the person: nothing here says they should have written
+                // something down, and there is no meter on how often they do.
+                // **One block, one lead.** Looked at on the phone: the answer
+                // sat plain on the canvas and the date sat under it in a gold
+                // card with its number drawn larger, so the loudest thing on
+                // the screen was the second most important. Two things that
+                // could each be the lead is `docs/V4.md` 6.1 item 1 failing.
+                //
+                // **One tonal block per page, never full height.** D198 item 3,
+                // and this is that block: the surfaces above and below it stay
+                // neutral.
+                Card(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    colors = CardDefaults.cardColors(
+                        containerColor = goldHue().wash,
+                        contentColor = colors.ink,
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = Space.none),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                Column(
+                    modifier = Modifier
+                        .testTag(ProjectHomeTags.STANDING)
+                        .padding(Space.ml),
+                ) {
                     Text(
                         text = strings["project.where_it_stands"],
                         style = type.eyebrow,
@@ -335,7 +413,32 @@ fun ProjectHomeScreen(
                             Spacer(Modifier.height(Space.xs))
                             Text(text = it, style = type.bodyM, color = colors.ink2)
                         }
+                    away?.let { lapse ->
+                        Spacer(Modifier.height(Space.sm))
+                        Column(modifier = Modifier.testTag(ProjectHomeTags.RETURN)) {
+                            Text(
+                                text = strings(returnKey(lapse), "count" to lapse.count),
+                                style = type.bodyM,
+                                color = colors.ink2,
+                            )
+                            Spacer(Modifier.height(Space.s))
+                            Action(
+                                label = strings["project.return.confirm"],
+                                onClick = onUpdateStanding,
+                            )
+                        }
+                    }
+                    // **The date is the second line of the answer, not a rival
+                    // to it.** A hairline separates the two questions inside
+                    // one block, which is the rhythm token `betweenGroups`
+                    // exists for.
+                    Spacer(Modifier.height(Space.betweenGroups))
+                    HorizontalDivider(color = goldHue().base.copy(alpha = DATE_RULE_ALPHA))
+                    Spacer(Modifier.height(Space.sm))
+                    dateBlock()
                 }
+                }
+                Spacer(Modifier.height(Space.sectionGap))
             }
 
 
@@ -522,98 +625,132 @@ fun ProjectHomeScreen(
             }
         }
 
-        // -- 5. The file: everything else, as five doors that look like doors.
-        // **No folds, no accordions, no counts that vanish.** The steps, the
-        // trail, the papers, the people and the setup each already have a
-        // screen of their own; the old home reached them through fold-shaped
-        // rows that sometimes opened in place and sometimes navigated, which
-        // is exactly the grammar the owner called a mess. Five dense rows
-        // under one header: every one navigates, every one says what it
-        // holds, none of them moves.
+        // -- 5. The file: four tiles, because they are a fixed set of doors. --
+        //
+        // **Rule 22 names the component for this shape**: a tile is for a fixed
+        // set of destinations, and a dense row is for a long scanned list. This
+        // was five dense rows, one of which was settings, which is what the
+        // owner meant by "menus and sub menus". Steps, the trail, papers and
+        // people are four destinations that never change and never reorder.
+        // Setup went to the overflow with the rest of the housekeeping. D206.
+        //
+        // **Every tile wears the mark and the color of what it opens.** D198,
+        // and the hues are `hueFor`'s, the owner's mapping: the papers take the
+        // documents' manila, the people take the care team's rose, and what
+        // belongs to the project itself takes the gold every whole-app surface
+        // takes.
         item {
             val projectHue = hueFor(Repository.Section.PROJECTS)
             Eyebrow(text = strings["project.file"])
             Spacer(Modifier.height(Space.headerGap))
-            // **Every row wears the mark and the color of what it opens.**
-            // D198: a mark is `TabHue.base` with `onBase` on top, and every
-            // other list in the notebook draws one. These five passed neither,
-            // so the file under a project was five bare titles and a number in
-            // a gray box while the notebook two taps away was full of color.
-            // **The hues are `hueFor`'s**, the owner's mapping: the papers are
-            // the documents' manila, the people are the care team's rose, the
-            // setup is the standing instructions' stone, and what belongs to
-            // the project itself takes the gold every whole-app surface takes.
-            Block(padding = Space.none) {
-                ListRow(
-                    title = strings["project.fold.steps"],
-                    value = strings("projects.step_count", "count" to steps.size),
-                    mark = Symbols.standingInstructions,
-                    markHue = projectHue,
-                    isDoor = true,
+            // **One height across a row, measured rather than assumed.** A
+            // `Row` lets each child be as tall as its own content, so a tile
+            // whose label wraps stands taller than its neighbor and two doors
+            // of equal rank are drawn at two heights. `IntrinsicSize.Min`
+            // measures the tallest and the members fill it, which is the same
+            // fix the three verbs above already needed.
+            Row(
+                modifier = Modifier.height(IntrinsicSize.Min),
+                horizontalArrangement = Arrangement.spacedBy(Space.s),
+            ) {
+                FileTile(
+                    label = strings["project.fold.steps"],
+                    count = strings("projects.step_count", "count" to steps.size),
+                    symbol = Symbols.standingInstructions,
+                    hue = projectHue,
                     onClick = onOpenSteps,
-                    modifier = Modifier.testTag(ProjectHomeTags.STEPS),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .testTag(ProjectHomeTags.STEPS),
                 )
-                RowDivider(inset = false)
-                ListRow(
-                    title = strings["project.fold.trail"],
-                    value = trailCount.toString(),
-                    mark = Symbols.trail,
-                    markHue = projectHue,
-                    isDoor = true,
+                FileTile(
+                    label = strings["project.fold.trail"],
+                    count = trailCount.toString(),
+                    symbol = Symbols.trail,
+                    hue = projectHue,
                     onClick = onOpenTrail,
-                    modifier = Modifier.testTag(ProjectHomeTags.TRAIL),
-                )
-                RowDivider(inset = false)
-                ListRow(
-                    title = strings["project.fold.papers"],
-                    // bidi-ok: a bare count with no direction of its own, the
-                    // same shape every fold in the app has always carried.
-                    value = papers.size.toString(),
-                    mark = Symbols.documents,
-                    markHue = hueFor(Repository.Section.DOCUMENTS),
-                    isDoor = true,
-                    onClick = onOpenPaperwork,
-                    modifier = Modifier.testTag(ProjectHomeTags.PAPERS),
-                )
-                RowDivider(inset = false)
-                ListRow(
-                    title = strings["project.fold.people"],
-                    value = peopleCount.toString(),
-                    mark = Symbols.careTeam,
-                    markHue = hueFor(Repository.Section.CARE_TEAM),
-                    isDoor = true,
-                    onClick = onOpenPeople,
-                    modifier = Modifier.testTag(ProjectHomeTags.PEOPLE),
-                )
-                RowDivider(inset = false)
-                ListRow(
-                    title = strings["project.setup.open"],
-                    mark = Symbols.edit,
-                    markHue = hueFor(Repository.Section.STANDING_INSTRUCTIONS),
-                    isDoor = true,
-                    onClick = onOpenSetup,
-                    modifier = Modifier.testTag(ProjectHomeTags.SETUP),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .testTag(ProjectHomeTags.TRAIL),
                 )
             }
-        }
-
-        // -- 6. Housekeeping, last, unchanged. --------------------------------
-        item {
-            Action(
-                label = strings["projects.rename"],
-                onClick = onRename,
-                modifier = Modifier.testTag(ProjectHomeTags.RENAME),
-            )
-            Spacer(Modifier.height(Space.cardGap))
-            Action(
-                label = strings["remove.action"],
-                onClick = onRemove,
-                modifier = Modifier.testTag(ProjectHomeTags.REMOVE),
-            )
+            Spacer(Modifier.height(Space.s))
+            Row(
+                modifier = Modifier.height(IntrinsicSize.Min),
+                horizontalArrangement = Arrangement.spacedBy(Space.s),
+            ) {
+                FileTile(
+                    label = strings["project.fold.papers"],
+                    // bidi-ok: a bare count with no direction of its own.
+                    count = papers.size.toString(),
+                    symbol = Symbols.documents,
+                    hue = hueFor(Repository.Section.DOCUMENTS),
+                    onClick = onOpenPaperwork,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .testTag(ProjectHomeTags.PAPERS),
+                )
+                FileTile(
+                    label = strings["project.fold.people"],
+                    count = peopleCount.toString(),
+                    symbol = Symbols.careTeam,
+                    hue = hueFor(Repository.Section.CARE_TEAM),
+                    onClick = onOpenPeople,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .testTag(ProjectHomeTags.PEOPLE),
+                )
+            }
         }
     }
 }
 
+
+/**
+ * One door out of a project, as a tile. D206, rule 22.
+ *
+ * **Material's card owns the surface and the press**, D196, so there is no hand
+ * drawn background, no `indication = null`, and no second answer to what a
+ * tappable surface looks like under a finger.
+ *
+ * **The count is a count and never a meter.** Rule 13: nothing here is a
+ * fraction of anything the person was supposed to finish.
+ */
+@Composable
+private fun FileTile(
+    label: String,
+    count: String,
+    @DrawableRes symbol: Int,
+    hue: com.kamsiob.healthtrail.ui.theme.TabHue,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = HealthTrail.colors
+    val type = HealthTrail.type
+    Card(
+        onClick = onClick,
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = Space.none),
+        // **One stop for a reader, on the node that takes the tap.**
+        modifier = modifier.semantics(mergeDescendants = true) { },
+    ) {
+        Column(modifier = Modifier.fillMaxWidth().padding(Space.cardPadding)) {
+            HueMark(hue = hue, mark = symbol, size = Space.markCard)
+            Spacer(Modifier.height(Space.s))
+            Text(text = label, style = type.rowTitle, color = colors.ink)
+            Spacer(Modifier.height(Space.xs))
+            Text(text = count, style = type.bodyS, color = colors.ink2)
+        }
+    }
+}
 
 /**
  * What a reader says instead of the road.

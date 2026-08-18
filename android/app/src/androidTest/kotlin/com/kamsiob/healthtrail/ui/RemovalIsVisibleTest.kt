@@ -461,12 +461,14 @@ class RemovalIsVisibleTest {
                 onBack = {},
             )
         }
-        // **Below the fold since #374 put the rename above it**, and this
-        // screen is a `SectionScaffold`, so the list does the scrolling.
-        assertRemovesOnce(
-            ProjectHomeTags.REMOVE,
-            listTag = SectionTags.root(ProjectHomeTags.NAME),
-        )
+        // **In the corner since D206**, with setup and the name. It was a
+        // loose tonal pill at the foot of the scroll, which is three pieces of
+        // housekeeping sitting in the middle of somebody's record.
+        compose.onNodeWithTag(ProjectHomeTags.MORE).performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(ProjectHomeTags.REMOVE).performClick()
+        compose.waitForIdle()
+        assertEquals("the project was not removed from its corner", 1, removals)
     }
 
     @Test
