@@ -59,7 +59,7 @@ import java.time.LocalDate
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Body
-import com.kamsiob.healthtrail.ui.components.StageDots
+import com.kamsiob.healthtrail.ui.v4.StageDots
 import com.kamsiob.healthtrail.ui.components.PickerOption
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space

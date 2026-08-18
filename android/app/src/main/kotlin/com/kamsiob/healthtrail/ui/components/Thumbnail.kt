@@ -30,6 +30,7 @@ import com.kamsiob.healthtrail.ui.theme.raisedSlightly
 import com.kamsiob.healthtrail.ui.theme.Radius
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.kamsiob.healthtrail.ui.v4.IconTile
 
 /**
  * A picture of the person's own paper, per `DESIGN.md` section 11.7.

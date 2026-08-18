@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.IconTile
+import com.kamsiob.healthtrail.ui.v4.IconTile
 import com.kamsiob.healthtrail.ui.components.Tile
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space

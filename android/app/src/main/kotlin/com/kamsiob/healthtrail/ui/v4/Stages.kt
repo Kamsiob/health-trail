@@ -1,7 +1,6 @@
-package com.kamsiob.healthtrail.ui.components
+package com.kamsiob.healthtrail.ui.v4
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
@@ -12,14 +11,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.Space
+import androidx.compose.material3.Surface
+import androidx.compose.material3.MaterialTheme
 
 /**
  * Where somebody is in a staged conversation. `DESIGN.md` section 7, and law 3.
@@ -70,7 +69,6 @@ fun StageDots(
 
 @Composable
 private fun Dot(filled: Boolean) {
-    val colors = HealthTrail.colors
     val motion = LocalMotion.current
 
     // The width moves rather than appearing, so the dots read as one thing
@@ -81,14 +79,23 @@ private fun Dot(filled: Boolean) {
         label = "stageDot",
     )
 
-    Row(
+    // **Material's surface rather than a clip over a background.** The shape,
+    // the color and the content color are its own. It stays a drawing rather
+    // than becoming a progress indicator: law 3 rules a progress bar out, and
+    // this says which part of a short conversation you are in, not how far
+    // along you are.
+    Surface(
         modifier = Modifier
             .width(width.dp)
             .height(DotSize.dp)
-            .clip(CircleShape)
-            .background(if (filled) colors.ink else colors.hairlineHeavy)
             // The row above says the whole thing in words. A dot is a mark.
             .clearAndSetSemantics { },
+        shape = CircleShape,
+        color = if (filled) {
+            MaterialTheme.colorScheme.onSurface
+        } else {
+            MaterialTheme.colorScheme.outlineVariant
+        },
     ) {}
 }
 

@@ -51,11 +51,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.components.CARD_SIZE
-import com.kamsiob.healthtrail.ui.components.IconTile
+import com.kamsiob.healthtrail.ui.v4.IconTile
 import com.kamsiob.healthtrail.ui.components.ROW_SIZE
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.openableByTap
-import com.kamsiob.healthtrail.ui.components.StageDots
+import com.kamsiob.healthtrail.ui.v4.StageDots
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.hueFor

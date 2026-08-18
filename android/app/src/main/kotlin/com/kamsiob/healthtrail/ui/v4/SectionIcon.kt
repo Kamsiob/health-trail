@@ -1,14 +1,12 @@
-package com.kamsiob.healthtrail.ui.components
+package com.kamsiob.healthtrail.ui.v4
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
@@ -16,6 +14,9 @@ import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.ui.screens.CaptureKind
 import com.kamsiob.healthtrail.ui.theme.Radius
+import com.kamsiob.healthtrail.ui.components.Symbols
+import androidx.compose.material3.Surface
+import androidx.compose.material3.MaterialTheme
 
 /**
  * The icon tile, per `DESIGN.md` section 5.12.
@@ -79,13 +80,16 @@ private fun SymbolTile(
     tileSize: Dp = TILE,
     iconSize: Dp = DRAWING,
 ) {
-    Box(
-        modifier = modifier
-            .size(tileSize)
-            .clip(Radius.iconTile)
-            .background(background),
-        contentAlignment = Alignment.Center,
+    // **Material's surface owns the shape and the two colors.** It was a `Box`
+    // with a clip and a background, which is what a surface is made of rather
+    // than what a surface is.
+    Surface(
+        modifier = modifier.size(tileSize),
+        shape = MaterialTheme.shapes.medium,
+        color = background,
+        contentColor = tint,
     ) {
+        Box(contentAlignment = Alignment.Center) {
         Icon(
             painter = painterResource(symbol),
             // The row's own words name it. A reader that says the section twice
@@ -94,6 +98,7 @@ private fun SymbolTile(
             modifier = Modifier.size(iconSize),
             tint = tint,
         )
+        }
     }
 }
 
