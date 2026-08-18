@@ -12,7 +12,7 @@ Written for a machine: fragments, no filler. Rewritten to current truth, never a
 
 1. `gh issue view 321`, then this file. Nothing else.
 2. `tools/sweep.sh audit`, then **look at the captures**.
-3. Pick the next row of the table in section 2 that is still hand drawn, replace it with Material's component, `tools/verify.sh`, install, look, commit, push. One component per commit.
+3. **Take the next screen and write it fresh.** New file, built from Material's components outward, **old file deleted in the same commit**. `MedicationList.kt` is the worked example and `MedicationsScreen.kt` is gone. One screen per commit: `tools/verify.sh`, install, look on the phone, commit, push.
 4. **Do not** start by reading the old design docs, and do not re-measure the mockups.
 
 ## 1. State
@@ -45,6 +45,12 @@ different jobs and only the first one is ours:
 | `MaterialTheme.typography` and `shapes` | a second ladder beside Material's |
 | Material Symbols through `Symbols` | an authored glyph |
 | **Polish layered on top**: our color identity, our copy, our arrangement, our motion tokens | re-deriving the control itself |
+
+**Do not patch the old screens.** Owner, 2026-08-17: "it's happening because
+you're still just trying to change the existing UI code instead of getting rid
+of it and building fresh." Swapping innards under a file written for the old
+language keeps the old bones and the old flatness. **Delete the file and write a
+new one.**
 
 **Do not trace the mockups.** `docs/screenshots/m3v4-*` show arrangement, hierarchy
 and color identity. They are not a thing to reproduce pixel by pixel, and a day
