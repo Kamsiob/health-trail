@@ -213,6 +213,7 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | D200 | A section's add control floats on the scaffold, because the capture button is not on a section screen |
 | D201 | The navigation bar is its own surface, deeper than the page, so it never blends into the content above it |
 | D202 | The current destination wears the app's own mark tile, not Material's oval, and it is ink rather than gold |
+| D203 | A tonal action is drawn in the blue wash, and the one that records a failure is drawn in the alert wash |
 
 ---
 
@@ -3115,6 +3116,41 @@ live path on the old design language.
 frozen file, and it does not make a second live copy of anything. If a frozen
 screen is ever retired for real, its components go with it in the same commit
 and the ledger says so.
+
+### D203. A tonal action is drawn in the blue wash, and the one that records a failure is drawn in the alert wash
+
+**2026-08-18.** The owner, on the standing instruction card: "that little
+thing that says write down a time this did not happen. needs to be a button
+inside of the card and probably with like a light tint of red or something
+like that since it's something critical and a little icon. **It shouldn't
+just be some random blue text** whether it's here or on some other page that
+I haven't seen."
+
+**It was a button, and he is right that it did not read as one.**
+`ActionEmphasis.Quiet` drew a `FilledTonalButton` with `containerColor =
+sand` and blue words on it. **Every block in this app is also `sand`**, so on
+a card the container disappeared completely and what was left was a line of
+blue type. That is the same defect as the medications group drawn in
+`surfaceContainerLow`, and it is `docs/V4.md` 6.1 item 4 both times: a
+container drawn in the color it sits on is not a container.
+
+**So the tonal action is `blueWash` with `blueDeep` on it**, which is what a
+blue tonal button is made of in this palette and is a pair
+`check_contrast.py` already measured. It is one line in one component and it
+reaches every secondary action in the app, which is why the owner's "or on
+some other page that I haven't seen" is answered rather than hunted.
+
+**And a third emphasis, `Critical`.** `Actions.kt` says "blue and only blue",
+and this is the one exception the app is allowed, because it is not
+decoration: D171 locks `alert` to the emergency card, an open incident and a
+disputed bill, and **a time a standing instruction was not followed is that
+same class of fact**. The tone is available to an action that writes down a
+failure and to nothing else. `alertInk` on `alertWash` is a measured pair.
+
+**Never a judgment**, rule 2 and rule 13. The color is on the control that
+records the event. It is never on the person's record, never on a count of
+how often something happened, and never on anything that reads as a comment
+on how the person is doing.
 
 ### D202. The current destination wears the app's own mark tile, not Material's oval, and it is ink rather than gold
 

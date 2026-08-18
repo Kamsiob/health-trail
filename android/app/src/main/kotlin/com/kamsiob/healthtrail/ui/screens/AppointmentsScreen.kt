@@ -285,6 +285,13 @@ private fun AppointmentRow(
             // wash is what makes one scannable and says which part of the
             // notebook it belongs to.
             mark = Symbols.of(Repository.Section.APPOINTMENTS),
+            // **The card size, because every row on this screen is an
+            // appointment.** #388 finding 8, and this screen is the third one
+            // it applies to after medications and questions: at the row's 44dp
+            // the same calendar disc ran down the whole page and was the
+            // loudest thing on a list whose content is what the visits were
+            // about. D198 item 4 still asks for the kind's color.
+            markSize = Space.markCard,
             markHue = hueFor(Repository.Section.APPOINTMENTS),
             value = EventDateText.render(strings, appointment.scheduledEdtf),
             isDoor = true,

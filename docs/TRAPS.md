@@ -70,6 +70,16 @@ If a run ends with TalkBack on:
 
 **The phone stays plugged in.** It is a dedicated development device. The owner said so on 2026-08-16: "you don't need to worry about me unplugging the phone". His daily driver is a separate device this session never sees, and it is where he installs a build to actually use it.
 
+**`tools/sweep.sh`'s closing list globs its prefix**, so it prints captures an
+older run with the same name left in `docs/screenshots`. A sweep that never
+visited setup listed `after-setup-light.png`, which was four hours old and
+from the previous design. **Read the timestamp before reading the capture.**
+
+**An empty notebook costs three taps and no phone setting**: More, people in
+this notebook, add another person, start their notebook. Every section is
+empty behind it and the first person's notebook is untouched, which is how
+every `empty3-*` and `empty4-*` capture was taken.
+
 **Tools.** `walk.sh see` prints the semantics tree (text plus `desc:` descriptions). `walk.sh tap "X"` taps and prints what it tapped. `walk.sh fields` lists editable fields with coordinates. By hand: `adb shell uiautomator dump /sdcard/w.xml`, tap the center of a node's bounds. `python3 tools/checks/report_today_rungs.py` says which rung of `DESIGN.md` 21.4 each Today card lands on per fixture: a report, not a gate, and its queries are a second copy of `Repository.todayAnswers`, so **if a rung it promises is not on screen, believe the screen**. The empty Today comes only from a cleared install plus walking onboarding.
 
 ---

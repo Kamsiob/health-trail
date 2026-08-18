@@ -22,6 +22,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Page
 import androidx.compose.ui.semantics.contentDescription
@@ -504,6 +505,14 @@ private fun InstructionRow(
         Action(
             label = strings["instruction.violations.add"],
             onClick = onRecordViolation,
+            // **A button, in the alert semantic, with its mark.** The owner,
+            // 2026-08-18: this was "some random blue text", and it was, because
+            // a tonal action in `sand` on a card in `sand` has no container the
+            // eye can find. Writing down a time a standing instruction was not
+            // followed is the same class of fact as an open incident, D171, so
+            // it wears that tone rather than the ordinary one.
+            emphasis = ActionEmphasis.Critical,
+            mark = Symbols.incidents,
             modifier = Modifier.testTag(InstructionTags.violation(instruction.id)),
         )
     }

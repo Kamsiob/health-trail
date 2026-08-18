@@ -55,6 +55,28 @@ enum class ActionEmphasis {
      * app are this one.
      */
     Quiet,
+
+    /**
+     * The one action that writes down something going wrong.
+     *
+     * **The owner, 2026-08-18, on the standing instruction card:** "that little
+     * thing that says write down a time this did not happen. needs to be a
+     * button inside of the card and probably with like a light tint of red or
+     * something like that since it's something critical and a little icon. It
+     * shouldn't just be some random blue text."
+     *
+     * **It is the alert semantic rather than a decorated button.** D171 locks
+     * `alert` to the emergency card, an open incident and a disputed bill, and
+     * a time a standing instruction was not followed is that same class of
+     * fact: it is what the record is for when something goes wrong. So this
+     * tone is not available to an action that merely matters; it is available
+     * to an action that writes down a failure.
+     *
+     * **Never a judgment, rule 2 and rule 13.** The color is on the control
+     * that records the event, never on the person's record and never on a
+     * count of how often it happened.
+     */
+    Critical,
 }
 
 /**
@@ -133,14 +155,40 @@ fun Action(
             contentPadding = PaddingValues(horizontal = Space.l, vertical = Space.sm),
         ) { content() }
 
+        // **`blueWash`, not `sand`, and this is the fix for "random blue
+        // text".** The owner, 2026-08-18, looking at the standing instruction
+        // card. A tonal action was drawn in `sand` with blue words on it, and
+        // every block in this app is also `sand`: on a card the container
+        // disappeared entirely and what was left was a line of blue type that
+        // did not read as a control at all. The app's own blue wash is what a
+        // blue tonal button is made of, and `blueDeep` on it is the pair
+        // `check_contrast.py` already measures.
         ActionEmphasis.Quiet -> FilledTonalButton(
             onClick = onClick,
             modifier = modifier.sizeIn(minHeight = Space.touchTarget),
             enabled = enabled,
             shape = Radius.button,
             colors = ButtonDefaults.filledTonalButtonColors(
-                containerColor = colors.sand,
-                contentColor = colors.blue,
+                containerColor = colors.blueWash,
+                contentColor = colors.blueDeep,
+                disabledContainerColor = colors.sand,
+                disabledContentColor = colors.ink2,
+            ),
+            contentPadding = PaddingValues(horizontal = Space.m, vertical = Space.sm),
+        ) { content() }
+
+        // **The same button in the alert semantic.** `alertInk` on `alertWash`
+        // is a measured pair, and the mark is required by the call site rather
+        // than by this component: an action that records something going wrong
+        // says so in words first.
+        ActionEmphasis.Critical -> FilledTonalButton(
+            onClick = onClick,
+            modifier = modifier.sizeIn(minHeight = Space.touchTarget),
+            enabled = enabled,
+            shape = Radius.button,
+            colors = ButtonDefaults.filledTonalButtonColors(
+                containerColor = colors.alertWash,
+                contentColor = colors.alertInk,
                 disabledContainerColor = colors.sand,
                 disabledContentColor = colors.ink2,
             ),

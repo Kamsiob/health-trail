@@ -156,6 +156,10 @@ project's road (`ui/v4/RoadStrip.kt`), a measure's line (`ui/v4/Trace.kt`), and
 - **A `LazyColumn` does not compose off-screen rows.** Tests that walked a scrolling `Column` break: scroll by the list's own item key, `performScrollToKey`.
 - **A floating action button is on the scaffold, not in the list.** Do not scroll a list to reach it.
 - **`tools/seed.sh` walks the restore screen by text** and taps the password field by `=Password`. Its last line says "Restored." or every capture after it is of an empty notebook.
+- **`tools/sweep.sh`'s closing list globs the prefix, so it lists files an
+  older run with the same name left behind.** `after-setup-light.png` was
+  printed by a sweep that never visited setup and was four hours old. Check
+  the timestamp before reading a capture as today's.
 - **`tools/walk.sh tap` matches the first node containing the word.** Navigate the four destinations by nav bar position: x = 133 / 400 / 670 / 940, y = 2252.
 - **Screenshot coordinates are not device coordinates.** `tools/screenshot.sh` crops 132px of status bar; add it back before `adb shell input tap`.
 - `onNodeWithText` does not see a `contentDescription`. Use `onNodeWithContentDescription`.

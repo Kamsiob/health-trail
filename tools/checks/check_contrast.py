@@ -152,6 +152,12 @@ def pairs_for(theme: dict) -> list:
         ("alertInk", "paper", TEXT_FLOOR, "alert text on the app background"),
         ("alertInk", "card", TEXT_FLOOR, "alert text on a card"),
         ("alertInk", "alertWash", TEXT_FLOOR, "alert text in a red tonal pill"),
+        # The critical action, D203: a button that records something going
+        # wrong, in the alert semantic rather than the ordinary blue.
+        ("alertInk", "alertWash", TEXT_FLOOR, "the label on a critical action"),
+        # The ordinary tonal action, which left `sand` because every block in
+        # the app is `sand` and the container disappeared on a card.
+        ("blueDeep", "blueWash", TEXT_FLOOR, "the label on a quiet action"),
         ("blue", "alertWash", TEXT_FLOOR, "the call action on an emergency card row"),
         ("ink", "alertWash", TEXT_FLOOR, "a value on an emergency card row"),
         ("onAlertFill", "alertFill", TEXT_FLOOR, "the emergency card header text"),
