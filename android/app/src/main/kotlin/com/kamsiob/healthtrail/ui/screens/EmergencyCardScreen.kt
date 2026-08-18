@@ -365,6 +365,9 @@ private fun MedicationCardRow(medication: Repository.Medication, isLast: Boolean
     Column {
         ListRow(
             title = Bidi.isolate(medication.name),
+            // One placement for the whole column, whatever each dose happens
+            // to be long enough for on its own.
+            valueBelow = true,
             value = medication.doseText?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) },
             modifier = Modifier.testTag(EmergencyTags.field("med_${medication.id}")),
         )

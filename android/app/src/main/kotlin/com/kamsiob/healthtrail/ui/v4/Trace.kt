@@ -15,8 +15,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
-import com.kamsiob.healthtrail.ui.components.chartPoints
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.v4.chartPoints
 
 /**
  * The line a series makes, written from scratch. #386.
@@ -79,7 +79,7 @@ fun Trace(
         val inset = RING_RADIUS.toPx() + RING_STROKE.toPx()
         val usable = size.height - inset * 2f
 
-        fun at(point: com.kamsiob.healthtrail.ui.components.Reading) = Offset(
+        fun at(point: Reading) = Offset(
             x = point.position.coerceIn(0f, 1f) * size.width,
             y = inset + (1f - (point.value - lo) / span) * usable,
         )
@@ -211,3 +211,88 @@ private const val WASH_ALPHA = 0.07f
 
 /** Below this, a series is flat rather than having a range worth scaling to. */
 private const val FLAT_EPSILON = 1e-6f
+
+/**
+ * One recorded value.
+ *
+ * @param position where it sits along the chart's time axis, 0 at the left edge
+ *   of the window and 1 at the right. **The caller computes this from the real
+ *   dates**, so an irregular series is drawn irregularly rather than being
+ *   spaced evenly, which would be its own quiet lie about when things happened.
+ * @param value the number, in the measure's own units. Only its relative height
+ *   is drawn; the chart never prints an axis scale, because a scale invites the
+ *   comparison this app does not make.
+ * @param startsSegment true where this reading follows a gap long enough that
+ *   the line must break before it. **The caller decides what counts as a gap**,
+ *   because that depends on how often the measure is taken: a daily weight and
+ *   a quarterly lab round have very different silences.
+ */
+data class Reading(
+    val position: Float,
+    val value: Float,
+    val startsSegment: Boolean = false,
+)
+
+/**
+ * The plot points for one measure, positioned by when each reading happened.
+ *
+ * **Positioned by time, not by index.** Six readings in a week and one four
+ * months later are not evenly spaced, and drawing them evenly would be the chart
+ * saying something about the rhythm that the record does not.
+ *
+ * **A gap breaks the line.** The rule is a silence longer than three times the
+ * median interval for this measure, which is derived from the measure's own
+ * rhythm rather than from a fixed number of days: a daily weight and a quarterly
+ * lab round have very different silences, and one threshold for both would draw
+ * a break in every lab chart and none in any weight chart.
+ *
+ * **The value is unscaled and stays that way.** The trace normalizes to its own
+ * extremes and draws no axis, which is what keeps the line a shape rather than
+ * a measurement somebody could read a number off.
+ *
+ * **It lives with the trace rather than on the screen that first needed it**,
+ * because Today draws the same series at the same measure's tall size, and a
+ * second copy of the gap rule is two charts that disagree about the same
+ * silence the first time either is touched. The rule is part of the drawing,
+ * not part of the Progress screen. It moved here when `ChartCard` was retired.
+ */
+fun chartPoints(readings: List<Repository.Reading>): List<Reading> {
+    val usable = readings.filter { it.number != null && it.occurredStart != null }
+    if (usable.size < 2) {
+        return usable.map { Reading(position = 0.5f, value = it.number!!.toFloat()) }
+    }
+
+    val first = usable.first().occurredStart!!
+    val last = usable.last().occurredStart!!
+    val span = (last - first).coerceAtLeast(1L).toFloat()
+
+    val intervals = usable.zipWithNext { older, newer ->
+        newer.occurredStart!! - older.occurredStart!!
+    }.sorted()
+    val median = intervals[intervals.size / 2].coerceAtLeast(1L)
+    val breakAfter = median * GAP_MULTIPLE
+
+    return usable.mapIndexed { index, reading ->
+        val previous = usable.getOrNull(index - 1)
+        Reading(
+            position = (reading.occurredStart!! - first) / span,
+            value = reading.number!!.toFloat(),
+            startsSegment = previous != null &&
+                reading.occurredStart - previous.occurredStart!! > breakAfter,
+        )
+    }
+}
+
+
+/**
+ * How much longer than usual a silence has to be before the line breaks.
+ *
+ * Six. It was three, which on a real notebook marked most of the line: readings
+ * are irregular by nature, so half the intervals beat three times the median and
+ * the drawing said "nothing was measured here" between almost every pair. A rule
+ * that fires constantly says nothing at all. Six is a silence somebody would
+ * actually notice, and it is what the owner was looking at when he said the
+ * chart looked broken. D193. It is a drawing rule and not a judgment: the app is deciding
+ * where to lift the pen, never what the silence meant.
+ */
+private const val GAP_MULTIPLE = 6

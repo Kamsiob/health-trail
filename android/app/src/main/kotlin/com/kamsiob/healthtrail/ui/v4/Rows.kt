@@ -98,6 +98,18 @@ fun ListRow(
      */
     valueAtTop: Boolean = false,
     /**
+     * Where the value sits, when the row is not left to decide for itself.
+     *
+     * **Null lets the row decide by length**, which is right for a list whose
+     * values are all the same shape. **A list whose values vary passes the same
+     * answer for every row**, because half a column at the end and half of it
+     * under the title is a column that does not line up, and lining up is the
+     * whole reason a value is set in the mono face. The medications are the
+     * case: "5 mg, evenings" and "50 mcg, mornings, empty stomach" are the same
+     * kind of fact at two lengths.
+     */
+    valueBelow: Boolean? = null,
+    /**
      * The one thing to do about this row, as a mark at its end.
      *
      * **Unweighted, and that is the difference from [value].** A weighted slot
@@ -148,7 +160,13 @@ fun ListRow(
         // what a dose and a bare date are; anything longer is a line of its own.
         // Rule 20: the row absorbs this so no screen has to know.
         val shown = value?.takeIf { it.isNotBlank() }
-        val below = shown != null && shown.length > VALUE_INLINE_MAX
+        // **Measured without the isolation marks.** `Bidi.isolate` wraps a
+        // value in two invisible characters, so counting them would move the
+        // bound by two for every value the app isolates and by nothing for the
+        // ones it does not, which is a threshold that is different on different
+        // rows for a reason nobody could see.
+        val below = shown != null &&
+            (valueBelow ?: (shown.count { it !in BIDI_MARKS } > VALUE_INLINE_MAX))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
@@ -220,6 +238,9 @@ fun RowDivider(modifier: Modifier = Modifier, inset: Boolean = true) {
  * thing in the app that still reads as a value rather than as a sentence.
  */
 private const val VALUE_INLINE_MAX = 16
+
+/** The isolation marks, which are invisible and must not count as width. */
+private val BIDI_MARKS = setOf('\u2066', '\u2067', '\u2068', '\u2069')
 
 /** The squircle a row's mark sits in, measured off `m3v4-1`. */
 private val MARK_TILE = Space.markTile

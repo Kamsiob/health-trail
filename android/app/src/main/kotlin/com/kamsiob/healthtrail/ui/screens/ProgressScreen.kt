@@ -25,19 +25,17 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.ChartCard
-import com.kamsiob.healthtrail.ui.components.ChartHeight
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.theme.hueFor
-import com.kamsiob.healthtrail.ui.components.chartPoints
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
+import com.kamsiob.healthtrail.ui.v4.StatBlock
 
 object ProgressTags {
     const val NAME = "progress"
@@ -150,12 +148,14 @@ fun ProgressScreen(
             if (hero.isText) {
                 TextMeasureHero(measure = hero, readings = heroReadings)
             } else {
-                val points = chartPoints(heroReadings)
-                ChartCard(
+                // **The v4 stat block, which is this card in the new
+                // language**: the measure's own name as its eyebrow, the
+                // latest reading at display size, the count as a chip, and
+                // the trace under it drawing one path with the silences
+                // dashed rather than the line stopping dead. D193.
+                StatBlock(
                     name = hero.name,
-                    latest = latestOf(strings, hero, heroReadings) ?: "",
-                    readings = points,
-                    hue = hue,
+                    value = latestOf(strings, hero, heroReadings),
                     description = strings(
                         "progress.chart.description",
                         "name" to hero.name,
@@ -163,12 +163,14 @@ fun ProgressScreen(
                         "first" to EventDateText.render(strings, heroReadings.firstOrNull()?.occurredEdtf),
                         "last" to EventDateText.render(strings, heroReadings.lastOrNull()?.occurredEdtf),
                     ),
-                    footerStart = strings("progress.readings", "count" to heroReadings.size),
-                    footerEnd = spread(hero, heroReadings)?.let {
+                    hue = hue,
+                    modifier = Modifier.testTag(ProgressTags.measure(hero.id)),
+                    count = strings("progress.readings", "count" to heroReadings.size),
+                    readings = heroReadings,
+                    footnote = spread(hero, heroReadings)?.let {
                         strings("progress.range", "low" to it.first, "high" to it.second)
                     },
-                    height = ChartHeight.full,
-                    modifier = Modifier.testTag(ProgressTags.measure(hero.id)),
+                    empty = strings["progress.empty"],
                 )
             }
         }

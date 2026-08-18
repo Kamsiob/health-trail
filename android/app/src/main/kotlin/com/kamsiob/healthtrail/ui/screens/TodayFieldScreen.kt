@@ -82,17 +82,14 @@ import com.kamsiob.healthtrail.ui.v4.Avatar
 import com.kamsiob.healthtrail.ui.v4.AvatarOverflow
 import com.kamsiob.healthtrail.time.Distance
 import com.kamsiob.healthtrail.time.Edtf
-import com.kamsiob.healthtrail.ui.components.ChartHeight
 import com.kamsiob.healthtrail.ui.components.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.DistanceMarker
 import com.kamsiob.healthtrail.ui.components.PickerOption
-import com.kamsiob.healthtrail.ui.components.Plot
 import com.kamsiob.healthtrail.ui.components.pressScale
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.components.ROW_SIZE
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
-import com.kamsiob.healthtrail.ui.components.chartPoints
 import com.kamsiob.healthtrail.ui.components.CardSize
 import com.kamsiob.healthtrail.ui.components.TabChip
 import com.kamsiob.healthtrail.ui.components.TodayCard

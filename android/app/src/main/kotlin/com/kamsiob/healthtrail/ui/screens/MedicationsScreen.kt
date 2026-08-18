@@ -163,6 +163,9 @@ private fun MedicationRow(
         // **Isolated, like the name beside it.** The list showed a dose raw
         // while the medication's own screen isolated the same string, which is
         // one record reading two ways. Seen in Arabic on the phone.
+        // One placement for the whole column, whatever each dose happens
+        // to be long enough for on its own.
+        valueBelow = true,
         value = medication.doseText?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) },
         onClick = { onOpen(medication) },
         clickLabel = strings["open.action"],
