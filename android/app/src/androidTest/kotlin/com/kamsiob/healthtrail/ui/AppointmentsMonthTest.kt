@@ -11,7 +11,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
-import com.kamsiob.healthtrail.ui.components.ViewPreference
+import com.kamsiob.healthtrail.ui.v4.ViewPreference
 import com.kamsiob.healthtrail.ui.screens.AppointmentsScreen
 import com.kamsiob.healthtrail.ui.screens.VIEW_AGENDA
 import com.kamsiob.healthtrail.ui.screens.ApptTags

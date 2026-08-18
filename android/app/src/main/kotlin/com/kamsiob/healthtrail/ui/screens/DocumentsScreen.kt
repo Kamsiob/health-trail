@@ -33,7 +33,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.CARD_SIZE
 import com.kamsiob.healthtrail.ui.components.FILL
 import com.kamsiob.healthtrail.ui.components.ROW_SIZE
-import com.kamsiob.healthtrail.ui.components.rememberViewChoice
+import com.kamsiob.healthtrail.ui.v4.rememberViewChoice
 import com.kamsiob.healthtrail.ui.components.Thumbnail
 import com.kamsiob.healthtrail.ui.components.tileColumns
 import com.kamsiob.healthtrail.ui.components.openableByTap

@@ -22,8 +22,8 @@ import com.kamsiob.healthtrail.ui.components.TipsSheet
 import com.kamsiob.healthtrail.ui.components.tipForDestination
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Alignment
-import com.kamsiob.healthtrail.ui.components.fabSafeActionBar
-import com.kamsiob.healthtrail.ui.components.fabScrollClearance
+import com.kamsiob.healthtrail.ui.v4.fabSafeActionBar
+import com.kamsiob.healthtrail.ui.v4.fabScrollClearance
 import com.kamsiob.healthtrail.ui.components.RoadSize
 import com.kamsiob.healthtrail.ui.components.RoadStage
 import com.kamsiob.healthtrail.ui.components.RoadStrip

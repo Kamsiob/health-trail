@@ -23,7 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import com.kamsiob.healthtrail.ui.components.MonthDay
 import com.kamsiob.healthtrail.ui.components.MonthGrid
 import com.kamsiob.healthtrail.ui.components.Symbols
-import com.kamsiob.healthtrail.ui.components.rememberViewChoice
+import com.kamsiob.healthtrail.ui.v4.rememberViewChoice
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Eyebrow

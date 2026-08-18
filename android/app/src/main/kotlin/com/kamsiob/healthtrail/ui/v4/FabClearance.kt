@@ -1,4 +1,4 @@
-package com.kamsiob.healthtrail.ui.components
+package com.kamsiob.healthtrail.ui.v4
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier

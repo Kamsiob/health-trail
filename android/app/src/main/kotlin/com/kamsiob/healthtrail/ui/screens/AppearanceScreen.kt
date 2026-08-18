@@ -13,7 +13,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.TipsButton
 import com.kamsiob.healthtrail.ui.components.TipsSheet
-import com.kamsiob.healthtrail.ui.components.fabScrollClearance
+import com.kamsiob.healthtrail.ui.v4.fabScrollClearance
 import com.kamsiob.healthtrail.ui.components.tipForDestination
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
