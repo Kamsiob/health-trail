@@ -35,6 +35,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
@@ -136,7 +137,15 @@ fun MedicationsScreen(
                     Icon(painter = painterResource(Symbols.add), contentDescription = null)
                 },
                 text = { Text(text = strings["meds.add"]) },
-                modifier = Modifier.testTag(MedsTags.ADD),
+                // **The sentence sits on the button's own node.** The words are
+                // in a `Text` two levels down, inside the row Material builds
+                // for an extended button, so the node that carries the tap
+                // carried no label of its own and the reader sweep listed it as
+                // a touchable with nothing to say. Rule 19 is a gate, and this
+                // is the one screen that had already been rebuilt.
+                modifier = Modifier
+                    .testTag(MedsTags.ADD)
+                    .semantics { contentDescription = strings["meds.add"] },
             )
         },
     ) { inset ->
