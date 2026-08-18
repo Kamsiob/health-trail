@@ -45,6 +45,7 @@ import com.kamsiob.healthtrail.ui.screens.CareTeamScreen
 import com.kamsiob.healthtrail.ui.screens.MedicationsScreen
 import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
+import com.kamsiob.healthtrail.ui.screens.MeasureScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectHomeScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectSetupScreen
@@ -1190,16 +1191,41 @@ internal fun ProjectStepOverlays(
                     onMoved = { sayingMoved = true },
                 )
 
-                Repository.Section.PROGRESS -> ProgressScreen(
-                    measures = measures,
-                    readings = readings,
-                    // The measurement form, which is a real destination rather
-                    // than a stub: it is the same screen capture opens.
-                    onAddReading = { capturing = CaptureKind.MEASUREMENT },
-                    onCorrectReading = { correctingReading = it },
-                    onCorrectMeasure = { correctingMeasure = it },
-                    onBack = { openSection = null },
-                )
+                Repository.Section.PROGRESS -> {
+                    // **One tracked thing's own screen sits above the list**,
+                    // #398, so back closes the measure and lands on Progress
+                    // rather than leaving the section entirely.
+                    val opened = openMeasure?.let { current ->
+                        measures.firstOrNull { it.id == current.id }
+                    }
+                    if (opened != null) {
+                        MeasureScreen(
+                            measure = opened,
+                            // **This measure's readings and no other's.** The
+                            // flat mixed list is what #398 exists to remove.
+                            readings = readings.filter { it.measureId == opened.id },
+                            onAddReading = { capturing = CaptureKind.MEASUREMENT },
+                            onCorrectReading = { correctingReading = it },
+                            onCorrectMeasure = { correctingMeasure = opened },
+                            onBack = { openMeasure = null },
+                        )
+                    } else {
+                        ProgressScreen(
+                            measures = measures,
+                            readings = readings,
+                            // The measurement form, which is a real destination
+                            // rather than a stub: it is the same screen capture
+                            // opens.
+                            onAddReading = { capturing = CaptureKind.MEASUREMENT },
+                            // **Correcting a reading lives where the readings
+                            // do**, which is the measure's own screen since
+                            // #398. This one holds no readings any more.
+                            onCorrectMeasure = { correctingMeasure = it },
+                            onOpenMeasure = { openMeasure = it },
+                            onBack = { openSection = null },
+                        )
+                    }
+                }
 
 
                 Repository.Section.THREADS -> CareThreadsScreen(

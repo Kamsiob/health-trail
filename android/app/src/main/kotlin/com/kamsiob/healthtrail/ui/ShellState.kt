@@ -152,6 +152,14 @@ internal class ShellState {
      * The measure whose name and unit are being corrected, and the correction
      * in flight. #374, the last of the six.
      */
+    /**
+     * The tracked thing whose own screen is open, or null. #398.
+     *
+     * **It sits above the Progress list rather than replacing it**, so back
+     * closes the measure and lands on the list it was opened from, the way a
+     * project's trail sits above the project.
+     */
+    var openMeasure by mutableStateOf<Repository.Measure?>(null)
     var correctingMeasure by mutableStateOf<Repository.Measure?>(null)
     var savingMeasureCorrection by mutableStateOf<Triple<String, String, String?>?>(null)
 

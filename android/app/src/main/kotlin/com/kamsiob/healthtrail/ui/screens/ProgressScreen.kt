@@ -97,10 +97,17 @@ fun ProgressScreen(
     onAddReading: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    /** Opens the form that corrects one reading. #374. */
-    onCorrectReading: (Repository.Reading) -> Unit = {},
     /** Opens the form that corrects the measure on screen. #374. */
     onCorrectMeasure: (Repository.Measure) -> Unit = {},
+    /**
+     * Opens one tracked thing on its own screen. #398.
+     *
+     * **This is the whole of the issue.** A measure card used to promote
+     * itself to hero, so tapping a tracked thing rearranged this page rather
+     * than opening it, and only whichever one happened to be the hero ever had
+     * a chart.
+     */
+    onOpenMeasure: (Repository.Measure) -> Unit = {},
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -179,131 +186,114 @@ fun ProgressScreen(
             return@Page
         }
 
-        // Oldest first for the plot, since a chart reads left to right in time
-        // whichever way the layout runs.
-        val heroReadings = byMeasure[hero.id].orEmpty().sortedBy { it.occurredStart }
+        // == The lead ======================================================
+        //
+        // **The measure written in most recently leads**, and it is the only
+        // one on this screen with a plot. #398: the page used to give the hero
+        // a chart and every other measure a figure with no way into its own
+        // history, so a second tracked thing was a dead end. Every measure has
+        // its own screen now and the chart lives there.
+        //
+        // **The same grammar the projects list uses**, D205, which is rule 16:
+        // one lead drawn as a block, the rest as rows in a contained group. A
+        // person who has learned one destination can read the next.
+        val leadReadings = byMeasure[hero.id].orEmpty().sortedBy { it.occurredStart }
 
-        item(key = "hero_${hero.id}") {
-            if (hero.isText) {
-                // **A measure written in words is still a measure.** It was
-                // the one thing on this page drawn as bare text on the canvas
-                // while everything else was a card, so the screen showed its
-                // own subject two ways. The words are the value; there is no
-                // line, because there is nothing to plot, and the card says so
-                // in the footnote rather than in a paragraph of its own.
-                val latest = latestParts(strings, hero, heroReadings)
-                StatBlock(
-                    name = hero.name,
-                    value = latest?.figure,
-                    description = strings(
-                        "progress.chart.description",
-                        "name" to hero.name,
-                        "count" to heroReadings.size,
-                        "first" to EventDateText.render(strings, heroReadings.firstOrNull()?.occurredEdtf),
-                        "last" to EventDateText.render(strings, heroReadings.lastOrNull()?.occurredEdtf),
-                    ),
-                    hue = hueForMeasure(hero.id),
-                    modifier = Modifier.testTag(ProgressTags.measure(hero.id)),
-                    count = strings("progress.readings", "count" to heroReadings.size),
-                    footnote = listOfNotNull(latest?.date, strings["progress.nochart"])
-                        .let { Bidi.join(it) }
-                        .takeIf { it.isNotBlank() },
-                    empty = strings["progress.empty"],
-                )
-            } else {
-                // **The v4 stat block, which is this card in the new
-                // language**: the measure's own name as its eyebrow, the
-                // latest reading at display size, the count as a chip, and
-                // the trace under it drawing one path with the silences
-                // dashed rather than the line stopping dead. D193.
-                val latest = latestParts(strings, hero, heroReadings)
-                StatBlock(
-                    name = hero.name,
-                    value = latest?.figure,
-                    description = strings(
-                        "progress.chart.description",
-                        "name" to hero.name,
-                        "count" to heroReadings.size,
-                        "first" to EventDateText.render(strings, heroReadings.firstOrNull()?.occurredEdtf),
-                        "last" to EventDateText.render(strings, heroReadings.lastOrNull()?.occurredEdtf),
-                    ),
-                    hue = hueForMeasure(hero.id),
-                    modifier = Modifier.testTag(ProgressTags.measure(hero.id)),
-                    unit = latest?.unit,
-                    count = strings("progress.readings", "count" to heroReadings.size),
-                    readings = heroReadings,
-                    // When the newest reading was taken, and the spread beside
-                    // it where there is one. A date, never a judgment.
-                    footnote = listOfNotNull(
+        item(key = "lead_${hero.id}") {
+            Eyebrow(text = strings["progress.latest"])
+            Spacer(Modifier.height(Space.withinGroup))
+            val latest = latestParts(strings, hero, leadReadings)
+            StatBlock(
+                name = hero.name,
+                value = latest?.figure,
+                description = strings(
+                    "progress.chart.description",
+                    "name" to hero.name,
+                    "count" to leadReadings.size,
+                    "first" to EventDateText.render(strings, leadReadings.firstOrNull()?.occurredEdtf),
+                    "last" to EventDateText.render(strings, leadReadings.lastOrNull()?.occurredEdtf),
+                ),
+                hue = hueForMeasure(hero.id),
+                modifier = Modifier.testTag(ProgressTags.measure(hero.id)),
+                unit = if (hero.isText) null else latest?.unit,
+                count = strings("progress.readings", "count" to leadReadings.size),
+                // **A measure written in words has no line**, and the card says
+                // so in its footnote rather than drawing an empty frame.
+                readings = if (hero.isText) emptyList() else leadReadings,
+                footnote = if (hero.isText) {
+                    Bidi.join(latest?.date, strings["progress.nochart"])
+                        .takeIf { it.isNotBlank() }
+                } else {
+                    listOfNotNull(
                         latest?.date,
-                        spread(hero, heroReadings)?.let {
+                        spread(hero, leadReadings)?.let {
                             strings("progress.range", "low" to it.first, "high" to it.second)
                         },
-                    ).let { Bidi.join(it) }.takeIf { it.isNotBlank() },
-                    empty = strings["progress.empty"],
-                )
-            }
+                    ).let { Bidi.join(it) }.takeIf { it.isNotBlank() }
+                },
+                empty = strings["progress.empty"],
+                // **The card is a door now**, which is the whole of #398. It
+                // used to promote itself to hero, so tapping a measure
+                // rearranged this page instead of opening the thing.
+                onOpen = { onOpenMeasure(hero) },
+            )
+            Spacer(Modifier.height(Space.betweenZones))
         }
-        // The others, as a choice rather than as a wall of charts. One chart is
-        // the hero; four charts at once is four things competing, which law 1
-        // says is a screen that is wrong.
-        // **A measure is a measure wherever it is drawn**, which is what
-        // `m3v4-0` settles: the tracked thing is a card with its name as the
-        // eyebrow, the latest reading at display size, the count as a chip and
-        // the line under it. A row with the reading typed at the end was this
-        // screen showing its own subject in a shape the drawing never uses,
-        // and it is the reason the page read as a list of strings. #387.
+
+        // == Everything else, as rows =======================================
         //
-        // **The hero is still the one with the room.** These are the same card
-        // without the footnote, so one screen has one leading thing and the
-        // others are still measures rather than links to measures.
+        // **A row, not a wall of charts.** Four charts at once is four things
+        // competing, which law 1 calls a screen that is wrong, and it was the
+        // shape the owner named. Each row says what it is, what was last
+        // written down and when, and opens that measure's own screen.
         val others = ordered.filter { it.id != hero.id }
-        others.forEach { measure ->
-            item(key = "measure_${measure.id}") {
-                val forMeasure = byMeasure[measure.id].orEmpty()
-                    .sortedBy { it.occurredStart }
-                val latest = latestParts(strings, measure, forMeasure)
-                StatBlock(
-                    name = measure.name,
-                    value = if (measure.isText) latest?.date else latest?.figure,
-                    description = strings(
-                        "progress.chart.description",
-                        "name" to measure.name,
-                        "count" to forMeasure.size,
-                        "first" to EventDateText.render(strings, forMeasure.firstOrNull()?.occurredEdtf),
-                        "last" to EventDateText.render(strings, forMeasure.lastOrNull()?.occurredEdtf),
-                    ),
-                    hue = hueForMeasure(measure.id),
-                    modifier = Modifier.testTag(ProgressTags.measure(measure.id)),
-                    unit = if (measure.isText) null else latest?.unit,
-                    count = strings("progress.readings", "count" to forMeasure.size),
-                    readings = if (measure.isText) emptyList() else forMeasure,
-                    footnote = latest?.date?.takeIf { !measure.isText },
-                    empty = strings["progress.empty"],
-                    onOpen = { chosen = measure.id },
-                )
+        if (others.isNotEmpty()) {
+            item(key = "tracked") {
+                Eyebrow(text = strings["progress.tracked"])
+                Spacer(Modifier.height(Space.withinGroup))
+                Block(padding = Space.none) {
+                    others.forEachIndexed { index, measure ->
+                        if (index > 0) RowDivider(inset = true)
+                        val forMeasure = byMeasure[measure.id].orEmpty()
+                            .sortedBy { it.occurredStart }
+                        val latest = latestParts(strings, measure, forMeasure)
+                        ListRow(
+                            // **Its own hue, from its id and never from a
+                            // reading**, D204. Sixteen tracked things on one
+                            // screen in one color is the page the owner called
+                            // dreary, and a color that moved with a value would
+                            // be rule 2 broken.
+                            mark = Symbols.progress,
+                            markSize = Space.markCard,
+                            markHue = hueForMeasure(measure.id),
+                            overline = strings("progress.readings", "count" to forMeasure.size),
+                            title = Bidi.isolate(measure.name),
+                            // **The figure for a number, the date for words.**
+                            // A sentence in a row's value slot is the row's
+                            // whole width, and shortening it would be the
+                            // truncation rule 11 forbids. The words are one tap
+                            // away, where the screen has room to say them.
+                            support = if (measure.isText) {
+                                latest?.date
+                            } else {
+                                Bidi.join(latest?.figure, latest?.unit, latest?.date)
+                                    .takeIf { it.isNotBlank() }
+                            },
+                            isDoor = true,
+                            onClick = { onOpenMeasure(measure) },
+                            clickLabel = strings["measure.open"],
+                            modifier = Modifier.testTag(ProgressTags.measure(measure.id)),
+                        )
+                    }
+                }
             }
         }
 
-        // Every reading for what is on screen, folded and counted, because the
-        // chart says shape and the list says what was actually written down.
-        item(key = "every") {
-            Eyebrow(text = strings["progress.every"])
-        }
-
-        // Newest first here, unlike the plot. A list of what happened reads
-        // most recent first everywhere else in this app, and a chart reads
-        // left to right in time. They are two different jobs.
-        for (reading in heroReadings.reversed()) {
-            item(key = reading.id) {
-                ReadingRow(
-                    reading = reading,
-                    measure = hero,
-                    onCorrect = { onCorrectReading(reading) },
-                )
-            }
-        }
-
+        // **The flat mixed list is gone**, #398. "EVERY READING" put the
+        // readings of every measure into one stream ordered by date, so
+        // somebody tracking weight and blood pressure and how she seemed read
+        // three records interleaved. Each measure's readings are on that
+        // measure's own screen now, which is where they mean something.
     }
 }
 
@@ -328,9 +318,9 @@ fun ProgressScreen(
  * lb · May 8, 2026" set as a headline. The date belongs in the footnote, where
  * the drawing puts the month the line starts in.
  */
-private data class Latest(val figure: String?, val unit: String?, val date: String)
+internal data class Latest(val figure: String?, val unit: String?, val date: String)
 
-private fun latestParts(
+internal fun latestParts(
     strings: Strings,
     measure: Repository.Measure,
     readings: List<Repository.Reading>,
@@ -369,7 +359,7 @@ private fun latestOf(
  * readings is, which is a fact about what they wrote down, and says nothing
  * about whether that range is anything.
  */
-private fun spread(
+internal fun spread(
     measure: Repository.Measure,
     readings: List<Repository.Reading>,
 ): Pair<String, String>? {
@@ -416,7 +406,7 @@ internal fun readingValue(reading: Repository.Reading): String? = when {
  * are one thing being said.
  */
 @Composable
-private fun ReadingRow(
+internal fun ReadingRow(
     reading: Repository.Reading,
     measure: Repository.Measure,
     onCorrect: () -> Unit = {},

@@ -441,7 +441,16 @@ fun NotebookShell(
             destination = Destination.NOTEBOOK
         }
 
-        BackHandler(enabled = openSection != null) { openSection = null }
+        BackHandler(enabled = openSection != null && openMeasure == null) {
+            openSection = null
+            openMeasure = null
+        }
+        // **A tracked thing sits above the Progress list**, #398, so back
+        // closes the measure first and lands on the list it was opened from.
+        // Registered after the section's own handler, because the dispatcher
+        // hands a press to the most recently added enabled callback and a
+        // measure has to win it.
+        BackHandler(enabled = openMeasure != null) { openMeasure = null }
         // **Above the trail it was opened from and below everything it opens.** The
         // dispatcher hands a press to the most recently added enabled callback, so a
         // chapter reached through a review has to register after this line or back

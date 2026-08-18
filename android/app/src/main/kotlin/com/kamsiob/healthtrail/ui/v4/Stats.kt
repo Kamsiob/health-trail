@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -62,8 +63,15 @@ import com.kamsiob.healthtrail.ui.v4.Eyebrow
  */
 @Composable
 fun StatBlock(
-    /** The measure's own name, in the case somebody wrote it. */
-    name: String,
+    /**
+     * The measure's own name, in the case somebody wrote it.
+     *
+     * **Null on a screen whose title is already that name**, #398: on the
+     * tracked thing's own page the card's eyebrow and the page's heading were
+     * the same word an inch apart, which is one thing said twice and, for
+     * somebody listening, heard twice.
+     */
+    name: String?,
     /** The latest reading, already formatted. Null where nothing has been written down. */
     value: String?,
     /**
@@ -126,14 +134,18 @@ fun StatBlock(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Space.sm),
         ) {
-            Eyebrow(
-                // bidi-ok: the caller isolates, because a measure's name is
-                // always somebody's own words.
-                text = name,
-                fixed = false,
-                color = hue.ink,
-                modifier = Modifier.weight(1f),
-            )
+            if (name != null) {
+                Eyebrow(
+                    // bidi-ok: the caller isolates, because a measure's name is
+                    // always somebody's own words.
+                    text = name,
+                    fixed = false,
+                    color = hue.ink,
+                    modifier = Modifier.weight(1f),
+                )
+            } else {
+                Spacer(Modifier.weight(1f))
+            }
             count?.let {
                 Chip(label = it, container = hue.wash, content = hue.ink)
             }

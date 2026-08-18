@@ -59,6 +59,7 @@ import com.kamsiob.healthtrail.ui.screens.PeopleScreen
 import androidx.compose.ui.test.onAllNodesWithTag
 import com.kamsiob.healthtrail.ui.screens.PaperViewerTags
 import com.kamsiob.healthtrail.ui.screens.PaperViewerScreen
+import com.kamsiob.healthtrail.ui.screens.MeasureScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectDetailScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectDetailTags
@@ -1502,6 +1503,62 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("progress")
+    }
+
+    /**
+     * One tracked thing on its own screen, #398, with the two variations that
+     * add lines to a reading: no date at all, and a clinician's note.
+     */
+    @Test
+    fun oneMeasureLabelsEverything() {
+        compose.show {
+            MeasureScreen(
+                measure = Repository.Measure("me1", "Weight", "weight", "lb", false),
+                readings = listOf(
+                    Repository.Reading("r1", "me1", 148.0, null, "lb", "2026-08-02", 1L, null, "family"),
+                    Repository.Reading("r2", "me1", 151.5, null, "lb", null, null, "After dialysis", "clinician"),
+                ),
+                onAddReading = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("measure")
+    }
+
+    /**
+     * **A measure written in words has no plot**, and the card says so rather
+     * than drawing an empty frame. Its screen still has to be walkable.
+     */
+    @Test
+    fun oneMeasureInWordsLabelsEverything() {
+        compose.show {
+            MeasureScreen(
+                measure = Repository.Measure("me2", "How she seemed", null, null, true),
+                readings = listOf(
+                    Repository.Reading(
+                        "r3", "me2", null, "Brighter than yesterday. Ate most of her lunch.",
+                        null, "2026-06-29", 2L, null, "family",
+                    ),
+                ),
+                onAddReading = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("measure-words")
+    }
+
+    /** Nothing written down yet, which is a finished screen and not a broken one. */
+    @Test
+    fun oneEmptyMeasureLabelsEverything() {
+        compose.show {
+            MeasureScreen(
+                measure = Repository.Measure("me3", "Blood pressure", "blood_pressure", "mmHg", false),
+                readings = emptyList(),
+                onAddReading = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("measure-empty")
     }
 
     @Test
