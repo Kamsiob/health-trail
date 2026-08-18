@@ -4,7 +4,7 @@ Current state. Nothing else. Read with `gh issue view 321`; neither repeats the 
 
 Fragments, no filler. Rewritten to current truth, never appended to. History goes to `docs/RUN-LOG.md` (never read to orient) or a commit message.
 
-**Last rewritten:** 2026-08-18, end of the Material rebuild session.
+**Last rewritten:** 2026-08-18, second Material rebuild session.
 
 ---
 
@@ -19,10 +19,30 @@ Worked examples, in order of quality: `TodayField.kt`, `Notebook.kt`, `OneThread
 
 ## 1. State
 
-- Tree clean, all on `origin/main`. 218 unit, 29 checks, lint green.
-- **`ui/components` is 36 files** (`git ls-tree`, not estimated).
-- **Instrumented: not run end to end.** Classes run clean tonight: `TodayFieldScreenTest` 40, `NotebookScreenTest` 14, `ScreenReaderTest` 109, `RemovalIsVisibleTest` 18, `AddCardOffersTest` 11, `MedicationQuestionJourneyTest` **2 failed**.
+- Tree clean, all on `origin/main`. 218 unit, **30 checks**, lint green.
+- **`ui/components` is 32 files.** Retired this session: `EdgeScrubber` to
+  `ui/v4/Rail.kt`, `ScopedSearch` to `ui/v4/Search.kt`, `ConfirmRemoveSheet` to
+  `ui/v4/Confirm.kt`. `Entrance` deleted outright: nothing called it.
+- **The folder cannot empty, and D199 settles what the target is instead.**
+  Three frozen files import from `ui/components`, and a frozen file is never
+  called, never extended and never fixed. **The test is whether any live file
+  imports from it, not whether the folder is empty.** `StepRow` and `Tile` have
+  no live caller at all and now have ledger rows; do not rewrite either.
+- **Before retiring a component, ask who calls it excluding the three frozen
+  files**: `ProjectDetailScreen.kt`, `CaptureSheet.kt`, `PinnedGroup.kt`.
+- **Instrumented: not run end to end.** Read counts from the XML, never a
+  gradle exit code: the run below exited 0 with a failure in it.
+  - 2026-08-18, second session: `MedicationsScreenTest` 4, `RemovalIsVisibleTest` 18, `ReaderStopsTest` 4 with **1 failed**.
+  - Earlier: `TodayFieldScreenTest` 40, `NotebookScreenTest` 14, `ScreenReaderTest` 109, `AddCardOffersTest` 11, `MedicationQuestionJourneyTest` **2 failed**.
+- **#391, `ReaderStopsTest` expects 12 notebook rows carrying their purpose in
+  one stop and finds 10.** Pre-existing, not from the retirement work: the test
+  renders `NotebookScreen` directly and nothing on its path changed. Rule 19
+  makes it a gate.
 - **Known failure**: `MedicationQuestionJourneyTest` dies at `capture_form_more_medications`. Not from this session's changes; it now reaches further than it used to.
+- **#390, three live screens take a callback and never call it.** Held by
+  `check_uncalled_callbacks.py`, which names them rather than counting them, so
+  the list can only shrink. A fourth, `MedicationRow`'s `onOpen`, was found and
+  fixed: no row on the medications list opened at all.
 - **No APK yet.** Owner: the APK is after the app is complete.
 - **Not started**: more than one person per notebook; restore tested across profiles.
 - Phone at baseline, plugged in: font 1.0, animator 1.0, no reader, night mode `no`.
@@ -61,8 +81,37 @@ The trail's route, a project's road, a measure's line (`Trace`), and `DatePicker
 
 ## 3. What is left, and the order
 
-1. **The rest of `ui/components`**, `gh issue view 387`. 36 files. Biggest hand-built first: `ScopedSearch` 222, `EdgeScrubber` 224, `Dictate` 244, `MonthGrid` 201, `RoadStrip` 372, `Spine` 401 (route, stays), `StepRow`, `StickyHeader`, `PinnedGroup`, `Tile`, `Hero`, `TabChip`, `Stages`, `ViewPreference`, `StandingCard`, `Confirm`, `Share`, `CalendarHandoff`, `DateRow`, `LatestWordCard`, `Thumbnail`, `ChipPicker`, `Chevron`, `ReferenceLine`, `SectionIcon`, `DraftSavers`, `FabClearance`, `Press` (infrastructure, move to `ui/v4`), `BottomNav` (move, do not redraw), `Symbols` (stays: it is the catalog).
-2. **The remaining screens still on old bones**, found by grepping for `HealthTrail.type`, `HealthTrail.colors`, `Radius.`, `openableByTap`, `pressedSurface`.
+1. **The rest of `ui/components`**, `gh issue view 387`. 32 files, and read D199
+   first. Live callers, counted excluding the three frozen files:
+
+   | Next, biggest hand built first | Live callers |
+   |---|---|
+   | `Dictate` 244 (needs the Material mic symbol) | 3 |
+   | `Tips` 216, the sheet half | 7 |
+   | `MonthGrid` 201 | 3 |
+   | `ChipPicker` 185 | 5 |
+   | `DateRow` 168 | 1 |
+   | `Thumbnail` 162 | 5 |
+   | `HeaderAction` 161 | 5 |
+   | `StickyHeader` 147 | 1 |
+   | `TabChip` 137, `Share` 134, `Hero` 123, `StandingCard` 117, `LatestWordCard` 115, `SectionIcon` 115, `CalendarHandoff` 107, `Stages` 96, `ReferenceLine` 99, `ViewPreference` 73, `Chevron` 69, `FabClearance` 53, `DraftSavers` 31 | 1 to 4 each |
+   | `RoadStrip` 372, `Spine` 401 | the road and the route stay drawn; what is a `Box` around them does not |
+
+   **`Press` 254 is last**, and it shrinks as the screens do: 32 live files use
+   `openableByTap` or `pressedSurface`, and every one of them should be on
+   Material's own state layer instead. `BottomNav` moves without redrawing.
+   `Symbols` stays, it is the catalog. `DatePicker` stays, D197.
+   **`StepRow` and `Tile` are frozen-tail: leave both.**
+2. **The remaining screens still on old bones.** Measured rather than guessed,
+   2026-08-18: **78 of 86 screens carry at least one of the five tokens, about
+   29,000 lines.** The grep is a proxy and the tail lies: forty of those carry
+   one or two stray `HealthTrail.colors` references and are otherwise Material.
+   **The genuinely old ones are the top twenty by hit count**, led by
+   `IncidentScreen` 621L, `StandingInstructionsScreen` 477L,
+   `MeasurementScreen` 861L, `UnfiledTrayScreen` 531L, `TrailScreen` 953L,
+   `ProjectDetailScreen` (frozen, skip), `SearchScreen` 354L, `PrepScreen`
+   510L, `EntryScreen` 476L, `TodayScreen` 551L. Re-run the count with the
+   script in `docs/RUN-LOG.md` rather than reading this list as fixed.
 3. **The polish pass**, `docs/V4.md` 6, every screen against the 10/10 bar. #388.
 4. **More than one person per notebook.**
 5. **The full instrumented suite clean**, read from the XML.
@@ -87,6 +136,18 @@ The trail's route, a project's road, a measure's line (`Trace`), and `DatePicker
 
 - **The caller's `testTag`, the tap and the reader's sentence must be on one node.** Put `combinedClickable` and `semantics { contentDescription }` on the `Card`'s own modifier, not on a column inside it. Twenty two tests read an empty description off the node they were handed.
 - **This scheme's `surfaceContainerLow` is the canvas in light.** A card drawn on it is invisible. Use `surfaceContainer`.
+- **A row that promises a door may not have one.** `MedicationRow` took an
+  `onOpen` and never called it, and the whole medications list had two clickable
+  nodes on it. `check_uncalled_callbacks.py` holds this now. **Dump the screen
+  and count clickable nodes**; it is one line and it does not lie the way
+  reading the file does.
+- **Three files are frozen and must not be edited**, `docs/REMOVAL-LEDGER.md`:
+  `ProjectDetailScreen.kt`, `CaptureSheet.kt`, `PinnedGroup.kt`. Retiring a
+  component they import means repointing their import, which is extending a
+  frozen screen. D199 says what to do instead.
+- **`git rm` stages immediately.** Run it at the moment you commit, not when you
+  start the rewrite, or the deletion lands in whatever commit goes out next and
+  that commit does not build.
 - **A `LazyColumn` does not compose off-screen rows.** Tests that walked a scrolling `Column` break: scroll by the list's own item key, `performScrollToKey`.
 - **A floating action button is on the scaffold, not in the list.** Do not scroll a list to reach it.
 - **`tools/seed.sh` walks the restore screen by text** and taps the password field by `=Password`. Its last line says "Restored." or every capture after it is of an empty notebook.
