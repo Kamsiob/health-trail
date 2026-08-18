@@ -60,6 +60,7 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import com.kamsiob.healthtrail.ui.screens.PaperViewerTags
 import com.kamsiob.healthtrail.ui.screens.PaperViewerScreen
 import com.kamsiob.healthtrail.ui.screens.MeasureScreen
+import com.kamsiob.healthtrail.ui.screens.NoteScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectDetailScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectDetailTags
@@ -1451,7 +1452,8 @@ class ScreenReaderTest {
     @Test
     fun theCaptureBloomLabelsEveryChoice() {
         compose.show {
-            CaptureBloom(onChoose = {}, onDismiss = {})
+            CaptureBloom(
+                onWriteNote = {},onChoose = {}, onDismiss = {})
         }
         assertEverythingIsLabeled("the capture bloom")
     }
@@ -1503,6 +1505,32 @@ class ScreenReaderTest {
             )
         }
         assertEverythingIsLabeled("progress")
+    }
+
+    /** Writing a note with no target, which is the ordinary case. #397. */
+    @Test
+    fun aGeneralNoteLabelsEverything() {
+        compose.show {
+            NoteScreen(onSave = { _, _ -> }, onBack = {})
+        }
+        assertEverythingIsLabeled("note")
+    }
+
+    /**
+     * **And one carrying what it is about**, rule 18, because the chip is the
+     * one thing on the screen that is a label rather than a control and a
+     * reader has to hear it as such.
+     */
+    @Test
+    fun aNoteAboutSomethingLabelsEverything() {
+        compose.show {
+            NoteScreen(
+                aboutLabel = "Care plan meeting",
+                onSave = { _, _ -> },
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("note-about")
     }
 
     /**

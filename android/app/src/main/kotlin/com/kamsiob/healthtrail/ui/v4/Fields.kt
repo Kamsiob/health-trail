@@ -135,6 +135,15 @@ fun Field(
     singleLine: Boolean = true,
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Next,
+    /**
+     * How tall the box stands before anything is typed.
+     *
+     * **A field somebody writes paragraphs into should look like one**, #397:
+     * the note's own body drew at the height of a field asking for a name, on
+     * a screen whose whole purpose is the paragraph that goes in it. One line
+     * is right everywhere else and stays the default.
+     */
+    minLines: Int = 1,
     /** A passphrase, and the only thing in this app that is ever hidden. */
     masked: Boolean = false,
     /** What sits at the end of the line inside the field: dictation, a unit. */
@@ -144,6 +153,7 @@ fun Field(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
+        minLines = minLines,
         modifier = modifier
             .fillMaxWidth()
             .then(fieldTestTag?.let { Modifier.testTag(it) } ?: Modifier),
@@ -219,6 +229,8 @@ fun DictatableField(
      * to typing on it. Law 3, on the note stage of capture.
      */
     prominentVoice: Boolean = false,
+    /** How tall the box stands before anything is typed. See [Field]. */
+    minLines: Int = 1,
 ) {
     val append: (String) -> Unit = { spoken ->
         onValueChange(if (value.isBlank()) spoken else "${value.trimEnd()} $spoken")
@@ -237,6 +249,7 @@ fun DictatableField(
             enabled = enabled,
             singleLine = singleLine,
             imeAction = imeAction,
+            minLines = minLines,
             // **Inside the field**, unless this is the one screen where
             // speaking is the point rather than an alternative.
             trailing = if (prominentVoice) {

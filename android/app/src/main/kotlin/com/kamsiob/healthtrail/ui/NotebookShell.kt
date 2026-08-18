@@ -541,6 +541,8 @@ fun NotebookShell(
             editingMedication = null
         }
         BackHandler(enabled = addingThread) { addingThread = false }
+        // A note sits above whatever it was opened from. #397.
+        BackHandler(enabled = writingNote != null) { writingNote = null }
         BackHandler(enabled = addingAppointment) {
             addingAppointment = false
             editingAppointment = null
@@ -2727,6 +2729,12 @@ fun NotebookShell(
                     onChoose = { kind ->
                         sheetOpen = false
                         capturing = kind
+                    },
+                    // #397: a note is not a capture kind, so it has its own
+                    // route. The comment on `onWriteNote` says why it cannot be.
+                    onWriteNote = {
+                        sheetOpen = false
+                        writingNote = NoteTarget(null, null, null)
                     },
                     onDismiss = { sheetOpen = false },
                 )

@@ -42,6 +42,8 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.v4.IconTile
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.components.Symbols
+import com.kamsiob.healthtrail.ui.theme.goldHue
 import com.kamsiob.healthtrail.ui.theme.Space
 
 /**
@@ -71,6 +73,23 @@ import com.kamsiob.healthtrail.ui.theme.Space
 @Composable
 fun CaptureBloom(
     onChoose: (CaptureKind) -> Unit,
+    /**
+     * Writing a note, which is the seventh choice and not a seventh kind. #397.
+     *
+     * **`CaptureKind` cannot grow.** `CaptureSheet.kt` is frozen and switches
+     * on it exhaustively, so a seventh value is a compile error in a file D199
+     * forbids editing *and* forbids deleting: the ledger's answer to a frozen
+     * file blocking the live path is a duplicate, never a change to the frozen
+     * one. **This is the same answer in the other direction**: the note takes
+     * its own route and the six kinds stay exactly as they are.
+     *
+     * **Which is also right on its own terms.** The six are staged capture
+     * forms whose order the enum's own comment says never changes, because
+     * somebody reaching for one while a nurse is on the phone reaches by
+     * position. A note has different mechanics, three marks and an attachment
+     * to anything, and it sits after them rather than among them.
+     */
+    onWriteNote: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -93,7 +112,7 @@ fun CaptureBloom(
     var released by remember { mutableStateOf(0) }
     LaunchedEffect(Unit) {
         keyboard?.hide()
-        repeat(CaptureKind.entries.size) {
+        repeat(CaptureKind.entries.size + 1) {
             released += 1
             kotlinx.coroutines.delay(BLOOM_STEP_MILLIS.toLong())
         }
@@ -132,14 +151,24 @@ fun CaptureBloom(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(Space.sm),
         ) {
+            val total = CaptureKind.entries.size + 1
             CaptureKind.entries.forEachIndexed { index, kind ->
                 BloomChoice(
                     label = strings[bloomLabelKey(kind)],
                     kind = kind,
-                    shown = released > CaptureKind.entries.size - 1 - index,
+                    shown = released > total - 1 - index,
                     onClick = { onChoose(kind) },
                 )
             }
+            // **Last, nearest the thumb.** The six above keep their positions
+            // to the pixel, which is what the enum's comment protects.
+            BloomChoice(
+                label = strings["note.title"],
+                kind = null,
+                shown = released > 0,
+                onClick = onWriteNote,
+                tag = CaptureTags.NOTE,
+            )
         }
     }
 }
@@ -147,9 +176,11 @@ fun CaptureBloom(
 @Composable
 private fun BloomChoice(
     label: String,
-    kind: CaptureKind,
+    /** The capture kind this writes, or null for the note, which is not one. */
+    kind: CaptureKind?,
     shown: Boolean,
     onClick: () -> Unit,
+    tag: String = kind?.let { CaptureTags.option(it) }.orEmpty(),
 ) {
     val colors = HealthTrail.colors
     val motion = LocalMotion.current
@@ -192,7 +223,7 @@ private fun BloomChoice(
                 contentDescription = label
                 onClick { onClick(); true }
             }
-            .testTag(CaptureTags.option(kind)),
+            .testTag(tag),
         shape = BloomShape,
         color = MaterialTheme.colorScheme.surfaceContainerLowest,
     ) {
@@ -209,14 +240,25 @@ private fun BloomChoice(
         Spacer(Modifier.width(Space.s))
         // The section's own mark, in its own hue, so a choice looks like the
         // place it writes to rather than like a generic menu item.
-        IconTile(
-            kind = kind,
-            tint = colors.ink,
-            background = colors.sand,
-            tileSize = BLOOM_MARK,
-            iconSize = BLOOM_DRAWING,
-            modifier = Modifier.clearAndSetSemantics { },
-        )
+        if (kind != null) {
+            IconTile(
+                kind = kind,
+                tint = colors.ink,
+                background = colors.sand,
+                tileSize = BLOOM_MARK,
+                iconSize = BLOOM_DRAWING,
+                modifier = Modifier.clearAndSetSemantics { },
+            )
+        } else {
+            // **A note belongs to no section**, so it takes the mark every
+            // whole-app surface takes rather than borrowing somebody else's.
+            HueMark(
+                hue = goldHue(),
+                mark = Symbols.notebook,
+                size = BLOOM_MARK,
+                modifier = Modifier.clearAndSetSemantics { },
+            )
+        }
     }
     }
 }

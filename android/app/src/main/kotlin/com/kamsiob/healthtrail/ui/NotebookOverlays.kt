@@ -46,6 +46,7 @@ import com.kamsiob.healthtrail.ui.screens.MedicationsScreen
 import com.kamsiob.healthtrail.ui.screens.QuestionsScreen
 import com.kamsiob.healthtrail.ui.screens.CareThreadsScreen
 import com.kamsiob.healthtrail.ui.screens.MeasureScreen
+import com.kamsiob.healthtrail.ui.screens.NoteScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectHomeScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectSetupScreen
@@ -1826,6 +1827,43 @@ internal fun ProjectOverlays(
                     papersOpen = false
                 },
             )
+        }
+
+        // == Writing a note, #397 ============================================
+        //
+        // **Above whatever it was opened from**, so back lands where the person
+        // was rather than closing the thing underneath it.
+        writingNote?.let { target ->
+            NoteScreen(
+                aboutLabel = target.label,
+                onSave = { title, body ->
+                    savingNote = SavedNote(title, body, target)
+                    writingNote = null
+                },
+                onBack = { writingNote = null },
+            )
+        }
+
+        savingNote?.let { note ->
+            LaunchedEffect(note) {
+                repository.activeSubject()?.id?.let { who ->
+                    // **The note and its link in one transaction**, D207, so a
+                    // note never exists attached to nothing.
+                    repository.addNote(
+                        subjectId = who,
+                        // bidi-ok: on its way to the database, exactly as typed.
+                        title = note.title,
+                        // bidi-ok: on its way to the database, exactly as typed.
+                        body = note.body,
+                        aboutTable = note.target.table,
+                        aboutId = note.target.id,
+                    )
+                }
+                savingNote = null
+                // **Reread rather than patched**, so the trail and whatever the
+                // note is attached to both show it without either being told.
+                revision += 1
+            }
         }
 
         if (startingProject) {

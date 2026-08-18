@@ -33,6 +33,13 @@ object Symbols {
     @DrawableRes val projects = R.drawable.ic_flag
     @DrawableRes val more = R.drawable.ic_more_horiz
 
+    // **The three marks a note can carry**, and no more. D207 and
+    // `contract/DATA-CONTRACT.md` 8.8.1: bold, italic and a bullet. Material
+    // Symbols Rounded, filled, from Google's own repository, D182 and D196.
+    @DrawableRes val bold = R.drawable.ic_format_bold
+    @DrawableRes val italic = R.drawable.ic_format_italic
+    @DrawableRes val bullet = R.drawable.ic_format_list_bulleted
+
     // The notebook's sections.
     @DrawableRes val careTeam = R.drawable.ic_groups
     @DrawableRes val medications = R.drawable.ic_medication

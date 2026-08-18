@@ -6649,11 +6649,15 @@ class Repository private constructor(
         /**
          * When it happened, at exactly the precision the person gave, rule 17.
          *
-         * **Unknown is a first class value and saves**, which is what the
-         * default is: a note somebody writes without saying when is a complete
-         * note, not a draft.
+         * **Today is the honest default, not unknown.** Looked at on the phone:
+         * a note written during a visit went in with no date, and an undated
+         * entry sorts last, so it landed at the foot of a 670 entry trail the
+         * moment it was written. The person is writing it because it is
+         * happening now, which is the same reasoning the questions screen uses
+         * for marking one asked. **It stays editable forever from the entry
+         * itself**, rule 17, because a note is an entry.
          */
-        occurred: Edtf.Date = Edtf.unknown(),
+        occurred: Edtf.Date = Edtf.day(LocalDate.now()),
         /** What this note is about, as a table and a row id, or null for a general note. */
         aboutTable: String? = null,
         aboutId: String? = null,

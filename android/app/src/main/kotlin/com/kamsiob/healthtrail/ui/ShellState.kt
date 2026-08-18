@@ -160,6 +160,16 @@ internal class ShellState {
      * project's trail sits above the project.
      */
     var openMeasure by mutableStateOf<Repository.Measure?>(null)
+    /**
+     * The note being written, and what it is about. #397, D207.
+     *
+     * **Null means no note screen is open**, and a target with three nulls is a
+     * general note, which is the ordinary case rather than a deficiency.
+     */
+    var writingNote by mutableStateOf<NoteTarget?>(null)
+
+    /** A note on its way to the database, cleared when the write is done. */
+    var savingNote by mutableStateOf<SavedNote?>(null)
     var correctingMeasure by mutableStateOf<Repository.Measure?>(null)
     var savingMeasureCorrection by mutableStateOf<Triple<String, String, String?>?>(null)
 
@@ -574,3 +584,26 @@ internal class ShellState {
     var acknowledging by mutableStateOf<Repository.StandingInstruction?>(null)
     var savingAcknowledgment by mutableStateOf<Pair<String, String>?>(null)
 }
+
+/**
+ * What a note is about, carried from wherever it was opened. #397.
+ *
+ * **All three null is a general note.** Rule 18 says if A shows B, B shows A,
+ * and the way that stays true is that the target travels with the screen rather
+ * than being asked for at the end: opening this from Tuesday's visit already
+ * knows which visit it is.
+ */
+data class NoteTarget(
+    /** The table the thing lives in, as `link.target_table` spells it. */
+    val table: String?,
+    val id: String?,
+    /** What to call it on screen, in the person's own words. */
+    val label: String?,
+)
+
+/** A note as the screen handed it over, with what it is about. #397. */
+data class SavedNote(
+    val title: String,
+    val body: String,
+    val target: NoteTarget,
+)

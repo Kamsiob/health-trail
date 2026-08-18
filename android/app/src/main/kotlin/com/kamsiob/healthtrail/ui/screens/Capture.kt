@@ -14,6 +14,15 @@ package com.kamsiob.healthtrail.ui.screens
 object CaptureTags {
     const val SHEET = "capture_sheet"
     fun option(kind: CaptureKind) = "capture_option_${kind.name.lowercase()}"
+
+    /**
+     * Writing a note, which is a choice in the bloom and not a capture kind.
+     *
+     * **`CaptureKind` cannot grow**, because the frozen `CaptureSheet.kt`
+     * switches on it exhaustively and D199 forbids editing or deleting a frozen
+     * file. #397.
+     */
+    const val NOTE = "capture_option_note"
 }
 
 /**
