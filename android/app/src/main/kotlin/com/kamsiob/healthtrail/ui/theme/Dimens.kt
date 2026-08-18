@@ -82,6 +82,34 @@ object Space {
     val markCardGlyph: Dp = 16.dp
 
     /**
+     * The section's mark on its own empty screen, and **the largest a mark gets
+     * anywhere in the app.**
+     *
+     * An empty section has one object on it and this is the object. At the
+     * row's 44 it read as a row that had lost its words; half again as large it
+     * reads as the section's own sign. #388 finding 1, and `docs/V4.md` 6.1
+     * item 9 asks for a designed empty state rather than the content removed.
+     */
+    val emptyMark: Dp = 64.dp
+
+    /** The drawing inside [emptyMark], on the tile's own 0.55 proportion. */
+    val emptyMarkGlyph: Dp = 34.dp
+
+    /**
+     * The destination mark in the navigation bar, and the tile the selected one
+     * wears.
+     *
+     * **Smaller than a row's 44dp**, because the bar has a label under it and a
+     * fixed height, and the tile has to hold four of these plus their words
+     * inside `ShortNavigationBar`'s own row without pushing it taller. Measured
+     * on the phone at font scale 1.0 and 2.0.
+     */
+    val navMark: Dp = 38.dp
+
+    /** The drawing inside [navMark], at Material's own 24dp icon size. */
+    val navMarkGlyph: Dp = 24.dp
+
+    /**
      * A mark set inside a line of type, or inside an action beside its label.
      *
      * **Smaller than the 24dp a symbol draws at on its own**, because a glyph

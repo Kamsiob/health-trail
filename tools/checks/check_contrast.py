@@ -128,6 +128,11 @@ def pairs_for(theme: dict) -> list:
         # A navigation label. navSurface is the one surface deeper than the
         # page, D201, so it is measured rather than assumed to equal sand.
         ("ink2", "navSurface", TEXT_FLOOR, "a navigation label"),
+        # The current destination's label and its mark tile, D202. The tile is
+        # a shape rather than text and the label on it is text, so the pair is
+        # held to the stricter of the two floors.
+        ("ink", "navSurface", TEXT_FLOOR, "the current destination in the bar"),
+        ("paper", "ink", TEXT_FLOOR, "the mark inside the current destination's tile"),
         # The single accent, as a link and as a filled button.
         ("blue", "paper", TEXT_FLOOR, "a link on the app background"),
         ("blue", "card", TEXT_FLOOR, "a link on a card"),

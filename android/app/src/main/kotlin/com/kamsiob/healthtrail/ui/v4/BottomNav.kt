@@ -1,6 +1,8 @@
 package com.kamsiob.healthtrail.ui.v4
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -10,6 +12,7 @@ import androidx.compose.material3.ShortNavigationBarItemDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
@@ -123,25 +126,31 @@ fun BottomNav(
                 ShortNavigationBarItem(
                     selected = selected,
                     onClick = { onSelect(destination) },
-                    icon = {
-                        Icon(
-                            painter = painterResource(Symbols.of(destination)),
-                            // **Null, because the label beside it says the same
-                            // word.** A reader that announces "Notebook, Notebook"
-                            // is worse than one that announces it once, and the
-                            // item itself carries the selected state.
-                            contentDescription = null,
-                        )
-                    },
-                    label = { NavLabel(labels(destination)) },
+                    icon = { NavMark(destination, selected) },
+                    label = { NavLabel(labels(destination), selected) },
                     modifier = Modifier.testTag(NavTags.tab(destination)),
                     colors = ShortNavigationBarItemDefaults.colors(
+                        // **Material's own indicator is turned off, and
+                        // [NavMark] draws the selected state instead.** The
+                        // owner, 2026-08-18: "the little yellow oval highlight
+                        // for the active tab in the taskbar looks ugly and
+                        // lazy. not polished and premium." Both halves of that
+                        // are fixable and both are named: the shape is a
+                        // stadium, which is a shape this app draws nowhere
+                        // else, and the fill is `goldWash`, which is pale
+                        // enough on any surface to read as a smudge rather
+                        // than as a decision.
+                        selectedIndicatorColor = Color.Transparent,
                         // Unselected items are the app's secondary ink rather than
                         // Material's, which is the one place this bar overrides the
                         // component: `ink2` is the value measured against these
                         // surfaces in `check_contrast.py`.
                         unselectedIconColor = HealthTrail.colors.ink2,
                         unselectedTextColor = HealthTrail.colors.ink2,
+                        selectedIconColor = HealthTrail.colors.ink,
+                        // The vertical arrangement's own name for it: this bar
+                        // puts the icon above the word.
+                        selectedTextColorTopIconPosition = HealthTrail.colors.ink,
                     ),
                 )
             }
@@ -164,10 +173,72 @@ fun BottomNav(
  * holds and the icon and the position carry it, which is the same set of things
  * a person navigates by after two weeks. Nothing else in the app is capped.
  */
+/**
+ * The destination's mark, and **the selected state the app draws itself.**
+ *
+ * The owner, 2026-08-18: "the little yellow oval highlight for the active tab
+ * in the taskbar looks ugly and lazy. not polished and premium."
+ *
+ * **What was wrong with it, named rather than judged.** Material's own
+ * indicator is a stadium in `secondaryContainer`, and #385 pointed that pair at
+ * `goldWash` because the approved mockups draw a gold pill. Three things came
+ * out of that:
+ *
+ * 1. **A stadium is a shape this app draws nowhere else.** Every mark in the
+ *    interface sits in a rounded square: the section rows, the capture kinds,
+ *    Today's card heads, the capture button itself. One oval at the bottom of
+ *    every screen is the generic Material component showing through, which is
+ *    `docs/V4.md` 6.1 item 11 exactly.
+ * 2. **`goldWash` is a pale tint**, and against the bar's own surface it reads
+ *    as a smudge rather than as a decision. It measures 1.07:1 on the old bar.
+ * 3. **It wrapped the icon only**, so the label sat outside it and the pill
+ *    looked like something that had come loose.
+ *
+ * **So the selected destination is the app's own mark tile**, at
+ * [Radius.iconTile], which is the same shape and the same idea as every other
+ * mark in the interface: a saturated tile with its own ink on top, D198.
+ *
+ * **In `ink`, not in gold.** Gold in this app means the way things enter the
+ * notebook: the capture button is gold and it floats a thumb's width above this
+ * bar. A second saturated gold object beside it would spend the one color the
+ * app reserves for one job on a second job. Ink is the app's own darkest value,
+ * it measures 9.3:1 against the bar, and a dark key pressed out of a warm
+ * surface is the thing this reads as.
+ *
+ * **The unselected mark keeps the tile's footprint and not its fill**, so
+ * nothing moves or resizes when the destination changes: the tile appears under
+ * the mark that was already there.
+ */
 @Composable
-private fun NavLabel(label: String) {
+private fun NavMark(destination: Destination, selected: Boolean) {
+    Surface(
+        modifier = Modifier.size(Space.navMark),
+        shape = Radius.iconTile,
+        color = if (selected) HealthTrail.colors.ink else Color.Transparent,
+        contentColor = if (selected) HealthTrail.colors.paper else HealthTrail.colors.ink2,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                painter = painterResource(Symbols.of(destination)),
+                // **Null, because the label beside it says the same word.** A
+                // reader that announces "Notebook, Notebook" is worse than one
+                // that announces it once, and the item itself carries the
+                // selected state.
+                contentDescription = null,
+                modifier = Modifier.size(Space.navMarkGlyph),
+            )
+        }
+    }
+}
+
+@Composable
+private fun NavLabel(label: String, selected: Boolean) {
     val density = LocalDensity.current
     val capped = min(density.fontScale, NavLabelMaxScale) / density.fontScale
+    // **The current destination's word is the app's ink and the rest are
+    // `ink2`.** Selection is carried by the tile, the mark's own color and the
+    // label together, which is what `DESIGN.md` 4.4 asks of any state that has
+    // a color, and it survives grayscale.
     val style = HealthTrail.type.navLabel
     Text(
         text = label,
