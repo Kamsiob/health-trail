@@ -1,5 +1,10 @@
 package com.kamsiob.healthtrail.ui.v4
 
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -297,22 +302,28 @@ fun Fold(
         return
     }
 
-    Row(
+    // **Material's surface owns the container and the state layer**, and the
+    // control says one thing rather than two. It carried a plus at the leading
+    // edge and a chevron at the trailing one: the plus says "this adds
+    // something" and the chevron says "this opens", and a control that makes
+    // two different promises is the affordance problem `docs/V4.md` 6.1 item 11
+    // is about. The chevron stays, because what happens is that more of the
+    // form appears.
+    Surface(
+        onClick = { open = true },
         modifier = modifier
             .fillMaxWidth()
             .sizeIn(minHeight = FOLD_HEIGHT)
-            .clip(Radius.fold)
-            .background(colors.sand)
-            .clickable(role = Role.Button, onClickLabel = label) { open = true }
-            .padding(horizontal = Space.ml, vertical = Space.sm),
+            .semantics { onClick(label = label) { open = true; true } },
+        shape = Radius.fold,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        border = BorderStroke(Space.hairlineWidth, MaterialTheme.colorScheme.outlineVariant),
+    ) {
+    Row(
+        modifier = Modifier.padding(horizontal = Space.ml, vertical = Space.sm),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
-        Icon(
-            painter = painterResource(Symbols.add),
-            contentDescription = null,
-            tint = colors.ink2,
-        )
         // bidi-ok: the app's own words for what is behind the control.
         Body(text = label, style = HealthTrail.type.bodyL, modifier = Modifier.weight(1f))
         Icon(
@@ -320,6 +331,7 @@ fun Fold(
             contentDescription = null,
             tint = colors.ink2,
         )
+    }
     }
 }
 

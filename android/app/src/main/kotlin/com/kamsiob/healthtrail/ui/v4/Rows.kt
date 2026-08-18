@@ -404,18 +404,26 @@ fun SwitchRow(
         // **The mark sits in a circle of its own**, which is how `m3v4-4` draws
         // it: a filled disc in the section's base with the glyph knocked out of
         // it, not a bare glyph beside the words. Measured off the PNG at 44dp.
+        //
+        // **Saturated, like every other mark in the app.** D198 rule 1: a mark
+        // is `TabHue.base` with `TabHue.onBase` on top. This one faded the base
+        // and put the section's ink on it, so the same emergency card mark was a
+        // solid red disc with a white glyph on the notebook and a pale pink one
+        // with a red glyph here. Seen on a capture of the medication form, #388,
+        // and the whole argument for `onBase` being computed rather than chosen
+        // is that the glyph clears contrast without anybody deciding it.
         mark?.let {
             Box(
                 modifier = Modifier
                     .size(Space.markTile)
                     .clip(CircleShape)
-                    .background(hue?.base?.copy(alpha = MARK_DISC_ALPHA) ?: colors.card),
+                    .background(hue?.base ?: colors.card),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     painter = painterResource(it),
                     contentDescription = null,
-                    tint = hue?.ink ?: colors.ink2,
+                    tint = hue?.onBase ?: colors.ink2,
                     modifier = Modifier.size(Space.markInline),
                 )
             }
@@ -453,4 +461,3 @@ fun SwitchRow(
  * color, so the glyph reads without the disc becoming a second filled thing on
  * a row that already has a switch.
  */
-private const val MARK_DISC_ALPHA = 0.22f

@@ -1,5 +1,8 @@
 package com.kamsiob.healthtrail.ui.v4
 
+import com.kamsiob.healthtrail.ui.components.Symbols
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -174,8 +177,23 @@ fun MoreChip(
         onClick = onClick,
         label = { Text(text = label) },
         modifier = modifier,
+        // **A mark, because the accent alone was not enough.** Seen on a
+        // capture: in a row of six person chips this one differed only by the
+        // color of its words, so it read as a sixth person called "Show all
+        // 15". `docs/V4.md` 6.1 item 6 and D198 rule 6 say the same thing from
+        // two directions: a color never carries meaning alone. The chevron says
+        // this one opens something, which is what law 2 gives anything that
+        // does.
+        trailingIcon = {
+            Icon(
+                painter = painterResource(Symbols.forward),
+                contentDescription = null,
+                modifier = Modifier.size(AssistChipDefaults.IconSize),
+            )
+        },
         colors = AssistChipDefaults.assistChipColors(
             labelColor = MaterialTheme.colorScheme.primary,
+            trailingIconContentColor = MaterialTheme.colorScheme.primary,
         ),
     )
 }

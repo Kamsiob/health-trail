@@ -383,8 +383,18 @@ fun Page(
                     // list rather than in it. Without this the last row on
                     // every section screen is underneath the one control the
                     // screen offers. Seen on the phone, rule 21.
+                    // **Clear of whatever floats or sits over the list.** The
+                    // floating button was accounted for and the band was not,
+                    // so on the add-a-person form the last two role chips were
+                    // cut in half behind the Save. Rule 11: nothing unfinished
+                    // reaches the person, and a control sitting on top of the
+                    // content is unfinished. Seen on a capture, #388.
                     contentPadding = PaddingValues(
-                        bottom = if (fab != null) Space.fabScrollClearance else Space.none,
+                        bottom = when {
+                            fab != null -> Space.fabScrollClearance
+                            band != null -> Space.betweenGroups
+                            else -> Space.none
+                        },
                     ),
                     verticalArrangement = Arrangement.spacedBy(itemSpacing),
                 ) {

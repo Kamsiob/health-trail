@@ -1,5 +1,11 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import com.kamsiob.healthtrail.ui.components.Symbols
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.labeledBlock
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.v4.Page
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -192,6 +198,22 @@ fun MeasurementScreen(
  * the first week that is the whole answer and it should cost one tap. The
  * sixteen presets sit below under their own heading, as short rows.
  */
+/**
+ * What to start tracking. Rewritten onto `Page`, #388 and #392.
+ *
+ * **It was the one form in the app with no top bar.** A full screen `Surface`
+ * around a `Column` around a `LazyColumn`, so it had no back arrow, no section
+ * eyebrow, no band, and its only way out was a Cancel below sixteen presets.
+ * Every other form in the app is a `Page` and this one looked like a different
+ * app. Seen by walking every form rather than by reading the file.
+ *
+ * **The presets are rows that say they are doors.** They were bare tonal cards
+ * with a name and a cadence and nothing else: tappable, and nothing on them
+ * said so. `ListRow` is the row the whole app already uses, so they carry the
+ * section's mark in the section's hue and end in the mark law 2 gives anything
+ * that opens something. `docs/V4.md` 6.1 item 11: a screen that could belong to
+ * any app has failed.
+ */
 @Composable
 private fun PickWhatToTrack(
     measures: List<Repository.Measure>,
@@ -202,96 +224,87 @@ private fun PickWhatToTrack(
     onCancel: () -> Unit,
 ) {
     val strings = LocalStrings.current
-    val colors = HealthTrail.colors
     // A preset already being tracked is not offered twice.
     val tracked = measures.mapNotNull { it.presetId }.toSet()
+    val hue = hueFor(Repository.Section.PROGRESS)
 
-    Surface(modifier = Modifier.fillMaxSize(), color = colors.paper) {
-        Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag(MeasurementTags.PICK)
-                    .padding(horizontal = Space.screenHorizontal),
-            ) {
-                item {
-                    Spacer(Modifier.height(Space.l))
-                    Text(
-                        text = strings["measurement.pick.title"],
-                        style = HealthTrail.type.displayL,
-                        color = colors.ink,
-                    )
-                    Spacer(Modifier.height(Space.s))
-                    Text(
-                        text = strings["measurement.pick.lead"],
-                        style = HealthTrail.type.bodyM,
-                        color = colors.ink2,
-                    )
-                }
-
-                if (measures.isNotEmpty()) {
-                    item {
-                        Spacer(Modifier.height(Space.sectionGap))
-                        Eyebrow(text = strings["measurement.tracked"])
-                        Spacer(Modifier.height(Space.headerGap))
-                        ChoiceChipGroup(label = "") {
-                            measures.forEach { measure ->
-                                ChoiceChip(
-                                    label = Bidi.isolate(measure.name),
-                                    selected = false,
-                                    onClick = { onPickMeasure(measure) },
-                                    modifier = Modifier.testTag(
-                                        MeasurementTags.measure(measure.id)
-                                    ),
-                                )
-                            }
-                        }
-                    }
-                }
-
-                item {
-                    Spacer(Modifier.height(Space.sectionGap))
-                    Eyebrow(text = strings["measurement.presets"])
-                    Spacer(Modifier.height(Space.headerGap))
-                }
-
-                presets.filter { it.id !in tracked }.forEach { preset ->
-                    item(key = preset.id) {
-                        PresetRow(preset = preset, onClick = { onPickPreset(preset) })
-                        Spacer(Modifier.height(Space.cardGap))
-                    }
-                }
-
-                // **Under the catalog rather than beside it**, because after
-                // the first week the answer is usually one of the chips above
-                // and this is the rarer errand. It is not hidden: 13.5 calls a
-                // capability only its author can find unfinished, and sixteen
-                // presets with no way past them was exactly that.
-                item {
-                    Spacer(Modifier.height(Space.sectionGap))
-                    Eyebrow(text = strings["measurement.own"])
-                    Spacer(Modifier.height(Space.headerGap))
-                    Action(
-                        label = strings["measurement.own.action"],
-                        onClick = onNameYourOwn,
-                        modifier = Modifier.testTag(MeasurementTags.OWN),
-                    )
-                }
-
-                item { Spacer(Modifier.height(Space.s)) }
-            }
-
-            Spacer(Modifier.height(Space.m))
-
+    Page(
+        title = strings["measurement.pick.title"],
+        subtitle = strings["measurement.pick.lead"],
+        eyebrow = strings["notebook.section.progress"],
+        section = Repository.Section.PROGRESS,
+        onBack = onCancel,
+        backLabel = strings["common.cancel"],
+        modifier = Modifier.testTag(MeasurementTags.PICK),
+        // **The way out is where every other form puts it.** It was a tonal
+        // pill at the foot of the list, which meant scrolling past sixteen
+        // presets to leave.
+        band = {
             Action(
                 label = strings["common.cancel"],
                 onClick = onCancel,
                 modifier = Modifier
+                    .fillMaxWidth()
                     .padding(horizontal = Space.screenHorizontal)
                     .testTag(MeasurementTags.CANCEL),
             )
+        },
+    ) {
+        if (measures.isNotEmpty()) {
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(Space.withinGroup)) {
+                    Eyebrow(text = strings["measurement.tracked"])
+                    ChoiceChipGroup(label = "") {
+                        measures.forEach { measure ->
+                            ChoiceChip(
+                                label = Bidi.isolate(measure.name),
+                                selected = false,
+                                onClick = { onPickMeasure(measure) },
+                                modifier = Modifier.testTag(
+                                    MeasurementTags.measure(measure.id)
+                                ),
+                            )
+                        }
+                    }
+                }
+            }
+        }
 
-            Spacer(Modifier.height(Space.l))
+        val offered = presets.filter { it.id !in tracked }
+        labeledBlock(
+            label = strings["measurement.presets"],
+            rows = offered.map { preset ->
+                {
+                    ListRow(
+                        // bidi-ok: a catalog label, in the app's own words
+                        // rather than the person's.
+                        title = preset.name,
+                        support = preset.cadence.takeIf { it.isNotBlank() },
+                        mark = Symbols.of(Repository.Section.PROGRESS),
+                        markHue = hue,
+                        isDoor = true,
+                        onClick = { onPickPreset(preset) },
+                        clickLabel = strings["open.action"],
+                        modifier = Modifier.testTag(MeasurementTags.preset(preset.id)),
+                    )
+                }
+            },
+        )
+
+        // **Under the catalog rather than beside it**, because after the first
+        // week the answer is usually one of the chips above and this is the
+        // rarer errand. It is not hidden: 13.5 calls a capability only its
+        // author can find unfinished, and sixteen presets with no way past them
+        // was exactly that.
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(Space.withinGroup)) {
+                Eyebrow(text = strings["measurement.own"])
+                Action(
+                    label = strings["measurement.own.action"],
+                    onClick = onNameYourOwn,
+                    modifier = Modifier.testTag(MeasurementTags.OWN),
+                )
+            }
         }
     }
 }

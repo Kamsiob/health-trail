@@ -1,5 +1,7 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -362,7 +364,7 @@ fun CaptureFormScreen(
                 .fillMaxSize()
                 .systemBarsPadding()
                 .imePadding()
-                .padding(horizontal = Space.screenHorizontal, vertical = Space.l),
+                .padding(top = Space.l),
         ) {
             // **The questions fade into the actions rather than being cut by
             // them.** Content scrolling behind a surface is correct and a line
@@ -371,7 +373,11 @@ fun CaptureFormScreen(
             // it adds no surface and no color, and it is what says the screen
             // continues. The owner, 2026-08-17, on this screen: things pushing
             // up against each other with no structure.
-            Box(modifier = Modifier.weight(1f)) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = Space.screenHorizontal),
+            ) {
             Column(
                 modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
             ) {
@@ -841,9 +847,27 @@ fun CaptureFormScreen(
             // screen, 2026-08-17: "it's hard to know where to look or what to
             // focus on at any given time." The band splits the screen into the
             // part that asks and the part that acts, so the questions scroll
-            // behind a surface rather than running into the buttons. It is the
-            // language's own container, not a new costume.
-            Block {
+            // behind a surface rather than running into the buttons.
+            //
+            // **A band, not a card, and that is the correction.** It was a
+            // `Block`, which is the app's card: rounded, inset from both
+            // margins, and now bordered, so on a stage with two short questions
+            // it read as a stray card floating over empty canvas rather than as
+            // the foot of the screen. Every other form in the app pins its
+            // actions with `Page`'s band, which is a full bleed surface, and
+            // this is the same surface by hand because this screen is not a
+            // `Page`. Seen by walking every form, #388.
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surfaceContainer,
+            ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(horizontal = Space.screenHorizontal, vertical = Space.ml),
+                verticalArrangement = Arrangement.spacedBy(Space.s),
+            ) {
 
             // **Where you are, and the way on, on one line.** Law 3 asks for
             // progress dots and a skip that is always visible. The dots say
@@ -953,6 +977,7 @@ fun CaptureFormScreen(
                 onClick = onCancel,
                 modifier = Modifier.testTag(CaptureFormTags.CANCEL),
             )
+            }
             }
         }
     }
