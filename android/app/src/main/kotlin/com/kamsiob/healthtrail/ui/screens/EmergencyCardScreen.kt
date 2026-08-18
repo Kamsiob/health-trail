@@ -208,7 +208,7 @@ fun EmergencyCardScreen(
         // the code looked wrong.
         if (!hasSomething) {
             item {
-                SectionEmpty(name = EmergencyTags.NAME, text = strings["emergency.empty"], section = Repository.Section.EMERGENCY_CARD, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION))
+                SectionEmpty(name = EmergencyTags.NAME, text = strings["emergency.empty"], section = Repository.Section.EMERGENCY_CARD)
             }
         } else {
             // Null throughout when no card row exists yet, which is the state a

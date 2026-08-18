@@ -109,15 +109,17 @@ fun ChaptersScreen(
     ) {
         if (chapters.isEmpty()) {
             item {
-                Block {
-                    // bidi-ok: the app's own sentence about a notebook with no
-                    // places written down yet.
-                    Body(
-                        text = strings["chapters.empty"],
-                        color = colors.ink,
-                        style = HealthTrail.type.bodyL,
-                    )
-                }
+                // **One empty state, app-wide.** #388 finding 1: this screen
+                // drew its own quiet block with one gray sentence in it while
+                // fourteen others centered a faded drawing in a void, and two
+                // answers to one question is the same as none. `SectionEmpty`
+                // is the answer now, and it carries the section's own mark.
+                // bidi-ok: the app's own sentence about an empty list.
+                SectionEmpty(
+                    name = ChapterTags.NAME,
+                    text = strings["chapters.empty"],
+                    section = Repository.Section.CHAPTERS,
+                )
             }
             // The one thing to do from an empty Chapters screen, and the whole
             // of #377: without it, zero taps lead anywhere.

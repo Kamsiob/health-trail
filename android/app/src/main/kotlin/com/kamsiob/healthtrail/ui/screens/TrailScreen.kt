@@ -136,6 +136,14 @@ fun TrailScreen(
     onReview: (Long) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * Opens the capture sheet, for a trail that holds nothing yet.
+     *
+     * Null where there is no sheet to open, which is every caller that is not
+     * the shell. The empty state drops its action rather than drawing one that
+     * goes nowhere.
+     */
+    onAdd: (() -> Unit)? = null,
     zone: ZoneId = ZoneId.systemDefault(),
     /**
      * Show only what arrived since this instant, or null for the whole trail.
@@ -303,7 +311,20 @@ fun TrailScreen(
                     name = TrailTags.NAME,
                     text = strings["trail.empty"],
                     section = Repository.Section.TRAIL,
-                    modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION),
+                    // **The one screen in the app with nothing on it and no
+                    // way to put anything on it**, which is what #388 finding 1
+                    // names alongside the blank canvas. The trail is opened from
+                    // the notebook, so it is pushed over the shell and has no
+                    // capture button in the corner the way a destination does,
+                    // and D200's floating add belongs to a section that owns a
+                    // kind of row. The trail owns every kind, so its way in is
+                    // the capture sheet itself.
+                    //
+                    // **The label is the capture button's own sentence** rather
+                    // than a new one, because it opens the capture button's own
+                    // sheet and the four catalogs already carry it.
+                    actionLabel = onAdd?.let { strings["capture.button.description"] },
+                    onAction = onAdd,
                 )
             }
             return@Page

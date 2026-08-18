@@ -97,7 +97,6 @@ fun IncidentsScreen(
                 SectionEmpty(
                     name = IncidentTags.LIST_NAME,
                     text = strings["incidents.empty"],
-                    modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION),
                 )
             }
             return@Page

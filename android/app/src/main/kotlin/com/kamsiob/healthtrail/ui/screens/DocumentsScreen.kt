@@ -155,17 +155,17 @@ fun DocumentsScreen(
     ) {
         if (documents.isEmpty()) {
             item {
+                // **The way in is inside the block rather than under it.**
+                // It was a full width filled action stacked below the empty
+                // state, which put two objects on a screen that has one thing
+                // to say. `SectionEmpty` carries the action now, so every
+                // empty section in the app is one block with one way in. #388.
                 SectionEmpty(
                     name = DocTags.NAME,
                     text = strings["docs.empty"],
                     section = Repository.Section.DOCUMENTS,
-                    modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION),
-                )
-                Spacer(Modifier.height(Space.l))
-                Action(
-                    label = strings["docs.photograph"],
-                    onClick = onAdd,
-                    modifier = Modifier.fillMaxWidth().testTag(DocTags.ADD), emphasis = ActionEmphasis.Main,
+                    actionLabel = strings["docs.photograph"],
+                    onAction = onAdd,
                 )
             }
             return@Page

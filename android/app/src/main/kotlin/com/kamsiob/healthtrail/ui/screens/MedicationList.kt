@@ -126,26 +126,33 @@ fun MedicationsScreen(
                 scrollBehavior = scrollBehavior,
             )
         },
-        floatingActionButton = {
-            // **Material's extended button for the one thing this screen does.**
-            // It says the verb rather than leaving a bare plus to carry it, and
-            // it is the only action here, so it is the only filled thing.
-            ExtendedFloatingActionButton(
-                onClick = onAdd,
-                icon = {
-                    Icon(painter = painterResource(Symbols.add), contentDescription = null)
-                },
-                text = { Text(text = strings["meds.add"]) },
-                // **The sentence sits on the button's own node.** The words are
-                // in a `Text` two levels down, inside the row Material builds
-                // for an extended button, so the node that carries the tap
-                // carried no label of its own and the reader sweep listed it as
-                // a touchable with nothing to say. Rule 19 is a gate, and this
-                // is the one screen that had already been rebuilt.
-                modifier = Modifier
-                    .testTag(MedsTags.ADD)
-                    .semantics { contentDescription = strings["meds.add"] },
-            )
+        // **Nothing floats over an empty screen**, because the empty state
+        // draws its own way to start and both carry the same tag. Two nodes
+        // under one test tag is `docs/TRAPS.md`'s first entry. #388.
+        floatingActionButton = if (medications.isEmpty()) {
+            {}
+        } else {
+            {
+                // **Material's extended button for the one thing this screen does.**
+                // It says the verb rather than leaving a bare plus to carry it, and
+                // it is the only action here, so it is the only filled thing.
+                ExtendedFloatingActionButton(
+                    onClick = onAdd,
+                    icon = {
+                        Icon(painter = painterResource(Symbols.add), contentDescription = null)
+                    },
+                    text = { Text(text = strings["meds.add"]) },
+                    // **The sentence sits on the button's own node.** The words are
+                    // in a `Text` two levels down, inside the row Material builds
+                    // for an extended button, so the node that carries the tap
+                    // carried no label of its own and the reader sweep listed it as
+                    // a touchable with nothing to say. Rule 19 is a gate, and this
+                    // is the one screen that had already been rebuilt.
+                    modifier = Modifier
+                        .testTag(MedsTags.ADD)
+                        .semantics { contentDescription = strings["meds.add"] },
+                )
+            }
         },
     ) { inset ->
         LazyColumn(
@@ -177,6 +184,8 @@ fun MedicationsScreen(
                         name = MedsTags.NAME,
                         text = strings["meds.empty"],
                         section = Repository.Section.MEDICATIONS,
+                        actionLabel = strings["meds.add"],
+                        onAction = onAdd,
                     )
                 }
             }

@@ -133,7 +133,6 @@ fun ProjectTrailScreen(
                     name = ProjectTrailTags.NAME,
                     lead = strings["project.trail.empty.lead"],
                     text = strings["project.trail.none"],
-                    modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_TALL),
                 )
             }
             return@Page

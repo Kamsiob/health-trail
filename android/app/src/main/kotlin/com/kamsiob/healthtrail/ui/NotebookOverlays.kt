@@ -1120,6 +1120,10 @@ internal fun ProjectStepOverlays(
                     // flag in memory would be correct until the screen was left
                     // and wrong afterward.
                     onBack = { openSection = null },
+                    // **An empty trail had no way to add the first entry.**
+                    // #388 finding 1. The trail is pushed over the shell, so it
+                    // has no capture button of its own; this opens the shell's.
+                    onAdd = { sheetOpen = true },
                 )
 
                 Repository.Section.DOCUMENTS -> DocumentsScreen(

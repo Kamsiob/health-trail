@@ -123,7 +123,6 @@ fun MonthReviewScreen(
                     name = ReviewTags.NAME,
                     text = strings["review.empty"],
                     section = null,
-                    modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION),
                 )
             }
             return@Page

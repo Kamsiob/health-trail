@@ -114,18 +114,29 @@ fun StandingInstructionsScreen(
         // **The way in floats over the list rather than sitting under it.**
         // D200: it was the last `item` in the `LazyColumn`, and a section
         // screen has no capture button in that corner to compete with.
-        fab = {
-            ExtendedFloatingActionButton(
-                onClick = onAdd,
-                icon = {
-                    Icon(painter = painterResource(Symbols.add), contentDescription = null)
-                },
-                text = { Text(text = strings["instructions.add"]) },
-                // The sentence sits on the button's own node, `docs/TRAPS.md`.
-                modifier = Modifier
-                    .testTag(InstructionTags.ADD)
-                    .semantics { contentDescription = strings["instructions.add"] },
-            )
+        // **While the section is empty the way in is in the words, not in
+        // the corner.** D200 put the add control on the scaffold so nobody
+        // scrolls a list to reach it, and that is right for a list. An empty
+        // screen has no list: the empty state carries the action itself, and a
+        // floating copy of it would be the same verb twice on one screen and
+        // two nodes under one test tag, which is the first entry in
+        // `docs/TRAPS.md`. #388.
+        fab = if (instructions.isEmpty()) {
+            null
+        } else {
+            {
+                ExtendedFloatingActionButton(
+                    onClick = onAdd,
+                    icon = {
+                        Icon(painter = painterResource(Symbols.add), contentDescription = null)
+                    },
+                    text = { Text(text = strings["instructions.add"]) },
+                    // The sentence sits on the button's own node, `docs/TRAPS.md`.
+                    modifier = Modifier
+                        .testTag(InstructionTags.ADD)
+                        .semantics { contentDescription = strings["instructions.add"] },
+                )
+            }
         },
         eyebrow = strings["notebook.section.standing_instructions"],
         subtitle = strings["instructions.subtitle"],
@@ -133,7 +144,13 @@ fun StandingInstructionsScreen(
     ) {
         if (instructions.isEmpty()) {
             item {
-                SectionEmpty(name = InstructionTags.NAME, text = strings["instructions.empty"], section = Repository.Section.STANDING_INSTRUCTIONS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION))
+                SectionEmpty(
+                    name = InstructionTags.NAME,
+                    text = strings["instructions.empty"],
+                    section = Repository.Section.STANDING_INSTRUCTIONS,
+                    actionLabel = strings["instructions.add"],
+                    onAction = onAdd,
+                )
             }
         }
 

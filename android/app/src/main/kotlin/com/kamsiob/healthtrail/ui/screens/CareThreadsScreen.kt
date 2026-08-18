@@ -111,31 +111,46 @@ fun CareThreadsScreen(
         // **The way in floats over the list rather than sitting under it.**
         // D200: it was the last `item` in the `LazyColumn`, and a section
         // screen has no capture button in that corner to compete with.
-        fab = {
-            ExtendedFloatingActionButton(
-                onClick = onAdd,
-                icon = {
-                    Icon(painter = painterResource(Symbols.add), contentDescription = null)
-                },
-                text = { Text(text = strings["threads.add"]) },
-                // The sentence sits on the button's own node, `docs/TRAPS.md`.
-                modifier = Modifier
-                    .testTag(ThreadTags.ADD)
-                    .semantics { contentDescription = strings["threads.add"] },
-            )
+        // **While the section is empty the way in is in the words, not in
+        // the corner.** D200 put the add control on the scaffold so nobody
+        // scrolls a list to reach it, and that is right for a list. An empty
+        // screen has no list: the empty state carries the action itself, and a
+        // floating copy of it would be the same verb twice on one screen and
+        // two nodes under one test tag, which is the first entry in
+        // `docs/TRAPS.md`. #388.
+        fab = if (threads.isEmpty()) {
+            null
+        } else {
+            {
+                ExtendedFloatingActionButton(
+                    onClick = onAdd,
+                    icon = {
+                        Icon(painter = painterResource(Symbols.add), contentDescription = null)
+                    },
+                    text = { Text(text = strings["threads.add"]) },
+                    // The sentence sits on the button's own node, `docs/TRAPS.md`.
+                    modifier = Modifier
+                        .testTag(ThreadTags.ADD)
+                        .semantics { contentDescription = strings["threads.add"] },
+                )
+            }
         },
     ) {
         if (threads.isEmpty()) {
             item {
-                Block {
-                    // bidi-ok: the app's own sentence about a notebook with no
-                    // threads running yet.
-                    Body(
-                        text = strings["threads.empty"],
-                        color = colors.ink,
-                        style = HealthTrail.type.bodyL,
-                    )
-                }
+                // **One empty state, app-wide.** #388 finding 1: this screen
+                // drew its own quiet block with one gray sentence in it while
+                // fourteen others centered a faded drawing in a void, and two
+                // answers to one question is the same as none. `SectionEmpty`
+                // is the answer now, and it carries the section's own mark.
+                // bidi-ok: the app's own sentence about an empty list.
+                SectionEmpty(
+                    name = ThreadTags.NAME,
+                    text = strings["threads.empty"],
+                    section = Repository.Section.THREADS,
+                    actionLabel = strings["threads.add"],
+                    onAction = onAdd,
+                )
             }
         }
 

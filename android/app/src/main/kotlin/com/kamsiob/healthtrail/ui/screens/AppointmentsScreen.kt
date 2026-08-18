@@ -176,7 +176,6 @@ fun AppointmentsScreen(
                     section = Repository.Section.APPOINTMENTS,
                     actionLabel = strings["appts.add"],
                     onAction = onAdd,
-                    modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION),
                 )
             }
         }

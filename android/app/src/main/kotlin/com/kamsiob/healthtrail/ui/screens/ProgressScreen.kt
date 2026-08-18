@@ -125,18 +125,22 @@ fun ProgressScreen(
         // **The way in floats over the list rather than sitting under it.**
         // D200: it was the last `item` in the `LazyColumn`, and a section
         // screen has no capture button in that corner to compete with.
-        fab = {
-            ExtendedFloatingActionButton(
-                onClick = onAddReading,
-                icon = {
-                    Icon(painter = painterResource(Symbols.add), contentDescription = null)
-                },
-                text = { Text(text = strings["progress.add"]) },
-                // The sentence sits on the button's own node, `docs/TRAPS.md`.
-                modifier = Modifier
-                    .testTag(ProgressTags.ADD)
-                    .semantics { contentDescription = strings["progress.add"] },
-            )
+        fab = if (hero == null) {
+            null
+        } else {
+            {
+                ExtendedFloatingActionButton(
+                    onClick = onAddReading,
+                    icon = {
+                        Icon(painter = painterResource(Symbols.add), contentDescription = null)
+                    },
+                    text = { Text(text = strings["progress.add"]) },
+                    // The sentence sits on the button's own node, `docs/TRAPS.md`.
+                    modifier = Modifier
+                        .testTag(ProgressTags.ADD)
+                        .semantics { contentDescription = strings["progress.add"] },
+                )
+            }
         },
         eyebrow = strings["notebook.section.progress"],
         subtitle = strings["progress.subtitle"],
@@ -154,18 +158,18 @@ fun ProgressScreen(
     ) {
         if (hero == null) {
             item {
+                // **"Add a reading" was on this screen twice**, once as a full
+                // width filled action under the empty state and once as the
+                // floating button, both carrying `ProgressTags.ADD`. That is
+                // the same verb twice on one screen and two nodes under one
+                // test tag, `docs/TRAPS.md`'s first entry. The empty state
+                // carries it and the floating copy is null while empty. #388.
                 SectionEmpty(
                     name = ProgressTags.NAME,
                     text = strings["progress.empty"],
                     section = Repository.Section.PROGRESS,
-                    modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION),
-                )
-            }
-            item {
-                Action(
-                    label = strings["progress.add"],
-                    onClick = onAddReading,
-                    modifier = Modifier.fillMaxWidth().testTag(ProgressTags.ADD), emphasis = ActionEmphasis.Main,
+                    actionLabel = strings["progress.add"],
+                    onAction = onAddReading,
                 )
             }
             return@Page

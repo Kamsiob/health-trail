@@ -180,13 +180,6 @@ fun ProjectsScreen(
                         text = strings["projects.empty"],
                         actionLabel = strings["projects.start.long"],
                         onAction = onStart,
-                        // **More of the height than a section's empty state
-                        // gets**, because this one dropped its subtitle and
-                        // carries three things rather than one. At 0.62 the
-                        // block sat in the upper half with the bottom third of
-                        // the screen blank under it, which reads as a screen
-                        // that failed to load. Measured by looking at it.
-                        modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_TALL),
                     )
                 }
             }

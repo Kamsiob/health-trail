@@ -136,7 +136,6 @@ fun ProjectPaperworkScreen(
                     lead = strings["project.paperwork.empty.lead"],
                     text = strings["project.paperwork.none"],
                     section = Repository.Section.DOCUMENTS,
-                    modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_TALL),
                 )
             }
             return@Page

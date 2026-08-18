@@ -92,7 +92,6 @@ fun ProjectPeopleScreen(
                     lead = strings["project.people.empty.lead"],
                     text = strings["project.people.none"],
                     section = Repository.Section.CARE_TEAM,
-                    modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_TALL),
                 )
             }
         }

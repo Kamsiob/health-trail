@@ -53,7 +53,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.v4.EmptyDrawing
+import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.BlockTone
+import com.kamsiob.healthtrail.ui.v4.IconTile
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.v4.railWidth
 import com.kamsiob.healthtrail.ui.theme.goldHue
@@ -122,87 +124,114 @@ object SectionTags {
  * screen. That was found on the device at font scale 2.0, not in the code.
  */
 /**
- * What a section says when it holds nothing.
+ * What a section says when it holds nothing, and **it is a state that was
+ * designed rather than the content taken away.**
  *
  * **It reads as "not yet", never as an error and never as a deficiency**, per
  * rule 13. It says what will turn up here and how, so an empty section teaches
  * the person what the section is for at the moment they are most likely to be
  * wondering.
+ *
+ * **What this was, and why it changed.** #388 finding 1, worst first, seen on
+ * `empty-trail-light.png`: a title, a sentence, a hairline gray squiggle about
+ * 40dp wide floating in the middle of the screen, a second sentence a third of
+ * the way down, and two thirds of the screen blank. Rule 11 calls a blank area
+ * unfinished and `docs/V4.md` 6.1 item 9 asks for eight states designed rather
+ * than handled. **And the app had two of these, not one**: fourteen screens
+ * centered a drawing and a gray line in 62% of the list's height, and six more
+ * put a plain `Block` with one sentence in it under the subtitle. Two answers
+ * to one question is the same as no answer, rule 16.
+ *
+ * **So it is one block, in the flow, carrying four things.** The block is the
+ * page's one tonal block, item 3, and an empty page is the only page that has
+ * room for it:
+ *
+ * 1. **The section's own mark, saturated, in its own hue.** D198: a mark is
+ *    `TabHue.base` with `TabHue.onBase` on top, **never a faded base**, and the
+ *    old drawing was `onSurface` at 14% alpha, which is exactly the faded mark
+ *    that rule forbids. It is also the mark the person will navigate by for the
+ *    next two years, taught at the moment they have nothing else to look at.
+ * 2. **An edge the eye can find**, item 4, which a drawing floating in the
+ *    canvas does not have.
+ * 3. **The sentence, in `ink` rather than `ink2`**, because inside a block it
+ *    is the content rather than a caption on empty space.
+ * 4. **The way in, where the screen has one.**
+ *
+ * **Top of the page rather than centered in it.** Item 6 asks for one left edge
+ * down the screen and the centered version broke it; more than that, an empty
+ * state placed where the content will be teaches the shape of the page. The air
+ * below it is then air below a designed object rather than a void with
+ * something small floating in it.
  */
 @Composable
 fun SectionEmpty(
     name: String,
     text: String,
     /**
-     * Which drawing to stand on the trail map ground.
-     *
-     * Null draws the ground alone, which is right for a place that is not one
-     * of the twelve sections. **It is never a substitute for passing the
-     * section**, per 5.17: a section's empty state uses its own drawing, so the
-     * empty screen is already teaching where you are.
-     */
-    /**
-     * Passed `Modifier.fillParentMaxHeight(...)` by every caller, so the block
-     * centers in the space the list actually has.
-     *
-     * **Without it the empty state sat jammed under the subtitle with the whole
-     * screen empty beneath it**, which reads as a screen that failed to load
-     * rather than as a place waiting for something. Found by looking at it on
-     * the phone rather than in the code.
+     * **No longer passed `fillParentMaxHeight`.** Every caller used to hand
+     * this the fraction of the list it should center itself in, which is what
+     * put the block in the middle of an otherwise blank screen.
      */
     modifier: Modifier = Modifier,
+    /**
+     * Which section this is, which is what gives the block its hue and its mark.
+     *
+     * Null draws the words alone in a quiet block, which is right for a place
+     * that is not one of the twelve sections: search results and the conflict
+     * list are not a section and have no mark of their own to teach.
+     */
     section: Repository.Section? = null,
     /**
      * One line above the paragraph, saying what this place is for.
      *
-     * **Rule 15: something has to lead.** A drawing over one gray paragraph is
-     * uniform weight, and uniform weight pushes the sorting onto the reader.
-     * Where a section has a sentence worth reading first, it goes here and
-     * takes the size, and the paragraph below it recedes.
-     *
-     * Null keeps the older shape, which is right where the paragraph is the
-     * whole thought and a headline would only restate it.
+     * **Rule 15: something has to lead.** Where a section has a sentence worth
+     * reading first, it goes here and takes the size, and the paragraph below
+     * it recedes. Null is the ordinary case: the screen's own title is already
+     * leading and a headline here would restate it.
      */
     lead: String? = null,
     /**
      * The one thing to do from here, if there is one.
      *
-     * **Outlined, never filled.** Every screen that passes this also carries a
-     * capture control, and two filled actions on an otherwise empty screen is
-     * the competition section 10.8 is about.
+     * **Quiet rather than filled**, [ActionEmphasis] leaves that to the screen's
+     * own primary action. A section screen's way in floats on the scaffold since
+     * D200, so this is a second route to the same place for somebody who is
+     * looking at the words rather than at the corner.
      */
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag(SectionTags.empty(name))
-            .padding(vertical = Space.l),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+    val hue: TabHue? = section?.let { hueFor(it) }
+    Block(
+        modifier = modifier.testTag(SectionTags.empty(name)),
+        tone = if (hue != null) BlockTone.Section else BlockTone.Quiet,
+        hue = hue,
+        padding = Space.l,
     ) {
-        EmptyDrawing(section = section)
-        // The drawing draws nothing for a null section since 2026-08-16, so
-        // its gap goes with it rather than floating above the lead.
-        if (section != null) Spacer(Modifier.height(Space.l))
+        if (section != null && hue != null) {
+            IconTile(
+                section = section,
+                tint = hue.onBase,
+                background = hue.base,
+                tileSize = Space.emptyMark,
+                iconSize = Space.emptyMarkGlyph,
+            )
+            Spacer(Modifier.height(Space.xs))
+        }
         if (lead != null) {
             Text(
                 text = lead,
                 style = HealthTrail.type.displayS,
                 color = HealthTrail.colors.ink,
-                textAlign = TextAlign.Center,
             )
-            Spacer(Modifier.height(Space.s))
         }
         Text(
             text = text,
             style = HealthTrail.type.bodyL,
-            color = HealthTrail.colors.ink2,
-            textAlign = TextAlign.Center,
+            color = HealthTrail.colors.ink,
         )
         if (actionLabel != null && onAction != null) {
-            Spacer(Modifier.height(Space.l))
+            Spacer(Modifier.height(Space.xs))
             Action(
                 label = actionLabel,
                 onClick = onAction,
@@ -212,24 +241,12 @@ fun SectionEmpty(
     }
 }
 
-/**
- * How much of the list's height an empty state is given to center itself in.
- *
- * Not all of it, because the title and subtitle above are already using some
- * and a block centered in the full height would sit visibly low. Section 5.10.
- */
-const val EMPTY_HEIGHT_FRACTION = 0.62f
-
-/**
- * The same, for an empty state that carries a lead and an action rather than
- * one line, and whose screen drops its subtitle while empty.
- *
- * **A taller block needs more room to center in, not less.** At the section
- * fraction it settled into the upper half and left the bottom third blank,
- * which rule 11 rules out and which reads as a screen that did not finish
- * loading.
- */
-const val EMPTY_HEIGHT_TALL = 0.82f
+// **The two centering fractions are gone with the centering.** They said how
+// much of the list's height an empty state should center itself in, 0.62 for a
+// section and 0.82 for a screen carrying a lead and an action. Both existed to
+// place a small thing in a large void, and #388 finding 1 is that the void was
+// the defect. The empty state is now a block at the top of the flow, so there
+// is no height to center in and no fraction to pick.
 
 /**
  * How far the heading settles, and over how much scroll.

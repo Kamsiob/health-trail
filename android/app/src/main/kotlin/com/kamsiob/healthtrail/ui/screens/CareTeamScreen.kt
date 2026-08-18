@@ -183,37 +183,52 @@ fun CareTeamScreen(
         // button is on the four destinations; a section screen is pushed over
         // them and has no button of its own in that corner, checked on the
         // phone rather than reasoned about. D200.
-        fab = {
-            ExtendedFloatingActionButton(
-                onClick = onAdd,
-                icon = {
-                    Icon(
-                        painter = painterResource(Symbols.addPerson),
-                        contentDescription = null,
-                    )
-                },
-                text = { Text(text = strings["careteam.add"]) },
-                // The sentence sits on the button's own node: the words are in
-                // a `Text` two levels down inside the row Material builds, so
-                // the node that takes the tap would otherwise have nothing to
-                // say. `docs/TRAPS.md`, and rule 19 is a gate.
-                modifier = Modifier
-                    .testTag(CareTeamTags.ADD)
-                    .semantics { contentDescription = strings["careteam.add"] },
-            )
+        // **While the section is empty the way in is in the words, not in
+        // the corner.** D200 put the add control on the scaffold so nobody
+        // scrolls a list to reach it, and that is right for a list. An empty
+        // screen has no list: the empty state carries the action itself, and a
+        // floating copy of it would be the same verb twice on one screen and
+        // two nodes under one test tag, which is the first entry in
+        // `docs/TRAPS.md`. #388.
+        fab = if (people.isEmpty()) {
+            null
+        } else {
+            {
+                ExtendedFloatingActionButton(
+                    onClick = onAdd,
+                    icon = {
+                        Icon(
+                            painter = painterResource(Symbols.addPerson),
+                            contentDescription = null,
+                        )
+                    },
+                    text = { Text(text = strings["careteam.add"]) },
+                    // The sentence sits on the button's own node: the words are in
+                    // a `Text` two levels down inside the row Material builds, so
+                    // the node that takes the tap would otherwise have nothing to
+                    // say. `docs/TRAPS.md`, and rule 19 is a gate.
+                    modifier = Modifier
+                        .testTag(CareTeamTags.ADD)
+                        .semantics { contentDescription = strings["careteam.add"] },
+                )
+            }
         },
     ) {
         if (people.isEmpty()) {
             item {
-                Block {
-                    Body(
-                        // bidi-ok: the app's own sentence about an empty care
-                        // team, never anything somebody typed.
-                        text = strings["careteam.empty"],
-                        color = HealthTrail.colors.ink,
-                        style = HealthTrail.type.bodyL,
-                    )
-                }
+                // **One empty state, app-wide.** #388 finding 1: this screen
+                // drew its own quiet block with one gray sentence in it while
+                // fourteen others centered a faded drawing in a void, and two
+                // answers to one question is the same as none. `SectionEmpty`
+                // is the answer now, and it carries the section's own mark.
+                // bidi-ok: the app's own sentence about an empty list.
+                SectionEmpty(
+                    name = CareTeamTags.NAME,
+                    text = strings["careteam.empty"],
+                    section = Repository.Section.CARE_TEAM,
+                    actionLabel = strings["careteam.add"],
+                    onAction = onAdd,
+                )
             }
         }
 
