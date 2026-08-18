@@ -20,23 +20,24 @@ Worked examples, in order of quality: `TodayField.kt`, `Notebook.kt`, `OneThread
 ## 1. State
 
 - Tree clean, all on `origin/main`. 218 unit, **30 checks**, lint green.
-- **`ui/components` is 23 files**, down from 36. Retired this session onto
-  `ui/v4`: `EdgeScrubber` to `Rail.kt`, `ScopedSearch` to `Search.kt`,
-  `ConfirmRemoveSheet` to `Confirm.kt`, `Dictate` to `Dictate.kt` with the
-  microphone now `Symbols.dictate` off Google's own set, `StickyHeader`, `Hero`,
-  `LatestWordCard` and `ReferenceLine`. **Deleted:** `Entrance`, which nothing
-  called, and `Chevron`, which was 69 lines wrapping one `Icon` and is written
-  at its four call sites instead. **Moved without redrawing:** `DraftSavers`,
-  `FabClearance`, `ViewPreference`, `BottomNav`.
-- **What is left with live callers**, biggest first: `Tips` 7, `Thumbnail` 5,
-  `HeaderAction` 5, `ChipPicker` 5, `MonthGrid` 3, `SectionIcon` 3, `Stages` 3,
-  `CaptureFab` 3, `EmptyDrawing` 3, `TabChip` 3, `Share` 2, `CalendarHandoff` 2,
-  `DateRow` 1, `StandingCard` 1, and the road and the route. **`Press` is last**
-  and shrinks as everything else comes across.
-- **`Page` has a `fab` slot and all ten section lists are on it**, D200. The
-  add control used to be the last `item` of the `LazyColumn` on every one of
-  them, so adding a question meant scrolling past thirty six. `Page` reserves
-  the clearance, so no screen restates it.
+- **`ui/components` is 14 files**, down from 36. Retired onto `ui/v4` or
+  deleted this session: `EdgeScrubber`, `ScopedSearch`, `ConfirmRemoveSheet`,
+  `Dictate` (with `Symbols.dictate` off Google's own set), `StickyHeader`,
+  `Hero`, `LatestWordCard`, `ReferenceLine`, `StandingCard`, `DateRow`,
+  `Stages`, `SectionIcon`; `Entrance`, `Chevron` and `TabChip` deleted as dead;
+  `DraftSavers`, `FabClearance`, `ViewPreference`, `BottomNav`, `Share`,
+  `CalendarHandoff`, `CaptureFab`, `EmptyDrawing` moved without redrawing.
+- **What is left**: `ChipPicker`, `HeaderAction`, `MonthGrid`, `Thumbnail`,
+  `Tips`, then `RoadStrip` and `Spine` (the road and the route stay drawn; what
+  is a `Box` around them does not), then **`Press` last**. `Symbols` and
+  `DatePicker` stay. `Confirm`, `StepRow`, `Tile` and `PinnedGroup` are the
+  frozen tail, D199: leave all four.
+- **After any `git mv` out of `ui/components`, compile immediately.** Four times
+  tonight a file left behind referenced the moved one with no import, because a
+  same-package reference needs none until the package moves underneath it.
+- **Count callers by use, not by import.** `TabChip` had three importers and no
+  caller; nine dead imports were removed in one commit. Kotlin does not error on
+  an unused import, so nothing else says so.
 - **The folder cannot empty, and D199 settles what the target is instead.**
   Three frozen files import from `ui/components`, and a frozen file is never
   called, never extended and never fixed. **The test is whether any live file
