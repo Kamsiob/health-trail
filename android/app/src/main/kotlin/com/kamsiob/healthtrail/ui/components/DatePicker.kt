@@ -3,8 +3,6 @@ package com.kamsiob.healthtrail.ui.components
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -39,8 +36,8 @@ import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.opensOnTap
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
@@ -443,31 +440,23 @@ private fun PickerHeader(
                 modifier = Modifier.weight(1f),
             )
         } else {
-            val interaction = remember { MutableInteractionSource() }
-            val surface by pressedSurface(interaction, Color.Transparent)
-            val ring by focusRingAlpha(interaction)
+            val zoomLabel = strings(
+                if (zoom == Zoom.DAYS) "date.pick.zoom.months" else "date.pick.zoom.years",
+                "date" to label,
+            )
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .clip(Radius.tile)
-                    .background(surface)
-                    .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.tile)
-                    .clickable(
-                        interactionSource = interaction,
-                        indication = null,
-                        role = Role.Button,
-                        onClick = onZoomOut,
+                    // **Material's state layer**, #392. The picker stays hand
+                    // drawn, D197, because Material's returns one day in
+                    // milliseconds; how its own controls answer a finger is a
+                    // separate question and the answer is the app-wide one.
+                    .opensOnTap(
+                        label = zoomLabel,
+                        onTap = onZoomOut,
+                        shape = MaterialTheme.shapes.small,
                     )
-                    .semantics {
-                        contentDescription = strings(
-                            if (zoom == Zoom.DAYS) {
-                                "date.pick.zoom.months"
-                            } else {
-                                "date.pick.zoom.years"
-                            },
-                            "date" to label,
-                        )
-                    }
+                    .semantics { contentDescription = zoomLabel }
                     .testTag(DatePickerTags.ZOOM),
                 contentAlignment = Alignment.Center,
             ) {
@@ -595,27 +584,26 @@ private fun CalendarCell(
     modifier: Modifier = Modifier,
 ) {
     val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val resting = if (selected) colors.blueWash else Color.Transparent
-    val surface by pressedSurface(interaction, resting)
-    val ring by focusRingAlpha(interaction)
+    val scheme = MaterialTheme.colorScheme
 
     Box(
         modifier = modifier
             .minimumInteractiveComponentSize()
             .height(Space.touchTarget)
-            .clip(Radius.tile)
-            .background(surface)
+            // **The ring is selection and nothing else now.** It used to carry
+            // the focus state as well, at whichever alpha was higher, so a
+            // focused cell and a chosen one drew the same thing. Material's
+            // state layer says focused; this says chosen. #392.
             .border(
-                2.dp,
-                colors.blue.copy(alpha = maxOf(if (selected) 1f else 0f, ring)),
-                Radius.tile,
+                Space.focusRing,
+                if (selected) scheme.primary else Color.Transparent,
+                MaterialTheme.shapes.small,
             )
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                role = Role.Button,
-                onClick = onClick,
+            .opensOnTap(
+                label = label,
+                onTap = onClick,
+                shape = MaterialTheme.shapes.small,
+                container = if (selected) scheme.primaryContainer else Color.Transparent,
             ),
         contentAlignment = Alignment.Center,
     ) {
@@ -650,21 +638,11 @@ private fun CalendarCell(
  */
 @Composable
 private fun Stepper(label: String, pointsForward: Boolean, onClick: () -> Unit) {
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, Color.Transparent)
-
     Box(
         modifier = Modifier
             .minimumInteractiveComponentSize()
             .size(Space.touchTarget)
-            .clip(CircleShape)
-            .background(surface)
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                role = Role.Button,
-                onClick = onClick,
-            )
+            .opensOnTap(label = label, onTap = onClick, shape = CircleShape)
             .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
@@ -761,27 +739,23 @@ private fun DayCell(
     onClick: () -> Unit,
 ) {
     val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val resting = if (selected) colors.blueWash else Color.Transparent
-    val surface by pressedSurface(interaction, resting)
-    val ring by focusRingAlpha(interaction)
+    val scheme = MaterialTheme.colorScheme
 
     Box(
         modifier = Modifier
             .minimumInteractiveComponentSize()
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(surface)
+            .size(DAY_CELL)
+            // Selection, and only selection. Focus is Material's state layer.
             .border(
-                2.dp,
-                colors.blue.copy(alpha = maxOf(if (selected) 1f else 0f, ring)),
+                Space.focusRing,
+                if (selected) scheme.primary else Color.Transparent,
                 CircleShape,
             )
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                role = Role.Button,
-                onClick = onClick,
+            .opensOnTap(
+                label = day.toString(),
+                onTap = onClick,
+                shape = CircleShape,
+                container = if (selected) scheme.primaryContainer else Color.Transparent,
             )
             .testTag(DatePickerTags.day(day)),
         contentAlignment = Alignment.Center,
@@ -889,3 +863,6 @@ private fun weekdayInitials(): List<String> =
 private val DEFAULT_TIME: LocalDateTime = LocalDateTime.of(2000, 1, 1, 14, 0)
 
 private const val STEP_MINUTES = 15L
+
+/** The day cell, at the size a month of them fits the screen at. */
+private val DAY_CELL = 40.dp

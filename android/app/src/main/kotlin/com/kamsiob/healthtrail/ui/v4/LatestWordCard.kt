@@ -26,7 +26,7 @@ import com.kamsiob.healthtrail.ui.theme.goldHue
  * The last thing somebody actually said about a process. #387, D196.
  *
  * **Written fresh on Material's `Card` and the old file deleted.** It was a
- * `Row` with a clip and `openableByTap`, which bundled a background, a hand
+ * `Row` with a clip and the old `openableByTap`, which bundled a background, a hand
  * animated pressed surface, a focus ring border and an `indication = null`
  * `clickable`. `Card` with an `onClick` is all of that, and the state layer is
  * Material's rather than a color this app steps toward `ink` by eight percent.

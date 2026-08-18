@@ -104,7 +104,9 @@ def frozen() -> set[str]:
 # and `Spine.kt`, and none of the six was ever going to come down: a frozen
 # file is never fixed. **This is not a gain, it is the count telling the
 # truth**, and the live number it now watches is the one the work can move.
-BASELINE = 55
+# 53 once the date picker's day cell named its own size, which is the last
+# measurement typed into a control that Material now presses for it. #392.
+BASELINE = 53
 
 LITERAL = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\.(dp|sp)\b")
 

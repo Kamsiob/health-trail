@@ -3,7 +3,6 @@ package com.kamsiob.healthtrail.ui.screens
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -47,7 +46,6 @@ import androidx.compose.foundation.layout.FlowRow
 import com.kamsiob.healthtrail.ui.v4.ScopedSearch
 import com.kamsiob.healthtrail.ui.v4.SpineRow
 import com.kamsiob.healthtrail.ui.v4.StickySectionHeader
-import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -815,8 +813,6 @@ private fun TrailRow(
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
 
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, Color.Transparent)
     val date = if (withinMonth) {
         EventDateText.withinMonth(strings, entry.occurredEdtf)
     } else {

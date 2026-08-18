@@ -98,7 +98,7 @@ class OpenNotRemoveTest {
      * And it announces no removal at all.
      *
      * The long press was the half that ran an empty function, so a reader
-     * offered an action that did nothing. `openableByTap` declares one action
+     * offered an action that did nothing. `opensOnTap` declares one action
      * and it is the one that happens.
      */
     @Test

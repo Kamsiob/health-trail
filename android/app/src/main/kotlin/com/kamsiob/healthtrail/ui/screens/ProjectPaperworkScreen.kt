@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,7 +31,7 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.v4.Thumbnail
-import com.kamsiob.healthtrail.ui.components.openableByTap
+import com.kamsiob.healthtrail.ui.v4.opensOnTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -269,18 +270,18 @@ private fun PaperTile(
             .clip(Radius.cardLarge)
             .then(
                 if (onOpen != null) {
-                    Modifier.openableByTap(
+                    // **Transparent at rest, so a filled place and an empty
+                    // one are the same object in two states.** The old modifier
+                    // defaulted to a filled surface, which gave every filled
+                    // tile a raised white panel the empty ones did not have: on
+                    // the phone that read as two different components, and it
+                    // made the filled state look like the designed one and
+                    // "Waiting" like an afterthought, which is the opposite of
+                    // what 20.4 says a placeholder is.
+                    Modifier.opensOnTap(
                         label = strings["project.paperwork.open_document"],
                         onTap = onOpen,
-                        // **Transparent at rest, so a filled place and an empty
-                        // one are the same object in two states.** The default
-                        // is the card surface, which gave every filled tile a
-                        // raised white panel the empty ones did not have: on
-                        // the phone that read as two different components, and
-                        // it made the filled state look like the designed one
-                        // and "Waiting" like an afterthought, which is the
-                        // opposite of what 20.4 says a placeholder is.
-                        resting = Color.Transparent,
+                        shape = MaterialTheme.shapes.large,
                     )
                 } else {
                     Modifier

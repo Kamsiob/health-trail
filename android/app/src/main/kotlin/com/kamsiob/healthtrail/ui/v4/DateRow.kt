@@ -27,7 +27,7 @@ import com.kamsiob.healthtrail.ui.theme.goldHue
  * The date a project turns on, and how long there is. #387, D196.
  *
  * **Written fresh on Material's `Card` and the old file deleted.** It was a
- * `Row` with a clip and `openableByTap`, which bundles a background, a hand
+ * `Row` with a clip and the old `openableByTap`, which bundled a background, a hand
  * animated pressed surface, a focus ring border and an `indication = null`
  * `clickable`. `Card` with an `onClick` is all four, and the wash is the card's
  * own container, so the press darkens the block itself rather than something

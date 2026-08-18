@@ -170,7 +170,7 @@ object ReducedMotion : Motion {
     override fun <T> settle(): FiniteAnimationSpec<T> = snap()
 
     // **No scale at all.** A shrink is motion, and this mode has none of it;
-    // the press still answers through color, which `pressedSurface` carries.
+    // the press still answers through Material's own state layer.
     override val pressScale: Float = 1f
 
     override val isReduced: Boolean = true

@@ -5,10 +5,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
@@ -17,9 +17,8 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.v4.SpineRow
-import com.kamsiob.healthtrail.ui.components.openableByTap
+import com.kamsiob.healthtrail.ui.v4.opensOnTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
@@ -184,7 +183,7 @@ fun StandingInstructionsScreen(
             // order, which is what the inventory reserves a spine for.
             //
             // **Outside the card rather than inside it**, and that is the
-            // structural half. The card is one `openableByTap`, which merges
+            // structural half. The card is one `opensOnTap`, which merges
             // its descendants, so five times written inside it became one
             // uninterrupted reader announcement labeled "Open" with no way to
             // land on a single one, and a person tapping their own sentence got
@@ -288,11 +287,11 @@ private fun ViolationRow(
                     // them one at a time. Inside the card they were part of a
                     // single utterance that began with the instruction's name.
                     .semantics(mergeDescendants = true) { }
-                    .clip(Radius.cardLarge)
-                    .openableByTap(
+                    .opensOnTap(
                         label = strings["open.action"],
                         onTap = onOpen,
-                        resting = colors.card,
+                        shape = MaterialTheme.shapes.large,
+                        container = MaterialTheme.colorScheme.surfaceContainer,
                     )
                     .testTag(InstructionTags.violationRow(violation.id))
                     .padding(Space.cardPadding),
@@ -367,11 +366,14 @@ private fun InstructionRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(Radius.cardLarge)
             // **A tap opens the request**, where how they answered is recorded
             // and where it can be taken off the list. It used to also carry
             // removal on a long press, which was the only path to it. #218.
-            .openableByTap(label = strings["open.action"], onTap = onOpen)
+            .opensOnTap(
+                label = strings["open.action"],
+                onTap = onOpen,
+                shape = MaterialTheme.shapes.large,
+            )
             .testTag(InstructionTags.row(instruction.id))
             .padding(Space.cardPadding),
     ) {

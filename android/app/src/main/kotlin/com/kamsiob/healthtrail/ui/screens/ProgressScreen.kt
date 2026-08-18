@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,10 +17,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import com.kamsiob.healthtrail.ui.components.openableByTap
-import com.kamsiob.healthtrail.ui.theme.Radius
+import com.kamsiob.healthtrail.ui.v4.opensOnTap
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
@@ -425,11 +424,10 @@ private fun ReadingRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(Radius.cardLarge)
-            .openableByTap(
+            .opensOnTap(
                 label = strings("measurement.correct.open", "value" to (value ?: "")),
                 onTap = onCorrect,
-                resting = Color.Transparent,
+                shape = MaterialTheme.shapes.large,
             )
             .testTag(ProgressTags.reading(reading.id))
             .padding(horizontal = Space.sm),

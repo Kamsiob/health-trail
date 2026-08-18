@@ -1,22 +1,17 @@
 package com.kamsiob.healthtrail.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
@@ -29,11 +24,8 @@ import com.kamsiob.healthtrail.ui.v4.Avatar
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.SpineRow
 import com.kamsiob.healthtrail.ui.v4.Waypoint
-import com.kamsiob.healthtrail.ui.components.focusRingAlpha
-import com.kamsiob.healthtrail.ui.components.openableByTap
-import com.kamsiob.healthtrail.ui.components.pressedSurface
+import com.kamsiob.healthtrail.ui.v4.opensOnTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
@@ -163,9 +155,6 @@ private fun IncidentSpineRow(
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.card)
-    val ring by focusRingAlpha(interaction)
 
     SpineRow(
         continuesAbove = continuesAbove,
@@ -179,14 +168,11 @@ private fun IncidentSpineRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .semantics(mergeDescendants = true) { }
-                    .clip(Radius.cardLarge)
-                    .background(surface)
-                    .border(Space.focusRing, colors.blue.copy(alpha = ring), Radius.cardLarge)
-                    .clickable(
-                        interactionSource = interaction,
-                        indication = null,
-                        role = Role.Button,
-                        onClick = onOpen,
+                    .opensOnTap(
+                        label = strings["open.action"],
+                        onTap = onOpen,
+                        shape = MaterialTheme.shapes.large,
+                        container = MaterialTheme.colorScheme.surfaceContainer,
                     )
                     .testTag(IncidentTags.row(incident.id))
                     .padding(Space.cardPadding),
@@ -406,13 +392,13 @@ fun IncidentScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .semantics(mergeDescendants = true) { }
-                            .clip(Radius.cardLarge)
                             // A tap opens the paper itself, the same as the
                             // people above and the entries below. #360.
-                            .openableByTap(
+                            .opensOnTap(
                                 label = strings["open.action"],
                                 onTap = { onOpenDocument(document) },
-                                resting = colors.card,
+                                shape = MaterialTheme.shapes.large,
+                                container = MaterialTheme.colorScheme.surfaceContainer,
                             )
                             .testTag(IncidentTags.document(document.id))
                             .padding(Space.cardPadding),
@@ -485,15 +471,15 @@ fun IncidentScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .semantics(mergeDescendants = true) { }
-                                .clip(Radius.cardLarge)
-                                // **`openableByTap`, which paints the surface
-                                // as well as taking the tap**, so the card
-                                // answers a finger the way every other entry
-                                // card in the app does. 5.14 and #46.
-                                .openableByTap(
+                                // **The card answers a finger the way every
+                                // other entry card in the app does**, which is
+                                // Material's own state layer now rather than a
+                                // surface color animated here. #392.
+                                .opensOnTap(
                                     label = strings["prep.change.open"],
                                     onTap = { onOpenEntry(entry) },
-                                    resting = colors.card,
+                                    shape = MaterialTheme.shapes.large,
+                                    container = MaterialTheme.colorScheme.surfaceContainer,
                                 )
                                 .testTag(IncidentTags.entry(entry.id))
                                 .padding(Space.cardPadding),

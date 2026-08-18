@@ -1,5 +1,11 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import com.kamsiob.healthtrail.ui.components.Symbols
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,24 +21,18 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.pressScale
-import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
@@ -262,31 +262,35 @@ private fun SizeChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val colors = HealthTrail.colors
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, if (selected) colors.ink else colors.sand)
-    val scale by pressScale(interaction)
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = label,
-            style = HealthTrail.type.label,
-            color = if (selected) colors.paper else colors.ink,
-            modifier = modifier
-                .graphicsLayer {
-                    scaleX = scale
-                    scaleY = scale
-                }
-                .clip(Radius.pill)
-                .background(surface)
-                .clickable(
-                    interactionSource = interaction,
-                    indication = null,
-                    onClickLabel = label,
-                    role = Role.Button,
-                    onClick = onClick,
+    // **Material's own chip**, #392 and D196. This was a `Text` wearing a
+    // clip, a background animated by hand, a spring on its scale and an
+    // `indication = null` clickable: a drawing of a chip rather than one, and
+    // the only place in the app where choosing looked like this.
+    //
+    // **`FilterChip` because this is choosing among options**, which is what
+    // the size control does. It carries the selected state as a fill and a
+    // leading check rather than as a color alone, which is section 9's rule and
+    // what the hand built version was already reaching for.
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = {
+            // bidi-ok: the app's own word for a card size, from the catalog,
+            // never anything the person typed.
+            Text(text = label, style = HealthTrail.type.label)
+        },
+        modifier = modifier,
+        leadingIcon = if (selected) {
+            {
+                Icon(
+                    painter = painterResource(Symbols.check),
+                    contentDescription = null,
+                    modifier = Modifier.size(FilterChipDefaults.IconSize),
                 )
-                .padding(horizontal = Space.m, vertical = Space.s),
-        )
-    }
+            }
+        } else {
+            null
+        },
+    )
 }
 

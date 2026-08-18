@@ -1,8 +1,8 @@
 package com.kamsiob.healthtrail.ui.screens
 
-import androidx.compose.foundation.background
+import com.kamsiob.healthtrail.ui.v4.opensOnTap
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -19,10 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
@@ -34,9 +32,7 @@ import com.kamsiob.healthtrail.ui.v4.DistanceMarker
 import com.kamsiob.healthtrail.ui.v4.SpineRow
 import com.kamsiob.healthtrail.ui.v4.RouteDash
 import com.kamsiob.healthtrail.ui.v4.Waypoint
-import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
 import com.kamsiob.healthtrail.ui.v4.Page
@@ -243,8 +239,6 @@ private fun TrailItemRow(
     val colors = HealthTrail.colors
     val type = HealthTrail.type
 
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, Color.Transparent)
     val date = EventDateText.render(strings, item.whenEdtf)
     val kind = strings[kindLabelFor(item)]
     val line = item.entry
@@ -256,16 +250,15 @@ private fun TrailItemRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(Radius.cardLarge)
-            .background(surface)
             .then(
                 if (onOpen != null) {
-                    Modifier.clickable(
-                        interactionSource = interaction,
-                        // The surface is the answer to the touch, 5.14.
-                        indication = null,
-                        role = Role.Button,
-                        onClick = onOpen,
+                    // **Material's own state layer answers the touch**, #392.
+                    // This was a surface color animated by hand behind an
+                    // indication = null clickable.
+                    Modifier.opensOnTap(
+                        label = strings["open.action"],
+                        onTap = onOpen,
+                        shape = MaterialTheme.shapes.large,
                     )
                 } else {
                     Modifier

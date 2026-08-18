@@ -41,7 +41,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.v4.IconTile
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
-import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 
@@ -154,8 +153,6 @@ private fun BloomChoice(
 ) {
     val colors = HealthTrail.colors
     val motion = LocalMotion.current
-    val interaction = remember { MutableInteractionSource() }
-    val surface by pressedSurface(interaction, colors.card)
 
     // **Movement only, never opacity.** A pill fading in is present in the
     // tree and not yet visible, which is a target somebody can tap and not see
@@ -179,7 +176,7 @@ private fun BloomChoice(
         label = "bloom",
     )
 
-    // **Material's surface owns the pill and the press.** #392. The bloom's own
+    // **Material owns the pill and the press.** #392. The bloom's own
     // rise stays: it is the one motion `DESIGN.md` 10 lets overshoot, and it is
     // placement rather than a state layer.
     Surface(

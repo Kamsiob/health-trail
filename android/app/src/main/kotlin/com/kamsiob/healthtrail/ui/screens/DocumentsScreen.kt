@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,7 +37,7 @@ import com.kamsiob.healthtrail.ui.v4.ROW_SIZE
 import com.kamsiob.healthtrail.ui.v4.rememberViewChoice
 import com.kamsiob.healthtrail.ui.v4.Thumbnail
 import com.kamsiob.healthtrail.ui.components.tileColumns
-import com.kamsiob.healthtrail.ui.components.openableByTap
+import com.kamsiob.healthtrail.ui.v4.opensOnTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -426,12 +427,10 @@ private fun DocumentCell(
     // rather than the card's.
     val body = modifier
         .semantics(mergeDescendants = true) { }
-        .clip(Radius.tile)
-        .openableByTap(
+        .opensOnTap(
             label = strings["open.action"],
             onTap = onOpen,
-            resting = Color.Transparent,
-            shape = Radius.tile,
+            shape = MaterialTheme.shapes.small,
         )
         .testTag(DocTags.row(document.id))
 

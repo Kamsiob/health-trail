@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -54,7 +55,7 @@ import com.kamsiob.healthtrail.ui.v4.CARD_SIZE
 import com.kamsiob.healthtrail.ui.v4.IconTile
 import com.kamsiob.healthtrail.ui.v4.ROW_SIZE
 import com.kamsiob.healthtrail.ui.components.Symbols
-import com.kamsiob.healthtrail.ui.components.openableByTap
+import com.kamsiob.healthtrail.ui.v4.opensOnTap
 import com.kamsiob.healthtrail.ui.v4.StageDots
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
@@ -425,8 +426,7 @@ fun AddDocumentScreen(
                     .fillMaxWidth()
                     .aspectRatio(PaperAspect)
                     .raisedSlightly(Radius.thumbnail)
-                    .clip(Radius.thumbnail)
-                    .openableByTap(
+                    .opensOnTap(
                         label = pickLabel,
                         onTap = {
                             picker.launch(
@@ -435,8 +435,8 @@ fun AddDocumentScreen(
                                 ),
                             )
                         },
-                        resting = colors.sand,
-                        shape = Radius.thumbnail,
+                        shape = MaterialTheme.shapes.small,
+                        container = MaterialTheme.colorScheme.surfaceContainerHighest,
                     )
                     .semantics { contentDescription = pickLabel }
                     .testTag(AddDocTags.PICK),

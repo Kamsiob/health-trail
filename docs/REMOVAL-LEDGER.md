@@ -29,6 +29,7 @@
 | `ui/components/PinnedGroup.kt` | `PinMark` and each screen's own lead group | 2026-08-13 | Frozen. Not called: pinning shipped drawn per screen rather than as one group. |
 | `ui/components/StepRow.kt` | `ProjectStepsScreen` and `StepEditSheet`, which is where a step is edited now | 2026-08-18 | Frozen. Not called: its only caller is the frozen `ProjectDetailScreen.kt`. |
 | `Tile` in `ui/components/Tile.kt` | Nothing yet | 2026-08-18 | Frozen with `CaptureSheet.kt`, its only caller. `tileColumns` in the same file is live and stays. |
+| `ui/components/Press.kt` | `ui/v4/Press.kt`, which is Material's own `ripple` state layer | 2026-08-18 | Frozen. Not called by the live path: every screen is on `Surface`, `Card`, `FilterChip` or `opensOnTap` now. `ProjectDetailScreen.kt`, and the frozen `Confirm.kt`, `StepRow.kt` and `Tile.kt`, keep this copy. D199. |
 | `ui/components/Spine.kt` | `ui/v4/Route.kt`, the same drawing under the new package | 2026-08-18 | Frozen. Not called by the live path: every live caller imports `ui/v4/Route.kt` now, and `ProjectDetailScreen.kt` keeps this copy for `SpineRow` and `Waypoint`. D199. |
 
 **The Projects conversion has begun and its first row is above.** What else it makes obsolete, and what will appear here as each conversion lands:

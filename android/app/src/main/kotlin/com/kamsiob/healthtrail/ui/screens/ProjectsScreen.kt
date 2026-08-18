@@ -31,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
-import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
@@ -280,10 +279,10 @@ private fun ProjectRow(
     // is on the project's own screen, where the person can see the road, the
     // papers and the people they are removing along with it.
     //
-    // **`openableByTap` paints the surface as well as taking the tap**, which
+    // **The old `openableByTap` painted the surface as well as taking the tap**, which
     // is why the background is no longer set here: one place decides what a
     // tappable card looks like at rest and under a finger, per 5.14.
-    // **Material's card owns the surface and the press.** `openableByTap`
+    // **Material's card owns the surface and the press.** The old modifier
     // bundled a background, a hand animated pressed surface, a focus ring
     // border and an `indication = null` `clickable`; `Card` with an `onClick`
     // is all four, and one more call site comes off `Press`.

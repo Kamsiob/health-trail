@@ -127,7 +127,7 @@ import java.time.LocalDate
  * | Now | Was |
  * |---|---|
  * | `Scaffold` + `LargeFlexibleTopAppBar`, which collapses the masthead itself | a `Row` in the first grid item, and a hand written "reduce the header" |
- * | `Card` for every widget, with Material's own state layer | `Box` + `clip` + `background` + `openableByTap` |
+ * | `Card` for every widget, with Material's own state layer | `Box` + `clip` + `background` + the old `openableByTap` |
  * | `IconButton` / `FilledIconButton` for the corner and for edit mode | a hand drawn pencil on a `Canvas`, and three text pills that measured `Done` to zero at font scale 2.0 |
  * | `MaterialTheme.colorScheme` and `typography` | `HealthTrail.colors` and a second type ladder |
  * | `Icon` over Material Symbols, including the remove minus | a minus drawn with `drawLine` |
