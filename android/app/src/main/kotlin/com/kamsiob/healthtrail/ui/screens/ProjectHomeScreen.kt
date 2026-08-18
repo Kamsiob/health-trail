@@ -30,10 +30,10 @@ import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.Distance
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.DateRow
+import com.kamsiob.healthtrail.ui.v4.DateRow
 import com.kamsiob.healthtrail.ui.v4.LatestWordCard
 import com.kamsiob.healthtrail.ui.components.SpineRow
-import com.kamsiob.healthtrail.ui.components.StandingCard
+import com.kamsiob.healthtrail.ui.v4.StandingCard
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.Waypoint
 import com.kamsiob.healthtrail.ui.theme.goldHue
