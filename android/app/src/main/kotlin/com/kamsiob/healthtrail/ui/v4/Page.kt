@@ -21,6 +21,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.animation.core.animateFloatAsState
@@ -205,114 +213,103 @@ fun Page(
     band: (@Composable () -> Unit)? = null,
     content: LazyListScope.() -> Unit,
 ) {
-    val colors = HealthTrail.colors
     var showTips by remember { mutableStateOf(false) }
     if (showTips && section != null) {
         TipsSheet(tip = tipFor(section), onDismiss = { showTips = false })
     }
 
-    // **The page arrives rather than cutting.** `DESIGN.md` 10 gives screen
-    // transitions the standard spring and 240ms, and every navigation in the app
-    // was a hard cut until #371: the tokens existed and nothing reached them.
-    // This is the one place every interior page gains it together.
-    //
-    // **A layer rather than an `AnimatedVisibility`.** The content is in the tree
-    // and hittable from the first frame either way, and something present but
-    // not yet visible is a target somebody can tap and not see. Here it only
-    // moves and fades, so nothing is ever absent.
-    //
-    // **The movement takes the spring and the opacity is done in 120ms.** A page
-    // at half opacity is readable through, so for as long as the fade lasts the
-    // person sees two pages at once. Caught by photographing a frame mid
-    // transition rather than by reading it. Reduced motion needs no special
-    // case: `standard()` is a snap, so the value arrives at 1 on the first frame.
-    val motion = LocalMotion.current
-    val rise = with(LocalDensity.current) { Space.m.toPx() }
-    var entered by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { entered = true }
-    val arrival by animateFloatAsState(
-        targetValue = if (entered) 1f else 0f,
-        animationSpec = motion.standard(),
-        label = "page arrival",
-    )
-    val opacity by animateFloatAsState(
-        targetValue = if (entered) 1f else 0f,
-        animationSpec = motion.quick(),
-        label = "page opacity",
-    )
+    // **Material's own scaffold and its own large flexible app bar.** The bar
+    // collapses as the list moves under it, which is the behavior this file
+    // used to hand roll out of `derivedStateOf`, a scale and an alpha; it owns
+    // the insets, the title and subtitle styles, the navigation slot and the
+    // action row. `LargeFlexibleTopAppBar` is the Expressive one, which is the
+    // whole reason this project pins an alpha. D179.
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val scheme = MaterialTheme.colorScheme
 
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .graphicsLayer {
-                alpha = opacity
-                translationY = (1f - arrival) * rise
-            },
-        color = colors.paper,
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                // **The page owns its insets**, because a page opens over the
-                // shell rather than inside it: without this the back arrow sits
-                // under the status bar and the first thing the person sees is
-                // their own paper with a clock on top of it. Seen on the phone,
-                // which is the only place it was visible. Rule 21.
-                .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.ime)),
-        ) {
-            // **The way back is pinned, not scrolled.** It used to be the first
-            // item of the list, so on a long screen it scrolled away and the
-            // only way out was a gesture some people do not know, which is the
-            // dead end rule 18 forbids. Found by a journey that saved something
-            // from the foot of a list and then could not leave.
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Space.screenHorizontal),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                onBack?.let { back ->
-                    IconButton(onClick = back, modifier = Modifier.testTag(PageTags.BACK)) {
-                        Symbol(
-                            symbol = Symbols.back,
-                            contentDescription = backLabel,
-                            tint = colors.ink,
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = scheme.background,
+        topBar = {
+            LargeFlexibleTopAppBar(
+                title = { Text(text = Bidi.isolate(title)) },
+                subtitle = eyebrow?.let {
+                    {
+                        // The section this page belongs to, in its own ink. It
+                        // sits under the name rather than over it, because that
+                        // is where Material's bar puts a subtitle and the bar
+                        // is the thing being used rather than imitated.
+                        Text(
+                            text = it,
+                            color = section?.let { s -> hueFor(s).ink } ?: eyebrowColor,
                         )
                     }
-                }
-                Spacer(Modifier.weight(1f))
-                badge?.let { state ->
-                    Text(
-                        text = state.uppercase(LocalConfiguration.current.locales[0]),
-                        style = HealthTrail.type.eyebrow,
-                        color = colors.goldInk,
-                        modifier = Modifier
-                            .clip(Radius.pill)
-                            .background(colors.goldWash)
-                            .padding(horizontal = Space.sm, vertical = Space.xs)
-                            // Capitals are for the eye; a reader gets the words
-                            // as they were written. D183.
-                            .semantics { contentDescription = state },
+                },
+                navigationIcon = {
+                    onBack?.let { back ->
+                        IconButton(onClick = back, modifier = Modifier.testTag(PageTags.BACK)) {
+                            Icon(
+                                painter = painterResource(Symbols.back),
+                                contentDescription = backLabel,
+                            )
+                        }
+                    }
+                },
+                actions = {
+                    // **A label rather than a chip.** A state says what is
+                    // true; it does nothing when pressed, and a chip that
+                    // announces itself as a button would be telling a reader
+                    // otherwise.
+                    badge?.let { state ->
+                        Surface(
+                            shape = MaterialTheme.shapes.small,
+                            color = scheme.secondaryContainer,
+                            contentColor = scheme.onSecondaryContainer,
+                        ) {
+                            Text(
+                                text = state,
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier.padding(
+                                    horizontal = Space.sm,
+                                    vertical = Space.xs,
+                                ),
+                            )
+                        }
+                    }
+                    HeaderActions(
+                        onTips = if (section != null) {
+                            { showTips = true }
+                        } else {
+                            null
+                        },
+                        onEdit = onEdit,
+                        editLabel = editLabel,
+                        editTag = editTag,
                     )
-                    Spacer(Modifier.width(Space.s))
+                    actions?.invoke()
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = scheme.background,
+                    scrolledContainerColor = scheme.surfaceContainer,
+                    titleContentColor = scheme.onSurface,
+                ),
+                scrollBehavior = scrollBehavior,
+            )
+        },
+        bottomBar = {
+            band?.let {
+                Surface(color = scheme.surfaceContainer) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .windowInsetsPadding(WindowInsets.navigationBars)
+                            .padding(vertical = Space.sm),
+                    ) { it() }
                 }
-                // **The same corner as every other page**, D173, routed
-                // through the one component so the lamp and the pencil cannot
-                // drift apart again.
-                HeaderActions(
-                    onTips = if (section != null) {
-                        { showTips = true }
-                    } else {
-                        null
-                    },
-                    onEdit = onEdit,
-                    editLabel = editLabel,
-                    editTag = editTag,
-                )
-                actions?.invoke()
             }
-
-        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+        },
+    ) { inset ->
+        Box(modifier = Modifier.padding(inset)) {
             var refreshing by remember { mutableStateOf(false) }
             val refreshScope = rememberCoroutineScope()
             PullToRefreshBox(
@@ -321,11 +318,9 @@ fun Page(
                     if (onRefresh != null) {
                         refreshing = true
                         onRefresh()
-                        // **Held briefly on purpose.** Re-reading a local
-                        // database is instant, and an indicator that vanishes
-                        // before it is seen reads as a gesture that did nothing.
-                        // This is the shortest pause that still says "I heard
-                        // you".
+                        // Held briefly: re-reading a local database is instant,
+                        // and an indicator that vanishes before it is seen reads
+                        // as a gesture that did nothing.
                         refreshScope.launch {
                             delay(REFRESH_HELD_MS)
                             refreshing = false
@@ -336,98 +331,39 @@ fun Page(
             ) {
                 LazyColumn(
                     state = listState,
-                    // **The caller's modifier lands on the list, not on the
-                    // surface around it.** A test that scrolls to a control does
-                    // `performScrollToNode` on the screen's own tag, and that
-                    // only works when the tagged node is the scrolling one: on
-                    // the surface it reported "no node found in scrollable
-                    // container" for a button sitting at the foot of the list.
-                    // #386.
+                    // The caller's modifier lands on the list, not on the
+                    // surface around it: a test that scrolls to a control needs
+                    // the tagged node to be the scrolling one.
                     modifier = modifier
                         .fillMaxSize()
                         .padding(horizontal = Space.screenHorizontal)
-                        // The rail gets a margin of its own rather than sitting
-                        // on top of the words. Direction aware, so in Arabic the
-                        // reserved strip moves to the left with it.
                         .padding(end = if (rail != null) railWidth() + Space.s else Space.none),
-                    // **Every item of a page is a group, so the air between them
-                    // is the between-groups gap.** At twelve points a labeled
-                    // block, a road and an action all sat the same distance
-                    // apart and the screen read as one column of things.
-                    // Material puts sections 24dp apart and its own research
-                    // measured what that buys. D188.
                     verticalArrangement = Arrangement.spacedBy(itemSpacing),
                 ) {
                     hero?.let { lead -> item { lead() } }
 
-                    item {
-                        // **Four points between the eyebrow and the name.**
-                        // Measured on `m3v4-3`: 13.3dp of air where the app's
-                        // line boxes alone gave 9.1dp, so the label sat closer
-                        // to its title than the drawing sets it. D183.
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(Space.xs),
-                        ) {
-                            eyebrow?.let {
-                                Eyebrow(
-                                    text = it,
-                                    color = section?.let { s -> hueFor(s).ink } ?: eyebrowColor,
-                                )
-                            }
-                            // **The heading settles as the list moves under
-                            // it.** D168, and it is Google's own signature on a
-                            // large app bar: the title starts at its full size
-                            // and eases down as the content scrolls, so the page
-                            // gives its space to what the person came to read.
-                            // Driven by the first item's offset, which is this
-                            // item, so the effect lasts exactly as long as the
-                            // header is on screen. Reduced motion holds it at
-                            // full size.
-                            val shrink by remember {
-                                derivedStateOf {
-                                    when {
-                                        motion.isReduced -> 0f
-                                        listState.firstVisibleItemIndex > 0 -> 1f
-                                        else -> (
-                                            listState.firstVisibleItemScrollOffset /
-                                                HEADING_SETTLE_PX
-                                            ).coerceIn(0f, 1f)
-                                    }
-                                }
-                            }
-                            Lead(
-                                text = title,
-                                modifier = Modifier.graphicsLayer {
-                                    val scale = 1f - (shrink * HEADING_SETTLE_SCALE)
-                                    scaleX = scale
-                                    scaleY = scale
-                                    transformOrigin = TransformOrigin(0f, 0.5f)
-                                    alpha = 1f - (shrink * HEADING_SETTLE_FADE)
-                                },
-                            )
-                            subtitle?.let {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(Space.s),
-                                ) {
-                                    subtitleMark?.let { mark ->
-                                        Symbol(
-                                            symbol = mark,
-                                            contentDescription = null,
-                                            tint = colors.ink2,
-                                            modifier = Modifier.size(Space.markInline),
-                                        )
-                                    }
-                                    Body(
-                                        // bidi-ok: this line is the app's own
-                                        // sentence about what the page is for. A
-                                        // page whose subtitle is somebody's
-                                        // words isolates them at its call site.
-                                        text = it,
-                                        style = HealthTrail.type.bodyL,
+                    subtitle?.let { line ->
+                        item {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(Space.s),
+                            ) {
+                                subtitleMark?.let { mark ->
+                                    Icon(
+                                        painter = painterResource(mark),
+                                        contentDescription = null,
+                                        tint = scheme.onSurfaceVariant,
+                                        modifier = Modifier.size(Space.markInline),
                                     )
                                 }
+                                // bidi-ok: the app's own sentence about what the
+                                // page is for. A page whose line is somebody's
+                                // words isolates them at its call site.
+                                Text(
+                                    text = line,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = scheme.onSurfaceVariant,
+                                )
                             }
                         }
                     }
@@ -442,24 +378,11 @@ fun Page(
                 Box(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
-                        // **Half the height, centered**, rather than the whole
-                        // of it. Spread over a full screen the labels read as
-                        // scattered digits beside the content; in a band they
-                        // read as an index, which is the thing they are.
                         .fillMaxHeight(RAIL_HEIGHT_FRACTION)
                         .padding(end = Space.xs),
                     contentAlignment = Alignment.Center,
                 ) { strip() }
             }
-        }
-
-        band?.let {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Spacer(Modifier.height(Space.m))
-                it()
-                Spacer(Modifier.height(Space.m))
-            }
-        }
         }
     }
 }
