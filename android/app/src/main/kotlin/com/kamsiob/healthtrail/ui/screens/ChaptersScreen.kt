@@ -182,38 +182,51 @@ fun ChaptersScreen(
         // already carrying it and two of the same button on one screen is
         // competition rather than emphasis.
         if (chapters.isNotEmpty()) {
-            item {
-                Spacer(Modifier.height(Space.s))
-                Action(
-                    label = strings["chapters.moved"],
-                    onClick = onMoved,
-                    mark = Symbols.chapters,
-                    modifier = Modifier.testTag(ChapterTags.MOVED),
-                )
+                item {
+                    Spacer(Modifier.height(Space.s))
+                    Action(
+                        label = strings["chapters.moved"],
+                        onClick = onMoved,
+                        mark = Symbols.chapters,
+                        modifier = Modifier.testTag(ChapterTags.MOVED),
+                    )
+                }
             }
-        }
 
-        labeledBlock(
-            leading = true,
-            label = null,
-            rows = listOf {
-                ListRow(
-                    title = strings["milestones.door"],
-                    // **A sentence wraps**, D105. Capped at one line this read
-                    // "The moments you decided were worth marking. Nothing here
-                    // is" and stopped, which is the truncation rule 11 bans, and
-                    // the half that was cut is the half saying the app works
-                    // nothing out.
-                    support = strings["milestones.subtitle"],
-                    mark = Symbols.trail,
-                    markHue = goldHue(),
-                    isDoor = true,
-                    onClick = onOpenMilestones,
-                    clickLabel = strings["open.action"],
-                    modifier = Modifier.testTag(ChapterTags.MILESTONES),
-                )
-            },
-        )
+            // **Not on an empty page.** The owner, 2026-08-18: "why is the path so
+            // far on the where have they been page? if it's empty, get rid of it."
+            // A door to a second empty section, under the one card that says this
+            // section is empty, is two nothings stacked.
+            //
+            // **Gated on this page rather than on the milestone count**, and the
+            // difference matters: a milestone can only be marked from behind this
+            // door, so hiding it whenever milestones is empty would make the
+            // section unreachable forever, which is the dead end rule 18 forbids.
+            // A notebook gets its first chapter at setup, which asks where they
+            // are, so the door is present on every notebook that has been set up.
+            if (chapters.isNotEmpty()) {
+            labeledBlock(
+                leading = true,
+                label = null,
+                rows = listOf {
+                    ListRow(
+                        title = strings["milestones.door"],
+                        // **A sentence wraps**, D105. Capped at one line this read
+                        // "The moments you decided were worth marking. Nothing here
+                        // is" and stopped, which is the truncation rule 11 bans, and
+                        // the half that was cut is the half saying the app works
+                        // nothing out.
+                        support = strings["milestones.subtitle"],
+                        mark = Symbols.trail,
+                        markHue = goldHue(),
+                        isDoor = true,
+                        onClick = onOpenMilestones,
+                        clickLabel = strings["open.action"],
+                        modifier = Modifier.testTag(ChapterTags.MILESTONES),
+                    )
+                },
+            )
+        }
     }
 }
 
