@@ -70,6 +70,7 @@ fun MedicationsScreen(
 
     Page(
         eyebrow = strings["notebook.section.medications"],
+        section = Repository.Section.MEDICATIONS,
         eyebrowColor = hue.ink,
         title = strings["meds.heading"],
         subtitle = strings["meds.subtitle"],

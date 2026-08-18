@@ -97,6 +97,7 @@ fun ChaptersScreen(
     val road = current + earlier
 
     Page(
+        section = Repository.Section.CHAPTERS,
         eyebrow = strings["notebook.section.chapters"],
         eyebrowColor = hue.ink,
         title = strings["chapters.heading"],

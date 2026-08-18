@@ -65,6 +65,7 @@ fun PeopleScreen(
     val others = subjects.filterNot { it.id == activeId }
 
     Page(
+        section = Repository.Section.CARE_TEAM,
         eyebrow = strings["nav.more"],
         title = strings["people.title"],
         subtitle = strings["people.lead"],

@@ -96,6 +96,7 @@ fun QuestionsScreen(
         )
 
     Page(
+        section = Repository.Section.ASK_NEXT_TIME,
         eyebrow = strings["notebook.section.ask_next_time"],
         eyebrowColor = hue.ink,
         title = strings["questions.heading"],
