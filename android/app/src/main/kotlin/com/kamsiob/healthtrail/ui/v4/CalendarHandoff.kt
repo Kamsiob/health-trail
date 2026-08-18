@@ -1,4 +1,4 @@
-package com.kamsiob.healthtrail.ui.components
+package com.kamsiob.healthtrail.ui.v4
 
 import android.content.Intent
 import android.provider.CalendarContract

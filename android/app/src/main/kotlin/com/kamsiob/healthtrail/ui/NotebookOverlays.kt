@@ -13,7 +13,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.kamsiob.healthtrail.data.Repository
-import com.kamsiob.healthtrail.ui.components.Share
+import com.kamsiob.healthtrail.ui.v4.Share
 import com.kamsiob.healthtrail.data.Attachments
 import java.time.LocalDate
 import com.kamsiob.healthtrail.data.TemplateCatalog

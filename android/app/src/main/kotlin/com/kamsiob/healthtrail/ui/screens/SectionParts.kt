@@ -54,7 +54,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.components.EmptyDrawing
+import com.kamsiob.healthtrail.ui.v4.EmptyDrawing
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.v4.railWidth
 import com.kamsiob.healthtrail.ui.theme.goldHue

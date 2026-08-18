@@ -43,7 +43,7 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.formatMoney
 import com.kamsiob.healthtrail.ui.v4.BottomNav
-import com.kamsiob.healthtrail.ui.components.CaptureFab
+import com.kamsiob.healthtrail.ui.v4.CaptureFab
 import com.kamsiob.healthtrail.ui.v4.Destination
 import com.kamsiob.healthtrail.ui.screens.AboutScreen
 import com.kamsiob.healthtrail.ui.screens.PROJECT_CARD_TYPES
@@ -55,7 +55,7 @@ import com.kamsiob.healthtrail.ui.screens.wordedAnswer
 import com.kamsiob.healthtrail.ui.screens.IncidentScreen
 import com.kamsiob.healthtrail.ui.screens.IncidentsScreen
 import com.kamsiob.healthtrail.data.Readable
-import com.kamsiob.healthtrail.ui.components.Share
+import com.kamsiob.healthtrail.ui.v4.Share
 import com.kamsiob.healthtrail.ui.screens.EntryScreen
 import com.kamsiob.healthtrail.ui.screens.PersonScreen
 import com.kamsiob.healthtrail.ui.screens.AddMilestoneScreen

@@ -2,7 +2,7 @@ package com.kamsiob.healthtrail.ui
 
 import android.content.Intent
 import android.provider.CalendarContract
-import com.kamsiob.healthtrail.ui.components.CalendarHandoff
+import com.kamsiob.healthtrail.ui.v4.CalendarHandoff
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
