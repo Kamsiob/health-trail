@@ -681,26 +681,11 @@ fun TodayFieldScreen(
                 }
             }
 
-            // **Which small cards end up alone in their row.** A grid of two
-            // columns puts a small card in one cell and gives a wide card the
-            // whole row, so a small card whose neighbor is wide sits by itself
-            // with an empty cell beside it. On the fixture that happened twice
-            // on one screen: an "Incidents" card holding the word "open" beside
-            // a hand's width of nothing, and the eye lands in the hole rather
-            // than on anything the person wrote. `docs/V4.md` 6.1 item 1.
-            //
-            // **The person's arrangement is not touched.** The order they chose
-            // and the size they chose are both kept; this decides only how a
-            // card with nothing to sit beside is drawn, which is the layout's
-            // business rather than theirs. Rule 13: an unfilled slot reads as
-            // "not yet", and an empty grid cell reads as a missing tile.
-            // Plain code in the grid's own builder, not a composable scope.
-            val alone = lonelySmallCards(field)
             items(
                 count = field.size,
                 key = { field[it].id },
                 span = { index ->
-                    if (oneColumn || alone[index]) {
+                    if (oneColumn) {
                         fullWidth
                     } else {
                         GridItemSpan(if (field[index].size == "small") 1 else 2)
@@ -715,14 +700,6 @@ fun TodayFieldScreen(
                     // rendering at full width in this layout, and 21.3 ties the
                     // second line of context to width rather than to the label
                     // on the size chip.
-                    // **A lone small card takes the row and keeps its height.**
-                    // Giving it the wide size as well moved the hole rather than
-                    // closing it: "1" and the word "open" in a card sized for a
-                    // chart is more empty space, not less. Width fills the row;
-                    // the compact height is what the answer actually needs.
-                    // One column is different, because there the card genuinely
-                    // is the full width of the screen and 21.3 ties the second
-                    // line of context to width.
                     size = if (oneColumn && card.size == "small") {
                         CardSize.WIDE
                     } else {
@@ -2502,36 +2479,3 @@ private const val LISTED_WITH_A_COUNT = 1
  * that still sets at display size inside a half width card without wrapping.
  */
 private const val FIGURE_MAX = 12
-
-/**
- * Which small cards would be left alone in a row of two columns.
- *
- * **A grid fills left to right and a wide card takes a whole row.** So a small
- * card is by itself exactly when it starts a row and the thing after it cannot
- * join it: either there is nothing after it, or what is after it is wide.
- *
- * Walked rather than guessed, because the answer depends on everything before
- * it: two smalls pair, and the card after a pair starts a fresh row.
- */
-internal fun lonelySmallCards(field: List<Repository.TodayCard>): List<Boolean> {
-    val alone = MutableList(field.size) { false }
-    var column = 0
-    field.forEachIndexed { index, card ->
-        if (card.size != "small") {
-            // A wide card always takes its own row, so a small card left in the
-            // leading column before it never gets a neighbor.
-            if (column == 1) alone[index - 1] = true
-            column = 0
-            return@forEachIndexed
-        }
-        if (column == 0) {
-            // Alone if nothing follows, or if what follows needs its own row.
-            val next = field.getOrNull(index + 1)
-            if (next == null || next.size != "small") alone[index] = true
-            column = 1
-        } else {
-            column = 0
-        }
-    }
-    return alone
-}
