@@ -43,6 +43,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Card
+import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import androidx.compose.ui.semantics.contentDescription
 
 object ProjectTags {
     const val ROOT = "projects_root"
@@ -52,6 +55,8 @@ object ProjectTags {
     const val EMPTY = "section_empty_projects"
     const val EMPTY_START = "section_empty_action_projects"
     const val COUNTS = "projects_counts"
+    /** The one project this screen leads with. D205. */
+    const val LEAD = "projects_lead"
     const val FINISHED_FOLD = "projects_finished_fold"
     fun row(id: String) = "project_$id"
 }
@@ -101,6 +106,30 @@ fun ProjectsScreen(
     val colors = HealthTrail.colors
 
     Surface(modifier = modifier.fillMaxSize(), color = colors.paper) {
+        // **The lead is chosen here rather than passed in**, because it is a
+        // fact about the list and not about any one project: whichever live
+        // project has the nearest date somebody else set. D205.
+        //
+        // **A date is a fact from outside, never a judgment.** Rule 2 forbids
+        // the app concluding anything and rule 13 forbids it scoring the
+        // person's diligence; "a decision is expected on October 17" is neither.
+        // It is the one thing on this screen with a clock attached to it, which
+        // is why it earns the lead.
+        val live = projects.filterNot { it.isFinished }
+        val finished = projects.filter { it.isFinished }
+        val dated = live
+            .mapNotNull { project ->
+                cards[project.id]?.nextDate?.dueStart?.let { due -> project to due }
+            }
+            .minByOrNull { it.second }
+            ?.first
+        // **With no date anywhere, the lead is the one started most recently**,
+        // which is what the repository's own order already puts first. It leads
+        // with where it stands instead of a countdown, and the eyebrow says
+        // which of the two this is rather than leaving somebody to work it out.
+        val lead = dated ?: live.firstOrNull()
+        val rest = live.filter { it.id != lead?.id }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -130,50 +159,31 @@ fun ProjectsScreen(
                     HeaderActions(onTips = { showTips = true })
                 }
                 // **The state of the person's own projects, not a definition
-                // of what a project is.** It read "The long processes:
-                // applications, appeals, requests. Each one says where it
-                // stands, the next date, and the latest word", which is three
-                // lines telling somebody who already has three projects what a
-                // project is. Rule 20: the app explaining its own organizing
-                // scheme on the screen.
-                //
-                // **Grid screen 02 draws a count here** and nothing recorded a
-                // departure, so D142 settles it. A count of things is not a
-                // score on the person, per rule 13, and it is the same shape
-                // the notebook's section counts already use: the finished half
-                // is left out entirely when there is none, so a first project
-                // does not arrive beside a zero.
-                //
-                // **Still nothing before the first one.** The empty state
-                // carries its own invitation and a count of none is furniture.
+                // of what a project is.** Rule 20: the app explaining its own
+                // organizing scheme on the screen. A count of things is not a
+                // score on the person, per rule 13, and the finished half is
+                // left out entirely when there is none. D142.
                 if (projects.isNotEmpty()) {
                     Spacer(Modifier.height(Space.xs))
                     Text(
                         text = strings(
                             "projects.subtitle.counts",
-                            "live" to projects.count { !it.isFinished },
-                            "finished" to projects.count { it.isFinished },
+                            "live" to live.size,
+                            "finished" to finished.size,
                         ),
                         style = HealthTrail.type.bodyM,
                         color = colors.ink2,
                         modifier = Modifier.testTag(ProjectTags.COUNTS),
                     )
                 }
-                Spacer(Modifier.height(Space.cardGap))
+                Spacer(Modifier.height(Space.betweenGroups))
             }
 
             if (projects.isEmpty()) {
                 item {
                     // **A warm invitation and never a blank**, 20.5 screen 01.
-                    // This was one gray paragraph under the subtitle with the
-                    // rest of the screen empty below it, which is the shape
-                    // 5.17 already solved everywhere else in the app. It uses
-                    // that solution rather than a second one, with the line
-                    // that says what this place is for taking the size.
-                    //
                     // **No section drawing, because projects are not one of the
-                    // twelve.** The trail map ground alone is what 5.17
-                    // prescribes for a place outside the sections.
+                    // twelve.**
                     SectionEmpty(
                         name = ProjectTags.NAME,
                         lead = strings["projects.empty.lead"],
@@ -184,64 +194,87 @@ fun ProjectsScreen(
                 }
             }
 
-            // **Live projects lead, finished ones fold**, per law 1 and law 4:
-            // a finished group collapses into a fold rather than sitting among
-            // the ones that still need something.
+            // == The lead ======================================================
             //
-            // **Finished is not hidden and never reads as an achievement
-            // count.** The fold names them and counts them, and the count is a
-            // fact about the list rather than a score on the person, per rule
-            // 13. Nothing here says "3 of 7 done".
-            val live = projects.filterNot { it.isFinished }
-            val finished = projects.filter { it.isFinished }
-
-            for (project in live) {
-                item(key = project.id) {
-                    ProjectRow(
+            // **One thing leads and it is unmistakable**, `docs/V4.md` 6.1 item
+            // 1. Before this the screen was four cards of identical
+            // construction and the eye landed nowhere.
+            //
+            // **It is drawn the way Today draws its hero**: one tonal block, the
+            // date as an eyebrow above it, the name at the size, and the block
+            // is the door. Rule 16 wants one answer to one question, and Today
+            // already answered this one.
+            lead?.let { project ->
+                item(key = "lead-${project.id}") {
+                    ProjectLead(
                         project = project,
                         card = cards[project.id],
                         countdown = countdown(project),
+                        dated = project.id == dated?.id,
                         onOpen = { onOpen(project) },
                     )
-                    Spacer(Modifier.height(Space.cardGap))
+                    Spacer(Modifier.height(Space.betweenGroups))
                 }
             }
 
+            // == Everything else, as rows =====================================
+            //
+            // **A row, not a card.** Rule 22: a card is for three or more lines
+            // actually read, a dense row is for a long scanned list. A project
+            // here is a name and one line of fact.
+            //
+            // **No road at row width.** Three of the four roads on the old
+            // screen had their stage labels overlapping or cut, which the owner
+            // named before any research was read. The road is a map on the lead
+            // and on the project's own screen, and its information travels into
+            // the row as words: "In review · 2 of 3". D205.
+            if (rest.isNotEmpty()) {
+                item {
+                    Eyebrow(text = strings["projects.group.live"])
+                    Spacer(Modifier.height(Space.withinGroup))
+                }
+                for (project in rest) {
+                    item(key = project.id) {
+                        ProjectRow(
+                            project = project,
+                            card = cards[project.id],
+                            onOpen = { onOpen(project) },
+                        )
+                    }
+                }
+                item { Spacer(Modifier.height(Space.betweenGroups)) }
+            }
+
+            // **Finished is not hidden and never reads as an achievement
+            // count.** The group names them, and the count is a fact about the
+            // list rather than a score on the person, per rule 13.
             if (finished.isNotEmpty()) {
                 item {
-                    Eyebrow(text = strings["projects.finished"], modifier = Modifier.testTag(ProjectTags.FINISHED_FOLD))
-                    Spacer(Modifier.height(Space.cardGap))
+                    Eyebrow(
+                        text = strings["projects.finished"],
+                        modifier = Modifier.testTag(ProjectTags.FINISHED_FOLD),
+                    )
+                    Spacer(Modifier.height(Space.withinGroup))
                 }
                 for (project in finished) {
                     item(key = project.id) {
                         ProjectRow(
                             project = project,
                             card = cards[project.id],
-                            countdown = countdown(project),
                             onOpen = { onOpen(project) },
                         )
-                        Spacer(Modifier.height(Space.cardGap))
                     }
                 }
+                item { Spacer(Modifier.height(Space.betweenGroups)) }
             }
 
             // **Not while the screen is empty.** The empty state already
-            // carries this action, at the place the eye lands, and repeating it
-            // under a screen with nothing on it is the same control twice.
+            // carries this action, at the place the eye lands. D200.
             if (projects.isNotEmpty()) item {
-                Spacer(Modifier.height(Space.s))
                 // **It stops before the FAB's corner.** `fabSafeActionBar` is
-                // the modifier D81 exists for and this screen was not using it:
-                // full width, the button ran underneath the gold FAB, and at
-                // font scale 2.0 the FAB sat on top of its trailing end. **A
-                // control somebody cannot reach because another control is on
-                // top of it is the most basic possible defect**, and it is
-                // invisible in a mockup because nothing overlaps until the FAB
-                // is real. Seen on the phone at 2.0.
-                // **Sized to its label since #371 item 5**, D137. The FAB
-                // clearance stays: the button no longer spans the width, and
-                // the token is what keeps that true at font scale 2.0 rather
-                // than an assumption about how wide the label happens to be.
+                // the modifier D81 exists for: full width, the button ran
+                // underneath the gold FAB, and at font scale 2.0 the FAB sat on
+                // top of its trailing end.
                 Action(
                     label = strings["projects.start"],
                     onClick = onStart,
@@ -249,165 +282,221 @@ fun ProjectsScreen(
                         .fabSafeActionBar()
                         .testTag(ProjectTags.START),
                 )
-                // The FAB sits over the bottom of this destination, so the last
-                // thing in the list needs room to scroll fully clear of it,
-                // from the token rather than from arithmetic here. D81.
                 Spacer(Modifier.height(fabScrollClearance))
             }
         }
     }
 }
 
+/**
+ * The one project this screen leads with, drawn as the app's own hero. D205.
+ *
+ * **One tonal block, never full height**, per D198 item 3, and the surface
+ * under it stays neutral. The block is the gold wash rather than the gold base
+ * for two reasons that are not taste: the saturated gold is what the capture
+ * button means app-wide, and the road draws itself in gold and would vanish on
+ * a gold ground, which is `docs/V4.md` 6.1 item 4.
+ *
+ * **The road is here at full width with its labels on**, which is the one place
+ * on this screen it can be read. On a card in a list it was a decoration with
+ * three of four label rows overlapping or cut.
+ *
+ * **Nothing here is colored by how the process is going.** Rule 2. The hue is
+ * the section's identity and says only that this is a project.
+ */
 @Composable
-private fun ProjectRow(
+private fun ProjectLead(
     project: Repository.Project,
     onOpen: () -> Unit,
-    card: Repository.ProjectCard? = null,
-    countdown: String? = null,
+    card: Repository.ProjectCard?,
+    countdown: String?,
+    /** Whether this one leads because of a date, or because it is the newest. */
+    dated: Boolean,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
+    val hue = hueFor(Repository.Section.PROJECTS)
+    val stages = card?.stages.orEmpty()
 
-    // **The card opens the project and nothing else**, per #218. Removing it
-    // is on the project's own screen, where the person can see the road, the
-    // papers and the people they are removing along with it.
-    //
-    // **The old `openableByTap` painted the surface as well as taking the tap**, which
-    // is why the background is no longer set here: one place decides what a
-    // tappable card looks like at rest and under a finger, per 5.14.
-    // **Material's card owns the surface and the press.** The old modifier
-    // bundled a background, a hand animated pressed surface, a focus ring
-    // border and an `indication = null` `clickable`; `Card` with an `onClick`
-    // is all four, and one more call site comes off `Press`.
+    // **The date, the kind, and the countdown, as one eyebrow line.** Raw parts
+    // into `Bidi.join`, never pre-isolated ones: join isolates each part
+    // itself, so a joined string passed into another join nests the marks.
+    val dateLine = card?.nextDate?.let { date ->
+        Bidi.join(countdown, date.kind, EventDateText.render(strings, date.dueEdtf))
+    }
+    // **The support line is what the row would say**, so the lead and the rows
+    // answer the same question in the same words.
+    val support = Bidi.join(
+        card?.holder,
+        stageLine(stages, strings),
+        project.waitingOn?.takeIf { it.isNotBlank() && card?.holder == null },
+    )
+
     Card(
         onClick = onOpen,
         shape = MaterialTheme.shapes.extraLarge,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            contentColor = MaterialTheme.colorScheme.onSurface,
+            containerColor = hue.wash,
+            contentColor = colors.ink,
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = Space.none),
         modifier = Modifier
             .fillMaxWidth()
-            .testTag(ProjectTags.row(project.id))
-            .semantics { onClick(label = strings["open.action"]) { onOpen(); true } },
+            .testTag(ProjectTags.LEAD)
+            // **One stop for a reader, on the node that takes the tap**, which
+            // is `docs/TRAPS.md`'s first entry.
+            .semantics(mergeDescendants = true) {
+                contentDescription = Bidi.join(
+                    strings[if (dated) "projects.lead.eyebrow" else "projects.lead.no_date"],
+                    project.name,
+                    dateLine,
+                    support,
+                    stages.takeIf { it.size >= 2 }
+                        ?.let { roadSentence(project.name, it, strings) },
+                )
+                onClick(label = strings["projects.open"]) { onOpen(); true }
+            },
     ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(Space.cardPadding),
-    ) {
-        // **The eyebrow, capitals and all**, which is what it is: the app's
-        // own fixed word for where a project stands. It was drawn in the
-        // eyebrow's size and tracking but in sentence case, so a screen whose
-        // group label reads FINISHED had four cards under it reading "Under
-        // way", two treatments of one thing an inch apart. D183: capitals
-        // where the words are the app's own and short.
-        //
-        // Waiting and stalled are stated, never colored as a problem. The app
-        // does not have a view about how a bureaucracy is going.
-        // **The project's own mark, beside the word for where it stands.**
-        // D198: every list in this app carries the kind's mark in the kind's
-        // color, and this screen carried none, so four cards were four gray
-        // boxes with a gold dotted line in each. The hue is the project's,
-        // which `hueFor` gives every surface belonging to no section.
-        //
-        // **The mark says "project" and never says how it is going.** Rule 2:
-        // waiting and stalled are stated in words, never colored as a problem.
-        // The app does not have a view about how a bureaucracy is going.
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            HueMark(
-                hue = hueFor(Repository.Section.PROJECTS),
-                mark = Symbols.projects,
-                size = Space.markCard,
-            )
-            Spacer(Modifier.width(Space.s))
-            Eyebrow(text = strings["projects.status.${project.status}"])
-        }
-        Spacer(Modifier.height(Space.xs))
-
-        Text(
-            text = Bidi.isolate(project.name),
-            style = HealthTrail.type.displayS,
-            color = if (project.isFinished) colors.ink2 else colors.ink,
-        )
-
-        // **The mini road, which is what makes a card read as a project.**
-        // DESIGN.md 20.5 screen 2 and 20.6. Bare, no labels at this size: three
-        // mono words under a card in a list is noise, and the road's shape
-        // already says where the thing is. The reader gets the sentence.
-        val stages = card?.stages.orEmpty()
-        if (stages.size >= 2) {
-            Spacer(Modifier.height(Space.s))
-            // **Named, because an unnamed road is a progress bar.** Four dots
-            // on a dashed line say only how far along something is, which is
-            // the one thing rule 13 rules out and the one thing this component
-            // is not for: a road says *where it stands*, and "In review" is the
-            // word somebody repeats on the phone. Grid screen 02 draws the
-            // stage names on the card and nothing recorded a departure from it,
-            // so D142 settles it.
-            //
-            // **`LabelsOrList` measures rather than guessing**, laying the
-            // longest name out in the label's own style and asking how wide it
-            // actually came out, so a road whose names do not fit under their
-            // waypoints becomes one line instead of four crushed columns.
-            RoadStrip(
-                stages = stages.map { RoadStage(name = it.name, reached = it.isReached) },
-                description = roadSentence(project.name, stages, strings),
-                size = RoadSize.MINI,
-                showLabels = true,
-            )
-        }
-
-        // **Where it stands and the next date, at a glance**, which is what the
-        // grid asks a card to answer. One line, because a card in a list is
-        // scanned rather than read, and the project's own screen is one tap
-        // away for the rest.
-        val glance = Bidi.join(
-            card?.holder,
-            countdown,
-            project.waitingOn?.takeIf { it.isNotBlank() && card?.holder == null },
-        )
-        if (glance.isNotBlank()) {
-            Spacer(Modifier.height(Space.s))
-            Text(
-                text = glance,
-                style = HealthTrail.type.bodyM,
-                color = colors.ink2,
-            )
-        }
-
-        // **What is next, and only when the card would otherwise say nothing.**
-        //
-        // This row said "2 of 5 steps done" until 2026-08-03, which is a
-        // completion count on the person's own work and is what rule 13 rules
-        // out. It became the next step instead, which was right while a project
-        // was a checklist.
-        //
-        // **Under the Projects grid a card answers where it stands and the next
-        // date**, 20.5 screen 2, and printing the next step under those two
-        // makes three lines competing where the grid draws one. So it prints
-        // only when there is neither: a project nobody has said anything about
-        // and that has no date is a real state, and the card should still say
-        // something rather than being a title and a road.
-        if (project.stepCount > 0 && glance.isBlank()) {
-            val next = project.nextStep
-            val line = when {
-                next != null -> strings("projects.next", "step" to next)
-                project.isFinished -> null
-                else -> strings["projects.nothing_left"]
+        Column(modifier = Modifier.fillMaxWidth().padding(Space.l)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                HueMark(
+                    hue = hue,
+                    mark = Symbols.projects,
+                    size = Space.markCard,
+                )
+                Spacer(Modifier.width(Space.s))
+                Eyebrow(
+                    text = strings[
+                        if (dated) "projects.lead.eyebrow" else "projects.lead.no_date",
+                    ],
+                    color = hue.ink,
+                )
             }
-            line?.let {
-                Spacer(Modifier.height(Space.xs))
+
+            if (dateLine != null) {
+                Spacer(Modifier.height(Space.sm))
                 Text(
-                    text = it,
-                    style = HealthTrail.type.bodyS,
+                    text = dateLine,
+                    style = HealthTrail.type.bodyL,
+                    color = hue.ink,
+                )
+            }
+
+            Spacer(Modifier.height(Space.s))
+            // **The name takes the size, not the countdown.** Somebody scanning
+            // this screen is asking which of their processes this is; the date
+            // is why it leads, and the name is what it is. Today's hero makes
+            // the same call, and rule 16 wants one answer to one question.
+            Text(
+                text = Bidi.isolate(project.name),
+                style = HealthTrail.type.hero,
+                color = colors.ink,
+            )
+
+            if (support.isNotBlank()) {
+                Spacer(Modifier.height(Space.s))
+                Text(
+                    text = support,
+                    style = HealthTrail.type.bodyM,
                     color = colors.ink2,
+                )
+            }
+
+            if (stages.size >= 2) {
+                Spacer(Modifier.height(Space.l))
+                RoadStrip(
+                    stages = stages.map { RoadStage(name = it.name, reached = it.isReached) },
+                    description = roadSentence(project.name, stages, strings),
+                    size = RoadSize.FULL,
+                    showLabels = true,
                 )
             }
         }
     }
+}
+
+/**
+ * One project in the list, as a dense row. D205.
+ *
+ * **Sentence case, and the status is not a tag above the name.** GOV.UK spent
+ * two years and three services iterating exactly this and came out at plain
+ * sentence case: uppercase was found hard to read, colored status boxes had no
+ * findings behind them, and users tried to click a tag that looked like a
+ * button. Sources on #399. This screen put an uppercase status above every
+ * project's name, so the loudest word on each card was the state rather than
+ * the thing.
+ *
+ * **The status is left off when it would repeat its own group.** A project
+ * under "Under way" whose status is "Under way" says it twice, an inch apart.
+ */
+@Composable
+private fun ProjectRow(
+    project: Repository.Project,
+    onOpen: () -> Unit,
+    card: Repository.ProjectCard?,
+) {
+    val strings = LocalStrings.current
+    val stages = card?.stages.orEmpty()
+
+    // **Two facts and never four.** Looked at on the phone: "The bank's legal
+    // team · Signed · 2 of 4 · Waiting on somebody" wrapped to three lines and
+    // read as a run-on, which is `docs/V4.md` 6.1 item 7, density chosen per
+    // surface. A row that is scanned carries who it is with and where it is,
+    // and the person's own word for how it is going is one tap away on the
+    // project's own screen.
+    //
+    // **A finished one trades the holder for the ending**, because "done" and
+    // "set aside" are the difference between two closed files and nobody
+    // remembers which was which a year later.
+    val support = if (project.isFinished) {
+        Bidi.join(
+            strings["projects.status.${project.status}"],
+            stageLine(stages, strings),
+        )
+    } else {
+        Bidi.join(
+            card?.holder ?: project.waitingOn?.takeIf { it.isNotBlank() },
+            stageLine(stages, strings),
+        )
     }
+
+    ListRow(
+        title = Bidi.isolate(project.name),
+        support = support.takeIf { it.isNotBlank() },
+        mark = Symbols.projects,
+        // **The card size, not the row size**, because every row here is the
+        // same kind. #388 finding 8, D198 item 4.
+        markSize = Space.markCard,
+        markHue = hueFor(Repository.Section.PROJECTS),
+        isDoor = true,
+        onClick = onOpen,
+        clickLabel = strings["projects.open"],
+        modifier = Modifier.testTag(ProjectTags.row(project.id)),
+    )
+}
+
+/**
+ * Where a project stands and how far along, as words rather than a drawing.
+ *
+ * **Never a percentage and never a bar.** Rule 13, and `docs/V4.md`: a
+ * months-long process has no percentage, and a bar that races then stalls is
+ * the shape Nielsen Norman warns damages trust. These stages are a
+ * bureaucracy's requirements, not the person's conscientiousness.
+ */
+@Composable
+private fun stageLine(
+    stages: List<Repository.ProjectStage>,
+    strings: com.kamsiob.healthtrail.i18n.Strings,
+): String? {
+    if (stages.size < 2) return null
+    val current = stages.indexOfLast { it.isReached }
+    if (current < 0) return null
+    return strings(
+        "projects.row.stage",
+        "stage" to stages[current].name,
+        "position" to current + 1,
+        "total" to stages.size,
+    )
 }
 
 /**
