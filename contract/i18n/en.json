@@ -789,6 +789,7 @@
   "meds.name.hint": "The name on the bottle, or how you refer to it",
   "meds.notes": "Anything to remember",
   "meds.notes.hint": "Who prescribed it, what you were warned about, what you want to ask",
+  "meds.open": "Open this medication",
   "meds.on_card": "Put this on the emergency card",
   "meds.on_card.badge": "On the emergency card",
   "meds.on_card.chip": "On the card",

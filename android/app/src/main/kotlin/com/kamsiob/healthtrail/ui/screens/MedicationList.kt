@@ -1,6 +1,7 @@
 package com.kamsiob.healthtrail.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -285,7 +286,16 @@ private fun MedicationRow(
 
     ListItem(
         headlineContent = { Text(text = Bidi.isolate(medication.name)) },
+        // **The tap, the tag and the reader's sentence on one node**, which is
+        // `docs/TRAPS.md`'s first entry and what this row was missing entirely:
+        // it took an `onOpen` and never called it, and drew a chevron promising
+        // a door that did nothing. Rule 16, and a list whose rows do not open
+        // is the medication screen with no way into any medication.
         modifier = Modifier
+            .clickable(
+                onClickLabel = strings["meds.open"],
+                onClick = { onOpen(medication) },
+            )
             .semantics(mergeDescendants = true) { }
             .testTag(MedsTags.row(medication.id)),
         supportingContent = if (detail == null && dose == null) {

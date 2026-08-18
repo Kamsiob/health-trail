@@ -789,6 +789,7 @@
   "meds.name.hint": "El nombre del envase, o como usted lo llame",
   "meds.notes": "Algo que recordar",
   "meds.notes.hint": "Quién lo recetó, de qué le advirtieron, qué quiere preguntar",
+  "meds.open": "Abrir este medicamento",
   "meds.on_card": "Poner esto en la tarjeta de emergencia",
   "meds.on_card.badge": "En la tarjeta de emergencia",
   "meds.on_card.chip": "En la tarjeta",

@@ -789,6 +789,7 @@
   "meds.name.hint": "药瓶上的名称，或您平时的称呼",
   "meds.notes": "值得记住的事",
   "meds.notes.hint": "谁开的、被提醒过什么、您想问什么",
+  "meds.open": "打开这个药物",
   "meds.on_card": "加入紧急信息卡",
   "meds.on_card.badge": "已在紧急信息卡上",
   "meds.on_card.chip": "放入卡片",
