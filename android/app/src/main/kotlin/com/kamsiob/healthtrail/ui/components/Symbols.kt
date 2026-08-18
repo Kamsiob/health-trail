@@ -58,6 +58,17 @@ object Symbols {
     @DrawableRes val search = R.drawable.ic_search
     @DrawableRes val add = R.drawable.ic_add
     @DrawableRes val edit = R.drawable.ic_edit
+
+    /**
+     * Take this off, which is not the same as delete it.
+     *
+     * **A minus rather than a cross**, and it is Google's own `remove`. A cross
+     * reads as "delete" and nothing here deletes: a card comes off Today and
+     * everything it was answering about is still written down. The app drew this
+     * one by hand on a canvas for as long as Today had an edit mode, which is the
+     * authored glyph D196 rules out.
+     */
+    @DrawableRes val remove = R.drawable.ic_remove
     @DrawableRes val close = R.drawable.ic_close
     @DrawableRes val back = R.drawable.ic_arrow_back
     @DrawableRes val forward = R.drawable.ic_chevron_right

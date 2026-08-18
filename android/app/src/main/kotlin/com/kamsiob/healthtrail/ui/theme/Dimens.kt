@@ -67,6 +67,21 @@ object Space {
     val markTile: Dp = 44.dp
 
     /**
+     * The same mark on a widget, where the height is fixed and the answer is
+     * what the card is for.
+     *
+     * **Smaller than a row's, because a widget pays for it in the answer.** A
+     * card on Today is one square of the field's grid and its height is set by
+     * that grid, D192, so every point the head takes is a point the count and
+     * its list do not have. At the row's 44 the lead cut its own last line off,
+     * which is the truncation rule 11 bans. Measured on the phone.
+     */
+    val markCard: Dp = 24.dp
+
+    /** The drawing inside [markCard]. */
+    val markCardGlyph: Dp = 16.dp
+
+    /**
      * A mark set inside a line of type, or inside an action beside its label.
      *
      * **Smaller than the 24dp a symbol draws at on its own**, because a glyph

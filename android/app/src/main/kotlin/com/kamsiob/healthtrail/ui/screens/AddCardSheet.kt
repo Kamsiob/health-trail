@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,9 +17,6 @@ import com.kamsiob.healthtrail.ui.sectionForCard
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.i18n.Strings
-import com.kamsiob.healthtrail.ui.components.CardSize
-import com.kamsiob.healthtrail.ui.components.TodayCard
-import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Page
@@ -98,8 +96,8 @@ fun AddCardSheet(
     modifier: Modifier = Modifier,
 ) {
     val strings = LocalStrings.current
-    val colors = HealthTrail.colors
-    val type = HealthTrail.type
+    val scheme = MaterialTheme.colorScheme
+    val fonts = MaterialTheme.typography
 
     Page(
         title = strings["today.add.title"],
@@ -116,8 +114,8 @@ fun AddCardSheet(
             item {
                 Text(
                     text = strings["today.add.none"],
-                    style = type.bodyM,
-                    color = colors.ink2,
+                    style = fonts.bodyMedium,
+                    color = scheme.onSurfaceVariant,
                     modifier = Modifier.padding(vertical = Space.m),
                 )
             }
@@ -152,7 +150,7 @@ fun AddCardSheet(
                 // **It wears the hue and the shape it will wear on Today**, so
                 // what is chosen and what arrives are the same object seen
                 // twice rather than a description and a thing. D157.
-                TodayCard(
+                TodayWidget(
                     tab = Bidi.isolate(offer.label),
                     hue = hueForCard(offer.type),
                     // **What a reader hears, composed here**, because the card
@@ -177,8 +175,8 @@ fun AddCardSheet(
                     // this screen is that the answer is on it.
                     Text(
                         text = offer.preview.orEmpty(),
-                        style = type.displayS,
-                        color = colors.ink,
+                        style = fonts.headlineSmall,
+                        color = scheme.onSurface,
                     )
                 }
             }
