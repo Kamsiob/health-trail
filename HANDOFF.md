@@ -220,6 +220,7 @@ Read on demand, never in bulk.
 
 | Need | Read |
 |---|---|
+| What each tracked thing is, before drawing its screen | **`docs/TRACKED-THINGS.md`**. Researched, with sources, and it is mostly about what rule 2 rules out |
 | What to do next | `gh issue view 321`, then this file. Then `gh issue list --milestone "FINISH THE APP"` |
 | The design and the polish bar | **`docs/V4.md`** |
 | What the approved design looks like | `docs/screenshots/m3v4-{0..5}-light.png`. **Open them** |
