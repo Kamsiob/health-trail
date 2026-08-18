@@ -282,16 +282,21 @@ private fun ChapterStop(
                     strings("today.open.incidents", "count" to holds.openIncidents)
                         .takeIf { holds.openIncidents > 0 },
                 )
-                Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
-                    Eyebrow(text = strings["chapters.holds"])
-                    // bidi-ok: every part is a catalog phrase around a number,
-                    // in the app's own words rather than anything typed.
-                    Body(
-                        text = Bidi.join(parts),
-                        color = colors.ink,
-                        modifier = Modifier.testTag(ChapterTags.holds(chapter.id)),
-                    )
-                }
+                // **No label above it, and that is a correction.** "WHAT IS IN
+                // THIS CHAPTER" sat inside every card on the screen, four
+                // times down one scroll, naming what the line under it already
+                // says: "281 entries, 5 documents" is not ambiguous. An
+                // eyebrow names a group of things; repeating one inside each
+                // member of a list is furniture, and no approved drawing does
+                // it. Seen on the phone, rule 21.
+                //
+                // bidi-ok: every part is a catalog phrase around a number, in
+                // the app's own words rather than anything typed.
+                Body(
+                    text = Bidi.join(parts),
+                    color = colors.ink,
+                    modifier = Modifier.testTag(ChapterTags.holds(chapter.id)),
+                )
             }
         }
     }

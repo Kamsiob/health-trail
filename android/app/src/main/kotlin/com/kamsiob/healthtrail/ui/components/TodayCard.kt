@@ -1,6 +1,7 @@
 package com.kamsiob.healthtrail.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -275,7 +277,20 @@ fun TodayCard(
      * blank area, on the first screen of a first run. #376.
      */
     centerContent: Boolean = false,
-    content: @Composable () -> Unit,
+    /**
+     * The white surface with an edge, for a card holding the person's own
+     * record rather than the app's summary of one. **D190, decided and until
+     * now unbuilt.**
+     *
+     * `m3v4-0` puts a tracked measurement on white: a column of numbers
+     * somebody wrote down themselves is theirs in the same sense a photograph
+     * of a discharge letter is. **It carries a hairline**, because `paper` is
+     * `#FBFAF8` and `card` is `#FFFFFF`, four values apart, so a white card on
+     * the canvas would have no boundary at all. That is an edge and not a
+     * raise: the only shadow in this app is still under the person's paper.
+     */
+    onOwnPaper: Boolean = false,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     val colors = HealthTrail.colors
     val type = HealthTrail.type
@@ -349,11 +364,21 @@ fun TodayCard(
             // the field needed a shadow to be visible: the tonal block needs
             // neither. **Two places, because the resting surface is the one
             // that paints.**
-            .background(colors.sand)
+            .background(if (onOwnPaper) colors.card else colors.sand)
+            .then(
+                if (onOwnPaper) {
+                    Modifier.border(Space.hairlineWidth, colors.hairline, Radius.cardLarge)
+                } else {
+                    Modifier
+                },
+            )
             .openableByTap(
                 label = openLabel,
                 onTap = onOpen,
-                resting = colors.sand,
+                // **The resting surface is the one that actually paints**, and
+                // the background above sits under it. A card given the white
+                // surface here and the sand one below is drawn in sand.
+                resting = if (onOwnPaper) colors.card else colors.sand,
                 shape = Radius.cardLarge,
                 // long-press-twin: Today's Arrange action, per the parameter above.
                 onLongPress = onLongPress,

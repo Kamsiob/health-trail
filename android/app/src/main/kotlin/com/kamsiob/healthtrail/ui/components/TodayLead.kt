@@ -2,6 +2,7 @@ package com.kamsiob.healthtrail.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -130,7 +131,7 @@ fun TodayLead(
      * everything under it, which is the order the screen actually has.
      */
     saturated: Boolean = true,
-    content: @Composable () -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     val colors = HealthTrail.colors
     val strings = LocalStrings.current

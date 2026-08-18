@@ -61,11 +61,25 @@ fun Trace(
     line: Color,
     modifier: Modifier = Modifier,
     height: Dp = TraceHeight.card,
+    /**
+     * Whether the line takes the room it is given rather than its own height.
+     *
+     * **For a card whose height is fixed by the grid**, D192: the eyebrow, the
+     * figure and the date are what they are, and the line is the one part that
+     * can give or take. A fixed band left a void under the date on a card that
+     * cannot grow, which reads as a card that failed to load rather than as a
+     * card with air in it. The caller passes a weight with this.
+     */
+    fillHeight: Boolean = false,
 ) {
     val points = chartPoints(readings)
     val surface = HealthTrail.colors.card
 
-    Canvas(modifier = modifier.fillMaxWidth().height(height)) {
+    Canvas(
+        modifier = modifier
+            .fillMaxWidth()
+            .then(if (fillHeight) Modifier else Modifier.height(height)),
+    ) {
         if (points.isEmpty()) return@Canvas
 
         val lo = points.minOf { it.value }
@@ -188,6 +202,7 @@ object TraceHeight {
      * above it and the month under it.
      */
     val card: Dp = 68.dp
+
 }
 
 /** Measured off `m3v4-0`: the stroke is a little over two points. */

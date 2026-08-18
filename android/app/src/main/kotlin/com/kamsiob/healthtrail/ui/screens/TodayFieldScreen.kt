@@ -30,6 +30,7 @@ import com.kamsiob.healthtrail.ui.theme.Radius
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -1125,6 +1126,10 @@ private fun CardFor(
     val shown = worded(card.type, answer, today)
 
     TodayCard(
+        // **A tracked measure sits on white, D190.** The readings are the
+        // person's own record rather than the app's summary of one, which is
+        // the same reason their photographed paper gets it.
+        onOwnPaper = card.type == "measure",
         tab = tab,
         hue = hueForCard(card.type),
         // **An empty answer centers itself in the square.** The none line sat
@@ -1299,7 +1304,7 @@ private fun CardFor(
  * disagree the first time either is touched.
  */
 @Composable
-private fun AnswerBody(
+private fun ColumnScope.AnswerBody(
     answer: Repository.TodayAnswer?,
     /** The card's type, for the one line of context that names what the count counts. */
     cardType: String,
@@ -1460,6 +1465,12 @@ private fun AnswerBody(
             // there the paper can be this very hue, so the line would be
             // painted in exactly the background.
             line = if (colors.paper == hue.base) colors.ink else hue.base,
+            // **The card's height is the grid's**, D192, so the line takes
+            // the room left after the figure and the date rather than a band
+            // of its own. A fixed band either clipped the date or left a void
+            // under it, depending on which way it was wrong.
+            modifier = Modifier.weight(1f),
+            fillHeight = true,
         )
     }
 
