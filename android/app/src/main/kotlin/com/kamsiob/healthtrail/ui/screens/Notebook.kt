@@ -35,9 +35,9 @@ import androidx.compose.ui.semantics.semantics
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.Symbols
-import com.kamsiob.healthtrail.ui.components.TipsSheet
+import com.kamsiob.healthtrail.ui.v4.TipsSheet
 import com.kamsiob.healthtrail.ui.v4.fabScrollClearance
-import com.kamsiob.healthtrail.ui.components.tipForDestination
+import com.kamsiob.healthtrail.ui.v4.tipForDestination
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.alertHue
 import com.kamsiob.healthtrail.ui.theme.goldHue
@@ -256,7 +256,7 @@ fun NotebookScreen(
                             contentDescription = strings["today.search.everything"],
                         )
                     }
-                    com.kamsiob.healthtrail.ui.components.TipsButton(
+                    com.kamsiob.healthtrail.ui.v4.TipsButton(
                         onOpen = { showTips = true },
                     )
                 },

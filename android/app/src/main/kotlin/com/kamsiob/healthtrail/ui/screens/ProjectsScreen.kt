@@ -18,8 +18,8 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.v4.HeaderActions
-import com.kamsiob.healthtrail.ui.components.TipsSheet
-import com.kamsiob.healthtrail.ui.components.tipForDestination
+import com.kamsiob.healthtrail.ui.v4.TipsSheet
+import com.kamsiob.healthtrail.ui.v4.tipForDestination
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Alignment
 import com.kamsiob.healthtrail.ui.v4.fabSafeActionBar
