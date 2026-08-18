@@ -71,7 +71,10 @@ UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
 # the chip's height, dot and two border widths. **This is the prediction above
 # coming true**: the measurements typed into screens were mostly furniture the
 # rebuild deletes rather than spacing anybody chose. #387.
-BASELINE = 90
+# 91, up one, for the fold's own 60dp height. **Geometry rather than spacing**,
+# the category this file's own note sets aside: it is the drawn height of a
+# control measured off `m3v4-4`, not a gap somebody chose. D195.
+BASELINE = 91
 
 LITERAL = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\.(dp|sp)\b")
 

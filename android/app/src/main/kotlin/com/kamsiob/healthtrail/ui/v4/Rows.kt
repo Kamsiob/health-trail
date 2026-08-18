@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -393,8 +394,24 @@ fun SwitchRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
+        // **The mark sits in a circle of its own**, which is how `m3v4-4` draws
+        // it: a filled disc in the section's base with the glyph knocked out of
+        // it, not a bare glyph beside the words. Measured off the PNG at 44dp.
         mark?.let {
-            Symbol(symbol = it, contentDescription = null, tint = hue?.ink ?: colors.ink2)
+            Box(
+                modifier = Modifier
+                    .size(Space.markTile)
+                    .clip(CircleShape)
+                    .background(hue?.base?.copy(alpha = MARK_DISC_ALPHA) ?: colors.card),
+                contentAlignment = Alignment.Center,
+            ) {
+                Symbol(
+                    symbol = it,
+                    contentDescription = null,
+                    tint = hue?.ink ?: colors.ink2,
+                    modifier = Modifier.size(Space.markInline),
+                )
+            }
         }
         Column(modifier = Modifier.weight(1f)) {
             // bidi-ok: the app's own question.
@@ -421,3 +438,12 @@ fun SwitchRow(
         )
     }
 }
+
+/**
+ * How much of the section's base a switch row's disc takes.
+ *
+ * `m3v4-4` sets the mark's circle between the row's wash and the section's full
+ * color, so the glyph reads without the disc becoming a second filled thing on
+ * a row that already has a switch.
+ */
+private const val MARK_DISC_ALPHA = 0.22f

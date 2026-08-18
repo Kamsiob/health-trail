@@ -51,6 +51,7 @@ import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.FactBlock
 import com.kamsiob.healthtrail.ui.v4.Field
 import com.kamsiob.healthtrail.ui.v4.FieldBlock
+import com.kamsiob.healthtrail.ui.v4.Fold
 import com.kamsiob.healthtrail.ui.v4.Lead
 import com.kamsiob.healthtrail.ui.v4.MoreChip
 import com.kamsiob.healthtrail.ui.v4.cappedChips
@@ -635,9 +636,8 @@ fun CaptureFormScreen(
                     // D185: nothing sits behind a fold that a label and a scroll can
                     // carry, and the sentence that used to explain the fold is the
                     // group's own line now. Nothing here was ever required.
-                    FieldBlock(
+                    Fold(
                         label = strings["capture.more"],
-                        aside = strings["capture.more.aside"],
                         modifier = Modifier.testTag(CaptureFormTags.MORE),
                     ) {
                         Column {

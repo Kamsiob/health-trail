@@ -8,7 +8,22 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.dp
+import com.kamsiob.healthtrail.ui.components.Symbol
+import com.kamsiob.healthtrail.ui.components.Symbols
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -231,3 +246,74 @@ fun DictatableField(
         }
     }
 }
+
+/**
+ * The rest of a form, behind one control nobody is required to touch. `m3v4-4`.
+ *
+ * **This comes back, and D185 said what would bring it.** That entry deleted
+ * the accordion because "the drawing does not draw one", which was checked
+ * against `m3v4-3`, the care team, where it is true. **`m3v4-4` draws one**: a
+ * sand pill at the foot of the medication form carrying a plus, "What it is
+ * for, and any note", and a chevron. D185's own revisit clause reads "a mockup
+ * that draws a fold. Then it is measured and written from scratch", so that is
+ * what this is. The list folds stay deleted: no drawing shows those, and
+ * nothing behind them was ever a question the form was asking.
+ *
+ * **Measured off the PNG**: 60dp tall, the full content width, a 14dp corner,
+ * the block's own sand, the plus and the chevron in the quiet ink.
+ *
+ * **It opens and stays open.** There is no close control, because somebody who
+ * opened it wanted what is inside and taking it away again would be the form
+ * arguing with them. Leaving the screen resets it, which is right: the next
+ * entry starts from the short form.
+ *
+ * **It never carries a count and never says how much is left.** "Add more" is
+ * an offer; "3 more fields" would be a measure of how incomplete the entry is,
+ * which rule 13 rules out.
+ *
+ * **It never hides something already written down**, which is what [startOpen]
+ * is for: a form correcting a saved record passes true, because folding away a
+ * note somebody typed last week behind a control that says "Add more" is the
+ * app hiding their own words.
+ */
+@Composable
+fun Fold(
+    label: String,
+    modifier: Modifier = Modifier,
+    startOpen: Boolean = false,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val colors = HealthTrail.colors
+    // Saveable, so a rotation or a theme change does not fold the form back up
+    // under somebody part way through filling it in.
+    var open by rememberSaveable(startOpen) { mutableStateOf(startOpen) }
+
+    if (open) {
+        Column(
+            modifier = modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(Space.withinGroup),
+            content = content,
+        )
+        return
+    }
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .sizeIn(minHeight = FOLD_HEIGHT)
+            .clip(Radius.fold)
+            .background(colors.sand)
+            .clickable(role = Role.Button, onClickLabel = label) { open = true }
+            .padding(horizontal = Space.ml, vertical = Space.sm),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        Symbol(symbol = Symbols.add, contentDescription = null, tint = colors.ink2)
+        // bidi-ok: the app's own words for what is behind the control.
+        Body(text = label, style = HealthTrail.type.bodyL, modifier = Modifier.weight(1f))
+        Symbol(symbol = Symbols.expand, contentDescription = null, tint = colors.ink2)
+    }
+}
+
+/** 59.8dp on `m3v4-4`, which is the touch target plus the air around the words. */
+private val FOLD_HEIGHT = 60.dp

@@ -182,7 +182,7 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | B4 | The emulator. Resolved by dropping it, 2026-07-31 |
 | D146 | The welcome is remembered by the phone as well as by the notebook |
 
-**The index stops at D157 and the entries do not.** Everything from D158 on is in the body, newest first, and the file is searched by number rather than read. The ones the interface rebuild turns on: **D178** replacement not conversion, **D179** the foundation needed a pinned alpha, **D183** measure the drawing rather than judge it, **D185** the accordion is not replaced, **D186** a person's mark is their own color and the care team splits by a toggle, **D187** the spine is a path not a filter, **D188** three gaps and no more, **D189** the hint comes out of the field, **D190** white is the third reserved surface and the only one with an edge, **D191** `m3v4-0` draws the arranged Today and there are two of them, **D194** the retirements are scripted and three of them were not renames.
+**The index stops at D157 and the entries do not.** Everything from D158 on is in the body, newest first, and the file is searched by number rather than read. The ones the interface rebuild turns on: **D178** replacement not conversion, **D179** the foundation needed a pinned alpha, **D183** measure the drawing rather than judge it, **D185** the accordion is not replaced, **D186** a person's mark is their own color and the care team splits by a toggle, **D187** the spine is a path not a filter, **D188** three gaps and no more, **D189** the hint comes out of the field, **D190** white is the third reserved surface and the only one with an edge, **D191** `m3v4-0` draws the arranged Today and there are two of them, **D194** the retirements are scripted and three of them were not renames, **D195** the form's fold comes back because `m3v4-4` draws one.
 
 ---
 
@@ -2989,6 +2989,22 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 **There was a third record, found after the fix, and it changes nothing but is worth the paragraph.** `DESIGN.md` section 14's row for this screen also said the role belongs behind "Add more", **and it gave the reason**: the role and up to six chips sat *between* the name and the number, so the number, which is why anybody adds a person, was the field furthest down. **That is a layout complaint, not an argument for hiding the role**, and putting the three fields in one group with the chips underneath answers it without hiding anything. So two records asked for the role to be folded, one recorded folding it being reverted, and the built screen now satisfies all three. Section 14 is corrected to say so.
 
 **Three records, one screen, and the only way to see it was to read all three.** The check that would have caught it does not exist and probably cannot: they were not contradictory statements, they were one statement, one reason, and one exception, written months apart in three files.
+
+---
+
+### D195. The form's fold comes back, because `m3v4-4` draws one and D185 said that is what would bring it
+
+**Date:** 2026-08-17. **Phase 4, #387.** Found by opening the approved PNGs beside the built screens after the owner said the app had become a cheap imitation.
+
+**D185 deleted the accordion on the grounds that the drawings do not draw one, and that was checked against one drawing.** Its text cites `m3v4-3`, the care team, where it is true: that screen has a segmented toggle and plain rows. **`m3v4-4`, the medication form, draws a fold** at the foot: a sand pill, 60dp tall at a 14dp corner, carrying a plus, "What it is for, and any note", and a chevron. Measured off the PNG.
+
+**D185 wrote its own revisit condition and this meets it**: "a mockup that draws a fold. Then it is measured and written from scratch like every other drawn thing, D183." So `ui/v4`'s `Fold` is written from the drawing rather than the old `Disclosure` being restored, and six forms use it again.
+
+**The list folds stay deleted, and that half of D185 is untouched.** Past appointments, a month of the trail, search results by kind, template categories: no drawing shows any of those folded, and the reasoning holds that a label and a scroll carry them. What the form's fold hides is different in kind: it is the half of a question the person was never asked, on a screen whose whole job is to ask as little as possible. **A list hides answers; a form's fold hides questions.**
+
+**What it keeps from the old one**, because those were right and are not design language: it opens and never closes, since somebody who opened it wanted what is inside; it carries no count, because "3 more fields" measures how incomplete an entry is and rule 13 rules that out; and it opens itself when what is behind it already says something, so a correction never hides words somebody typed last week.
+
+**Revisit if.** A drawing arrives with the form's optional half unfolded, or the owner says a form should ask everything at once.
 
 ---
 
