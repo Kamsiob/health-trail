@@ -400,12 +400,8 @@ private fun CardField(entry: CardEntry, isLast: Boolean) {
             .testTag(EmergencyTags.field(entry.key))
             .padding(Space.cardPadding),
     ) {
-        Text(
-            // bidi-ok: a catalog label, in the app's own words rather than the person's.
-            text = entry.label,
-            style = HealthTrail.type.eyebrow,
-            color = colors.alertInk,
-        )
+        // bidi-ok: a catalog label, in the app's own words rather than the person's.
+        Eyebrow(text = entry.label, color = colors.alertInk)
         Spacer(Modifier.height(Space.xs))
         Text(
             text = Bidi.isolate(entry.value),

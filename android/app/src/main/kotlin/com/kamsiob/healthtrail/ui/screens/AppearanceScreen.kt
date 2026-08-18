@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.Symbols
+import com.kamsiob.healthtrail.ui.components.TipsButton
 import com.kamsiob.healthtrail.ui.components.TipsSheet
 import com.kamsiob.healthtrail.ui.components.fabScrollClearance
 import com.kamsiob.healthtrail.ui.components.tipForDestination
@@ -90,13 +91,15 @@ fun AppearanceScreen(
         subtitle = strings[subtitleKey],
         onBack = onBack,
         backLabel = strings[backLabelKey],
+        // **The lamp in its gold circle, which is where it is everywhere
+        // else.** `m3v4-1` draws it that way in the top corner, and every
+        // section page gets it through the page's own corner. A destination
+        // built on this frame drew a bare bulb instead, so the same control
+        // had two costumes depending on which screen you were on. Seen on the
+        // phone, rule 21.
         actions = tipsKey?.let {
             {
-                IconAction(
-                    symbol = Symbols.tips,
-                    label = strings["tips.open"],
-                    onClick = { showTips = true },
-                )
+                TipsButton(onOpen = { showTips = true })
             }
         },
         modifier = modifier.testTag(AppearanceTags.ROOT),

@@ -20,6 +20,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Avatar
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.labeledBlock
@@ -128,12 +129,8 @@ private fun PersonRow(
                         .background(colors.leafWash)
                         .padding(horizontal = Space.s, vertical = Space.xs),
                 ) {
-                    Text(
-                        // bidi-ok: the app's own word for the state.
-                        text = strings["people.showing"],
-                        style = HealthTrail.type.eyebrow,
-                        color = colors.leafInk,
-                    )
+                    // bidi-ok: the app's own word for the state.
+                    Eyebrow(text = strings["people.showing"], color = colors.leafInk)
                 }
             }
         } else {

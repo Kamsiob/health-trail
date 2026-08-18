@@ -188,11 +188,7 @@ fun StartProjectScreen(
             // #371 item 5: the eyebrow slot above now holds the tab
             // chip, and a mono line stacked over a chip is two
             // eyebrows arguing about which one says where you are.
-            Text(
-                text = strings["projects.start.stage"],
-                style = HealthTrail.type.eyebrow,
-                color = colors.ink2,
-            )
+            Eyebrow(text = strings["projects.start.stage"])
             Spacer(Modifier.height(Space.l))
             ScopedSearch(
                 value = query,

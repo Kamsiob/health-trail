@@ -285,13 +285,16 @@ private fun ProjectRow(
             .testTag(ProjectTags.row(project.id))
             .padding(Space.cardPadding),
     ) {
-        Text(
-            text = strings["projects.status.${project.status}"],
-            style = HealthTrail.type.eyebrow,
-            // Waiting and stalled are stated, never colored as a problem. The
-            // app does not have a view about how a bureaucracy is going.
-            color = colors.ink2,
-        )
+        // **The eyebrow, capitals and all**, which is what it is: the app's
+        // own fixed word for where a project stands. It was drawn in the
+        // eyebrow's size and tracking but in sentence case, so a screen whose
+        // group label reads FINISHED had four cards under it reading "Under
+        // way", two treatments of one thing an inch apart. D183: capitals
+        // where the words are the app's own and short.
+        //
+        // Waiting and stalled are stated, never colored as a problem. The app
+        // does not have a view about how a bureaucracy is going.
+        Eyebrow(text = strings["projects.status.${project.status}"])
         Spacer(Modifier.height(Space.xs))
 
         Text(

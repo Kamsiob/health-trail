@@ -216,13 +216,11 @@ fun SearchScreen(
         val best = results.firstOrNull()
         if (best != null) {
             item(key = "best_${best.id}") {
-                Text(
+                Eyebrow(
                     text = Bidi.join(
                         strings["search.best"],
                         strings[sectionKey(best.section)],
                     ),
-                    style = HealthTrail.type.eyebrow,
-                    color = colors.ink2,
                 )
                 Spacer(Modifier.height(Space.xs))
                 ResultRow(hit = best, onOpen = { onOpen(best) }, lead = true)

@@ -164,11 +164,7 @@ private fun StarterCard(
         Text(text = starter.name, style = HealthTrail.type.displayS, color = colors.ink)
 
         Spacer(Modifier.height(Space.sm))
-        Text(
-            text = strings["instructions.what_to_say"],
-            style = HealthTrail.type.eyebrow,
-            color = colors.ink2,
-        )
+        Eyebrow(text = strings["instructions.what_to_say"])
         Spacer(Modifier.height(Space.xs))
         // bidi-ok: a catalog label, in the app's own words rather than the person's.
         Text(text = starter.wording, style = HealthTrail.type.bodyL, color = colors.ink)
