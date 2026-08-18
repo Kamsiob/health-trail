@@ -37,6 +37,8 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
+import androidx.compose.ui.Alignment
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RichText
@@ -54,6 +56,7 @@ object NoteTags {
     const val TITLE = "note_title"
     const val BODY = "note_body"
     const val SAVE = "note_save"
+    const val CANCEL = "note_cancel"
     const val ABOUT = "note_about"
     const val BOLD = "note_mark_bold"
     const val ITALIC = "note_mark_italic"
@@ -107,18 +110,43 @@ fun NoteScreen(
         subtitle = strings["note.lead"],
         // **The way out sits in the band**, where every other form's Save does,
         // so the keyboard never covers it. #129.
+        // **A save and a cancel, in that order of weight.** The owner,
+        // 2026-08-18: "make that the save/cancel material 3 expressive style."
+        // It was one quiet action sitting on the left of the band, which reads
+        // as a link rather than as the thing the screen is for.
+        //
+        // **One filled action and one quiet one**, `ActionEmphasis` law: at most
+        // one filled per group, because a band with two shouts has told the
+        // person nothing about which one matters. Save takes the width it
+        // deserves and cancel keeps its presence without competing.
         band = {
-            Action(
-                label = strings["note.save"],
-                // **A note with nothing in it is not a note.** This is the one
-                // thing on the screen that is required, and it is required
-                // because saving nothing writes an empty row rather than
-                // helping anybody. Rule 13 is about not blocking on *missing*
-                // fields, not about writing blank records.
-                enabled = body.isNotBlank() || title.isNotBlank(),
-                onClick = { onSave(title.trim(), body) },
-                modifier = Modifier.testTag(NoteTags.SAVE),
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Space.s),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Action(
+                    label = strings["common.cancel"],
+                    emphasis = ActionEmphasis.Quiet,
+                    onClick = onBack,
+                    modifier = Modifier.testTag(NoteTags.CANCEL),
+                )
+                Action(
+                    label = strings["note.save"],
+                    emphasis = ActionEmphasis.Main,
+                    // **A note with nothing in it is not a note.** This is the
+                    // one thing on the screen that is required, and it is
+                    // required because saving nothing writes an empty row
+                    // rather than helping anybody. Rule 13 is about not
+                    // blocking on *missing* fields, not about writing blank
+                    // records.
+                    enabled = body.isNotBlank() || title.isNotBlank(),
+                    onClick = { onSave(title.trim(), body) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag(NoteTags.SAVE),
+                )
+            }
         },
     ) {
         aboutLabel?.let { about ->
