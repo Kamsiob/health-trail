@@ -19,6 +19,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -197,6 +199,14 @@ fun StepEditSheet(
                 Switch(
                     checked = step.isDone,
                     onCheckedChange = { onSetDone(it) },
+                    // **A reader hears what the control is for, not "switch".**
+                    // The words beside it are a separate node, so the switch
+                    // announced its state and nothing about what the state was
+                    // about. `ScreenReaderTest` caught it, which is rule 19
+                    // being a gate rather than a wish.
+                    modifier = Modifier.semantics {
+                        contentDescription = strings["project.step.done"]
+                    },
                 )
             }
 

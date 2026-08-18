@@ -63,6 +63,13 @@ fun Modifier.arrives(index: Int = 0): Modifier = composed {
         animationSpec = motion.standard(),
         label = "arrival",
     )
+    // **A rise and a fade, and the rise was suspected and cleared.** Thirteen
+    // instrumented tests fail on `performScrollTo` and `assertIsDisplayed`, and
+    // this looked like the cause: a `translationY` moves the bounds every scroll
+    // gesture is measured against. It is not. The same thirteen fail on the
+    // commit before any of this session's work, checked in a worktree at
+    // `0f560b14`, so they are the suite's own and this is cleared. Written down
+    // because the next person will suspect it too.
     val rise = with(LocalDensity.current) { motion.arrivalRise.toPx() }
     graphicsLayer {
         alpha = progress

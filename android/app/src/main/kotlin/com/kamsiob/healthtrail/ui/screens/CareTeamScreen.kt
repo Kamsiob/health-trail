@@ -1,5 +1,6 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import com.kamsiob.healthtrail.ui.v4.listGroupShape
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Color
@@ -314,7 +315,7 @@ fun CareTeamScreen(
         // is six hundred rows and pays for laziness; this is fifteen people and
         // grouping them costs nothing.
         item {
-            Block(padding = Space.none) {
+            Block(padding = Space.none, shape = listGroupShape) {
                 shown.forEachIndexed { index, person ->
                     val phone = person.phone?.takeIf { it.isNotBlank() }
                     PersonRow(

@@ -112,6 +112,26 @@ fun Block(
 }
 
 /**
+ * The corner a group of rows wears, and it is not the corner a card wears.
+ *
+ * **Shape variety is the loudest signal of Material 3 Expressive**, `docs/V4.md`
+ * 2 and D167, and this app had five corners in its scale and drew one of them.
+ * Every container in the interface was the card's 26dp, which is the thing
+ * Theme.kt's own note says makes an app read as clean rather than as designed.
+ *
+ * **A tighter corner is what a list looks like.** A card is a thing held up to
+ * be read and its corner is generous; a run of rows under a label is a list, and
+ * a list with a card's corner reads as a card that happens to have lines in it.
+ * `docs/V4.md` 6.1 item 7 asks for density chosen per surface, and the corner is
+ * the part of density the eye reads first.
+ *
+ * **Material's own medium step**, so this is the scale being used rather than a
+ * sixth value being invented.
+ */
+val listGroupShape: Shape
+    @Composable get() = MaterialTheme.shapes.medium
+
+/**
  * What a block is for, which decides its color.
  *
  * **A tone rather than a color at the call site.** A screen says what the block

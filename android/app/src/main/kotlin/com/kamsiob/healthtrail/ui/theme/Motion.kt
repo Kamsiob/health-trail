@@ -98,12 +98,10 @@ interface Motion {
     val pressScale: Float
 
     /**
-     * How far a part of a screen travels on its way in. `docs/V4.md` 6.1 item
-     * 8, and the token is here rather than in the component so the reduced
-     * motion setting reaches it the way it reaches everything else.
+     * How far a part of a screen travels on its way in. `docs/V4.md` 6.1 item 8.
      *
      * **Small enough to be felt rather than watched.** About a line of body
-     * text, so a card looks like it settled rather than like it flew in from
+     * text, so a page looks like it settled rather than like it flew in from
      * somewhere off the screen. Zero when motion is reduced.
      */
     val arrivalRise: Dp

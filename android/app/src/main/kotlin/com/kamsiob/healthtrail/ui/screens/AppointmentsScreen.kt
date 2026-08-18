@@ -162,7 +162,22 @@ fun AppointmentsScreen(
     ) {
         if (appointments.isEmpty()) {
             item {
-                SectionEmpty(name = ApptTags.NAME, text = strings["appts.empty"], section = Repository.Section.APPOINTMENTS, modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION))
+                // **An empty screen still offers the one thing to do here.**
+                // The fab is null on an empty section, D200, and this passed no
+                // action either, so a notebook with nothing on the calendar
+                // showed a drawing, a sentence, and no way to put anything
+                // there. Rule 11: an empty state is a designed state, not a
+                // screen with the content removed. The comment on the fab above
+                // already said the empty state keeps its own way to start; it
+                // did not have one.
+                SectionEmpty(
+                    name = ApptTags.NAME,
+                    text = strings["appts.empty"],
+                    section = Repository.Section.APPOINTMENTS,
+                    actionLabel = strings["appts.add"],
+                    onAction = onAdd,
+                    modifier = Modifier.fillParentMaxHeight(EMPTY_HEIGHT_FRACTION),
+                )
             }
         }
 
@@ -198,14 +213,12 @@ fun AppointmentsScreen(
                     onOpen = onOpen,
                 )
             }
-            item {
-                Spacer(Modifier.height(Space.s))
-                Action(
-                    label = strings["appts.add"],
-                    onClick = onAdd,
-                    modifier = Modifier.testTag(ApptTags.ADD),
-                )
-            }
+            // **No second way to add.** The floating button is already on this
+            // screen, D200, and this drew a tonal one under the grid carrying
+            // the same tag: two ways to do one thing on one screen, and two
+            // nodes under one test tag, which is `docs/TRAPS.md`'s first entry.
+            // The fab's own comment names the rule this broke. Seen on a
+            // capture, #388.
             return@Page
         }
 

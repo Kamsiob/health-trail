@@ -2,6 +2,7 @@ package com.kamsiob.healthtrail.ui.v4
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -331,9 +332,8 @@ fun Page(
                             // typed it. Seen on the phone, rule 21, and it is
                             // #129's rule one layer up: a form whose action is
                             // unreachable is a form nobody finishes.
-                            .windowInsetsPadding(
-                                WindowInsets.navigationBars.union(WindowInsets.ime),
-                            )
+                            .windowInsetsPadding(WindowInsets.navigationBars)
+                            .imePadding()
                             .padding(vertical = Space.sm),
                     ) { it() }
                 }
@@ -521,7 +521,10 @@ fun LazyListScope.labeledBlock(
             // screen. Color belongs in the marks, the chips and the one small
             // thing a screen leads with, which is what Material does and what
             // every approved drawing does.
-            Block(padding = Space.none) {
+            // **A list's corner, not a card's.** `listGroupShape`, and the
+            // reason is written there: this app had five corners in its scale
+            // and drew one of them on every container in the interface.
+            Block(padding = Space.none, shape = listGroupShape) {
                 rows.forEachIndexed { index, row ->
                     row()
                     if (index != rows.lastIndex) RowDivider()
