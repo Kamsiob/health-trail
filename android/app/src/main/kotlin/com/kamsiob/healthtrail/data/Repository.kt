@@ -6621,6 +6621,127 @@ class Repository private constructor(
             }
         }
 
+    /**
+     * Writes a note, and attaches it to the thing it is about. D207, #397.
+     *
+     * **A note is an entry**, `kind = 'note'`, which the schema has allowed
+     * since Phase 0 and which nothing could write until now. That keeps it on
+     * the trail, in search, in the archive, in the merge and in the change log
+     * with no new plumbing, and it is why #397 changed no table.
+     *
+     * **The body is stored exactly as typed**, marks and all, per
+     * `contract/DATA-CONTRACT.md` 8.8.1. There is no encode step here and no
+     * decode step on the way out, which is what makes "survives the archive
+     * byte for byte" true by construction.
+     *
+     * **The attachment is one `link` row and it reads from both sides**, rule
+     * 18. A note about Tuesday's visit is
+     * `('entry', <note>, 'appointment', <appointment>)`, and both the note and
+     * the appointment find it with the same query.
+     *
+     * **Both writes are one transaction**, so a note never exists attached to
+     * nothing because the second insert failed.
+     */
+    suspend fun addNote(
+        subjectId: String,
+        title: String?,
+        body: String?,
+        /**
+         * When it happened, at exactly the precision the person gave, rule 17.
+         *
+         * **Unknown is a first class value and saves**, which is what the
+         * default is: a note somebody writes without saying when is a complete
+         * note, not a draft.
+         */
+        occurred: Edtf.Date = Edtf.unknown(),
+        /** What this note is about, as a table and a row id, or null for a general note. */
+        aboutTable: String? = null,
+        aboutId: String? = null,
+        chapterId: String? = null,
+    ): String = withContext(Dispatchers.IO) {
+        val database = db().database
+        database.beginTransaction()
+        try {
+            val id = insertRow(
+                "entry",
+                mapOf(
+                    "subject_id" to subjectId,
+                    "kind" to "note",
+                    "title" to title?.ifBlank { null },
+                    // **Exactly what was typed.** Rule 3 and 8.8.1: the column
+                    // is the record, and nothing here rewrites it.
+                    "body" to body?.ifBlank { null },
+                    "chapter_id" to chapterId,
+                ) + dateColumns("occurred", occurred),
+            )
+            if (aboutTable != null && aboutId != null) {
+                insertRow(
+                    "link",
+                    mapOf(
+                        "source_table" to "entry",
+                        "source_id" to id,
+                        "target_table" to aboutTable,
+                        "target_id" to aboutId,
+                        "relation" to "about",
+                    ),
+                )
+            }
+            database.setTransactionSuccessful()
+            id
+        } finally {
+            database.endTransaction()
+        }
+    }
+
+    /**
+     * Every note about one thing, newest first. Rule 18, the other direction.
+     *
+     * **Read from both sides of `link`**, exactly as `entriesAbout` does, so a
+     * row written from either end is found. A link is a fact about two things
+     * and not a property of one of them.
+     */
+    suspend fun notesAbout(table: String, rowId: String): List<TrailEntry> =
+        withContext(Dispatchers.IO) {
+            val ids = db().database.rawQuery(
+                "SELECT CASE WHEN source_table = 'entry' THEN source_id ELSE target_id END " +
+                    "FROM live_link " +
+                    "WHERE (source_table = 'entry' AND target_table = ? AND target_id = ?) " +
+                    "   OR (source_table = ? AND source_id = ? AND target_table = 'entry') " +
+                    "ORDER BY created_at DESC",
+                arrayOf(table, rowId, table, rowId),
+            ).use { cursor ->
+                buildList { while (cursor.moveToNext()) add(cursor.getString(0)) }
+            }
+            if (ids.isEmpty()) return@withContext emptyList()
+            val marks = ids.joinToString(", ") { "?" }
+            db().database.rawQuery(
+                "SELECT id, kind, title, body, occurred_edtf, occurred_start, created_at, " +
+                    "is_unfiled, pinned_at FROM live_entry " +
+                    "WHERE id IN ($marks) AND kind = 'note' " +
+                    "ORDER BY occurred_start DESC, created_at DESC",
+                ids.toTypedArray(),
+            ).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(
+                            TrailEntry(
+                                id = cursor.getString(0),
+                                kind = cursor.getString(1),
+                                title = cursor.getString(2),
+                                body = cursor.getString(3),
+                                occurredEdtf = cursor.getString(4),
+                                occurredStart = if (cursor.isNull(5)) null else cursor.getLong(5),
+                                createdAt = cursor.getLong(6),
+                                isUnfiled = cursor.getInt(7) == 1,
+                                threads = emptyList(),
+                                pinnedAt = if (cursor.isNull(8)) null else cursor.getLong(8),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
     /** Connects an entry to a project, so each can show the other. Rule 18. */
     suspend fun linkEntryToProject(entryId: String, projectId: String): String = insert(
         "link",
