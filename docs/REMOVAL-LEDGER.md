@@ -27,6 +27,8 @@
 | `ui/screens/CaptureSheet.kt` | The capture bloom in `NotebookShell` | 2026-08-13 | Frozen. Not called: the gold button blooms its six choices in place, which is what grid screen 04 always drew. |
 | Its case in `ScreenReaderTest` | The bloom's own walk in `CaptureTest` and `BackJourneyTest` | 2026-08-13 | Removed with the screen, per "its tests go with it". |
 | `ui/components/PinnedGroup.kt` | `PinMark` and each screen's own lead group | 2026-08-13 | Frozen. Not called: pinning shipped drawn per screen rather than as one group. |
+| `ui/components/StepRow.kt` | `ProjectStepsScreen` and `StepEditSheet`, which is where a step is edited now | 2026-08-18 | Frozen. Not called: its only caller is the frozen `ProjectDetailScreen.kt`. |
+| `Tile` in `ui/components/Tile.kt` | Nothing yet | 2026-08-18 | Frozen with `CaptureSheet.kt`, its only caller. `tileColumns` in the same file is live and stays. |
 
 **The Projects conversion has begun and its first row is above.** What else it makes obsolete, and what will appear here as each conversion lands:
 
@@ -86,3 +88,21 @@
 **The frozen file is not extended to bridge the gap**, which is the whole point of freezing it.
 
 **A row is added at the moment the code is frozen, not at a phase gate**, which is the same discipline rule 12 applies to design reviews and for the same reason.
+
+### Found by the #387 audit, 2026-08-18
+
+**Three of the files `gh issue view 387` counts as components to retire are held
+up by frozen screens rather than by the app.** `StepRow` is reached only from
+the frozen project detail screen, and `Tile` only from the frozen capture
+sheet. A retirement pass that reads a file list rather than a call graph will
+try to rewrite both onto Material's components, and rewriting a frozen screen's
+only dependency is extending a frozen screen by the back door.
+
+**This was found by doing it.** `Tile` was rewritten onto `Card`, the frozen
+capture sheet's import was repointed at the new file, and that edit is exactly
+what D112 forbids. Both were put back and the new file was dropped rather than
+left in the tree uncalled, because a component nothing calls is not progress
+toward emptying `ui/components`.
+
+**What to check before retiring a component**: whether any live file calls it,
+not whether any file calls it. The three frozen files are the rows above.
