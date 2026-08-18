@@ -52,11 +52,19 @@ projects and progress**:
 |---|---|
 | ~~#399~~ | **Done, 2026-08-18.** D205 and D206, and the owner corrected it three times while it was being built: the mark did not align with the words, the rows had no container and no arrival, and three controls all looked like "update". The doors out of a project went from five rows and two loose pills to four tiles and a corner. `ProjectDetailScreen` needed no removal: it has had no live caller since 2026-08-05 and its ledger row was already written. |
 | ~~#398~~ | **Done, 2026-08-18.** `MeasureScreen` per tracked thing, Progress is a lead plus rows, the flat mixed list is gone. **Three of the five shapes in `docs/TRACKED-THINGS.md` 7 need schema the contract does not have and are on #403**, blood pressure being the sharpest: the form has one field called "The number". |
-| **#397** | **In progress.** **The storage is decided and it changed nothing**, D207 and contract 8.8: a note is `entry.kind = 'note'`, which the schema has allowed since Phase 0, and it attaches through the `link` table that already reads from both sides. Rich text is three marks stored as text, `**bold**`, `_italic_`, `- bullet`. **Built so far**: `ui/v4/RichText.kt` with 11 unit tests, and `Repository.addNote` / `notesAbout`. **Left**: the note screen, the way in, the attachment shown on both sides, the readable archive and the decryptor. |
+| **#397** | **In progress, and the owner added to it after seeing the first pass.** **Storage decided and it changed nothing**, D207 and contract 8.8: a note is `entry.kind = 'note'`, allowed since Phase 0, attached through the `link` table that already reads from both sides. Rich text is three marks stored as text. **Built**: `ui/v4/RichText.kt` + 11 unit tests, `Repository.addNote` / `notesAbout`, `NoteScreen` with the marks as the field's own toolbar and no microphone, the bloom's seventh choice, and three Material Symbols. **Left**: the notes list as a grid or a list, pin and delete from both the list and inside a note, the attachment shown on both sides for each target kind, the readable archive and the decryptor, and the states. |
 | **#400** | **The archive carries everything, with two people in one notebook.** The gate on #397 and #398 rather than a task after them: notes, every tracked thing, a mother and a father each fully used, export, wipe, restore, and a merge with a conflict, on the signed minified build. D24 calls the export the only way back. |
 
 **The order now: #397, then #396, then #395 a second time.** #400 is the gate
 rather than an item of its own, and #402 is the one thing standing in its way.
+
+**What the owner added to #397 on 2026-08-18**, after looking at the first pass,
+in his words on the issue: the marks belong in the body with buttons rather than
+floating, the microphone goes and there must not be two styles of it, notes are
+viewable as a grid or a list, pin and delete from both places, and **a universal
+trash can in More that restores anything deleted anywhere back to its own place
+on the timeline**, which is **#405** and is buildable today because deletion is
+always a tombstone, rule 3.
 
 **A trap #397 hit and the next session will hit again.** `CaptureKind` cannot
 grow: `CaptureSheet.kt` is frozen and switches on it exhaustively, so adding a
@@ -155,6 +163,17 @@ project's road (`ui/v4/RoadStrip.kt`), a measure's line (`ui/v4/Trace.kt`), and
 - **#402 is open and release-blocking**: six merge resolutions are recorded and
   the door on More that opens them never appears. Everything ruled out is
   written on the issue so nobody repeats the diagnosis.
+- **New issues this session**: #401 and #404 are the rule 12 design reviews,
+  #402 the conflict door, #403 the three tracked-thing shapes the schema cannot
+  carry, #405 the universal trash can.
+- **`ListRow` takes `overline`** and `Field` takes `minLines`. Both exist
+  because Material's own behavior needed them: a row top-aligns its mark only at
+  three lines, and a field somebody writes paragraphs into should not stand at
+  the height of one asking for a name.
+- **An open question the owner has to settle**: "get rid of the mic completely"
+  was read as this screen rather than app-wide. **If it was app-wide, #396 is
+  the issue that changes**, because it says every text area should offer
+  dictation.
 
 ## 6. Blocked, and section 3 is the live one
 
