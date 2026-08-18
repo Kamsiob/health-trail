@@ -19,6 +19,10 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
 
 /**
  * The most recent thing the office, the insurer or the facility actually said.
@@ -110,6 +114,11 @@ fun LatestWordCard(
                 )
             }
         }
-        Chevron()
+        Icon(
+            painter = painterResource(Symbols.forward),
+            contentDescription = null,
+            modifier = Modifier.size(Space.markInline),
+            tint = MaterialTheme.colorScheme.outline,
+        )
     }
 }

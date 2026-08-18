@@ -74,7 +74,7 @@ UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
 # 91, up one, for the fold's own 60dp height. **Geometry rather than spacing**,
 # the category this file's own note sets aside: it is the drawn height of a
 # control measured off `m3v4-4`, not a gap somebody chose. D195.
-BASELINE = 69
+BASELINE = 68
 
 LITERAL = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\.(dp|sp)\b")
 

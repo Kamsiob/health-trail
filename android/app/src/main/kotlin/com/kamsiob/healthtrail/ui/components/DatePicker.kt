@@ -50,6 +50,9 @@ import java.time.YearMonth
 import java.time.format.TextStyle as JavaTextStyle
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
 
 object DatePickerTags {
     const val SHEET = "date_picker_sheet"
@@ -665,7 +668,14 @@ private fun Stepper(label: String, pointsForward: Boolean, onClick: () -> Unit) 
             .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
-        Chevron(pointsForward = pointsForward)
+        Icon(
+            painter = painterResource(
+                if (pointsForward) Symbols.forward else Symbols.back,
+            ),
+            contentDescription = null,
+            modifier = Modifier.size(Space.markInline),
+            tint = MaterialTheme.colorScheme.outline,
+        )
     }
 }
 

@@ -29,6 +29,10 @@ import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.size
 
 /**
  * The single thing the person came for, at the top of the screen.
@@ -118,6 +122,11 @@ fun HeroLine(
             modifier = Modifier.weight(1f),
         )
         Spacer(Modifier.width(Space.sm))
-        Chevron()
+        Icon(
+            painter = painterResource(Symbols.forward),
+            contentDescription = null,
+            modifier = Modifier.size(Space.markInline),
+            tint = MaterialTheme.colorScheme.outline,
+        )
     }
 }
