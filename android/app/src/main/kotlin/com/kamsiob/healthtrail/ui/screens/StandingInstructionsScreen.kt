@@ -51,11 +51,19 @@ object InstructionTags {
  * sharpest way this project could break rule 2. `run_all.py` carries a check
  * for exactly this, listed as waiting on this screen.
  *
- * **The tag's explainer is shown, not just its label.** "Backed by federal
- * rules for nursing homes" is useless to somebody whose mother is in assisted
- * living, and the catalog's explainer says plainly that other kinds of places
- * are not covered by those rules. Showing the label alone would be the app
- * being accurate and misleading at the same time.
+ * **The tag's label is on every card and its explainer is not, 2026-08-18.**
+ * The owner: "get rid of the backed by federal rules paragraph. It's out of
+ * place there." Seventy words of general explanation sat inside a card about
+ * one thing this family asked for, between the request and how the place
+ * answered.
+ *
+ * **The qualifier is not lost, and losing it would matter.** "Backed by
+ * federal rules for nursing homes" is useless to somebody whose mother is in
+ * assisted living, and the catalog's explainer is what says plainly that other
+ * kinds of places are not covered. It is drawn on `AddInstructionScreen`, at
+ * the moment somebody chooses what to ask for, which is where seventy words
+ * are worth reading. **The label names nursing homes in its own words**, so
+ * the card is scoped rather than merely accurate.
  *
  * **The app records that something was asked. It never says what follows from
  * that.** No advice about escalating, no assessment of whether a violation
@@ -167,17 +175,13 @@ fun StandingInstructionsScreen(
             ),
         )
 
-        // **Each tag explains itself once, on the first instruction carrying
-        // it.** Explaining only on the leading instruction was the first fix and
-        // it was wrong: a notebook whose lead is an unbacked request would never
-        // show what "backed by federal rules" means anywhere at all. Seen on the
-        // phone, where the federal instruction sat with its label and no
-        // explanation on the screen.
-        val explained = mutableSetOf<String>()
+        // **The set that tracked which tag had explained itself is gone with
+        // the explainer**, and the ordering it fed stays: the one with
+        // something wrong still leads, which is law 1 and is what the sort
+        // above is for.
         val ordered = instructions.sortedByDescending { it.id == lead?.id }
 
         ordered.forEach { instruction ->
-            val explainHere = explained.add(instruction.tag)
             val times = violations[instruction.id].orEmpty()
 
             item(key = instruction.id) {
@@ -185,7 +189,6 @@ fun StandingInstructionsScreen(
                     onRecordViolation = { onRecordViolation(instruction) },
                     instruction = instruction,
                     tag = tags[instruction.tag],
-                    lead = explainHere,
                     onOpen = { onOpen(instruction) },
                 )
                 Spacer(
@@ -367,12 +370,6 @@ private fun ViolationRow(
 
 @Composable
 private fun InstructionRow(
-    /**
-     * True on the first instruction carrying this tag, which is the one that
-     * spells the tag out. Every other instruction with the same tag shows the
-     * label alone, because the label is what differs between them.
-     */
-    lead: Boolean = false,
     onRecordViolation: () -> Unit,
     instruction: Repository.StandingInstruction,
     tag: TemplateCatalog.InstructionTag?,
@@ -444,20 +441,21 @@ private fun InstructionRow(
                         colors.ink2
                     },
                 )
-                // **The explainer only on the one that leads.** It is the same
-                // paragraph for every instruction carrying the same tag, so
-                // three requests meant the same seventy words three times, and
-                // what each instruction actually said was buried between them.
-                // The label stays on every row, because that is the part that
-                // differs and the part somebody scans for.
-                if (lead) {
-                    Spacer(Modifier.height(Space.xs))
-                    Text(
-                        text = tag.explainer,
-                        style = HealthTrail.type.bodyS,
-                        color = colors.ink2,
-                    )
-                }
+                // **The explainer does not belong on this card.** The owner,
+                // 2026-08-18: "get rid of the backed by federal rules
+                // paragraph. It's out of place there." It is seventy words of
+                // general explanation sitting inside a card about one thing
+                // this family asked for, between the request and how the place
+                // answered, which is the part somebody opened the screen to
+                // read.
+                //
+                // **The label stays**, because it is one line, it differs per
+                // instruction, and it is what the section's own subtitle
+                // promises: "whether any rule backs it up".
+                //
+                // **The explanation is not lost.** `AddInstructionScreen`
+                // draws it where somebody is choosing what to ask for, which
+                // is where it is worth seventy words.
             }
         }
 
