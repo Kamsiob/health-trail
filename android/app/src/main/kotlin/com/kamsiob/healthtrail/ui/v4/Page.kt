@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -211,6 +212,20 @@ fun Page(
      * not a form passes nothing and there is no band at all.
      */
     band: (@Composable () -> Unit)? = null,
+    /**
+     * The one thing this page exists to let somebody add, as a button that
+     * floats over the list rather than sitting at the end of it.
+     *
+     * **Twelve section screens put their add control in the last `item` of the
+     * `LazyColumn`**, so adding a person meant scrolling past fifteen of them
+     * and adding a question meant scrolling past thirty six. `docs/TRAPS.md`
+     * has said "a floating action button is on the scaffold, not in the list"
+     * the whole time; there was nowhere on `Page` to put one. Now there is.
+     *
+     * The list reserves [Space.fabScrollClearance] at the bottom when this is
+     * set, so the last row is never underneath the button.
+     */
+    fab: (@Composable () -> Unit)? = null,
     content: LazyListScope.() -> Unit,
 ) {
     var showTips by remember { mutableStateOf(false) }
@@ -238,6 +253,7 @@ fun Page(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = scheme.background,
+        floatingActionButton = { fab?.invoke() },
         topBar = {
             LargeFlexibleTopAppBar(
                 title = { Text(text = Bidi.isolate(title)) },
@@ -346,6 +362,13 @@ fun Page(
                         .fillMaxSize()
                         .padding(horizontal = Space.screenHorizontal)
                         .padding(end = if (rail != null) railWidth() + Space.s else Space.none),
+                    // **Clear of the floating button**, which sits over the
+                    // list rather than in it. Without this the last row on
+                    // every section screen is underneath the one control the
+                    // screen offers. Seen on the phone, rule 21.
+                    contentPadding = PaddingValues(
+                        bottom = if (fab != null) Space.fabScrollClearance else Space.none,
+                    ),
                     verticalArrangement = Arrangement.spacedBy(itemSpacing),
                 ) {
                     hero?.let { lead -> item { lead() } }

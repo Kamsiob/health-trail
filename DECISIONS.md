@@ -210,6 +210,7 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | D197 | The date picker stays hand drawn, and it is the fourth exception |
 | D198 | Color lives in the marks, saturated, and no page is one color |
 | D199 | `ui/components` empties of the live path, and what stays is the frozen tail |
+| D200 | A section's add control floats on the scaffold, because the capture button is not on a section screen |
 
 ---
 
@@ -3073,6 +3074,49 @@ live path on the old design language.
 frozen file, and it does not make a second live copy of anything. If a frozen
 screen is ever retired for real, its components go with it in the same commit
 and the ledger says so.
+
+### D200. A section's add control floats on the scaffold, because the capture button is not on a section screen
+
+**2026-08-18.** Twelve section screens put the way to add something in the last
+`item` of their `LazyColumn`. Adding somebody to the care team meant scrolling
+past fifteen people; adding a question meant scrolling past thirty six.
+`docs/TRAPS.md` has said "a floating action button is on the scaffold, not in
+the list. Do not scroll a list to reach it" the whole time, and `ui/v4/Page.kt`
+had nowhere to put one, so every screen did the only thing it could.
+
+**The reason written in the code did not survive being looked at.**
+`CareTeamScreen` carried this comment: "A floating button would be the second
+thing hovering on a screen the capture button already hovers over, and
+`DESIGN.md` gives that corner to capture alone."
+
+**Checked on the phone rather than reasoned about.** The capture button is on
+the four destinations, Today, the notebook, Projects and More. A section screen
+is pushed over them, has no navigation bar and has no capture button: dumping
+the care team's clickable nodes finds the back arrow, a call button per row and
+nothing in the bottom corner. The premise was true of a destination and was
+never true of a section. `MedicationList.kt` had already shipped an
+`ExtendedFloatingActionButton` on exactly such a screen without a second button
+appearing beside it.
+
+**`Page` gains a `fab` slot** so the answer is in one place rather than decided
+twelve times, and the list reserves `Space.fabScrollClearance` when it is set so
+the last row is never underneath the button.
+
+**The empty state keeps its in-list action and does not get a floating one.**
+On a screen with nothing on it the add action is the content, not an overlay: a
+sentence saying nothing is written down yet, with the way to start under it. A
+bare floating button in the corner of an empty screen is the opposite of rule
+13, which says an unfilled slot reads as "not yet" rather than as an error.
+
+**What D118 actually settled stays settled.** In-content actions are pills
+sized to their label rather than full width buttons, and that is untouched: this
+is about where the one primary action of a list screen lives, not about how
+secondary actions inside a page are drawn.
+
+**Care team is converted as the worked example and eleven screens are not.**
+They are listed on #388. Rule 14 makes the bar retroactive, so they follow;
+converting all twelve without looking at any of them is how a consistency fix
+becomes twelve new defects.
 ### D197. The date picker stays hand drawn, and it is the fourth exception
 
 **Date:** 2026-08-18. **Decided under rule 10** while working the `ui/components` ledger, #387, which listed "DatePicker to Material's own date picker".

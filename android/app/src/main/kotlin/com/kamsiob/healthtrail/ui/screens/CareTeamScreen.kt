@@ -31,6 +31,10 @@ import com.kamsiob.healthtrail.ui.v4.PersonHero
 import com.kamsiob.healthtrail.ui.v4.PersonRow
 import com.kamsiob.healthtrail.ui.v4.Segments
 import com.kamsiob.healthtrail.ui.v4.hueForPerson
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.ui.res.painterResource
 
 object CareTeamTags {
     const val NAME = "care_team"
@@ -163,6 +167,37 @@ fun CareTeamScreen(
         onBack = onBack,
         backLabel = strings[backLabelKey],
         modifier = modifier.testTag(CareTeamTags.ROOT),
+        // **The way in floats over the list rather than sitting under it.**
+        // It was the last `item` in the `LazyColumn`, so adding somebody meant
+        // scrolling past everybody already on the team, and the fixture has
+        // fifteen. `docs/TRAPS.md`: a floating action button is on the
+        // scaffold, not in the list.
+        //
+        // **The reason it was in the list did not survive being looked at.**
+        // The comment said a floating button would be the second thing hovering
+        // on a screen the capture button already hovers over. The capture
+        // button is on the four destinations; a section screen is pushed over
+        // them and has no button of its own in that corner, checked on the
+        // phone rather than reasoned about. D200.
+        fab = {
+            ExtendedFloatingActionButton(
+                onClick = onAdd,
+                icon = {
+                    Icon(
+                        painter = painterResource(Symbols.addPerson),
+                        contentDescription = null,
+                    )
+                },
+                text = { Text(text = strings["careteam.add"]) },
+                // The sentence sits on the button's own node: the words are in
+                // a `Text` two levels down inside the row Material builds, so
+                // the node that takes the tap would otherwise have nothing to
+                // say. `docs/TRAPS.md`, and rule 19 is a gate.
+                modifier = Modifier
+                    .testTag(CareTeamTags.ADD)
+                    .semantics { contentDescription = strings["careteam.add"] },
+            )
+        },
     ) {
         if (people.isEmpty()) {
             item {
@@ -299,19 +334,6 @@ fun CareTeamScreen(
             )
         }
 
-        // **The way in sits under the list rather than over it.** A floating
-        // button would be the second thing hovering on a screen the capture
-        // button already hovers over, and `DESIGN.md` gives that corner to
-        // capture alone. Sized to its label, D118.
-        item {
-            Spacer(Modifier.height(Space.s))
-            Action(
-                label = strings["careteam.add"],
-                onClick = onAdd,
-                mark = Symbols.addPerson,
-                modifier = Modifier.testTag(CareTeamTags.ADD),
-            )
-        }
     }
 }
 
