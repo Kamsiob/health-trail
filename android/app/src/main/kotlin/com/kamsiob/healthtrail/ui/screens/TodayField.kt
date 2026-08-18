@@ -102,7 +102,7 @@ import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.Thumbnail
 import com.kamsiob.healthtrail.ui.components.TipsSheet
 import com.kamsiob.healthtrail.ui.components.tipForDestination
-import com.kamsiob.healthtrail.ui.components.wholeAppHue
+import com.kamsiob.healthtrail.ui.theme.goldHue
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.Space
@@ -1378,7 +1378,7 @@ private fun ColumnScope.AnswerBody(
     /** Whether the card has the height for a chart. Wide only, per 21.3. */
     tall: Boolean = false,
     /** The card's hue, so a chart drawn here is the section's line and not a new color. */
-    hue: TabHue = wholeAppHue(),
+    hue: TabHue = goldHue(),
     /** Where the person's own pictures are read from, for the documents card. */
     attachments: Attachments = Attachments.open(LocalContext.current),
 ) {
@@ -2261,7 +2261,7 @@ internal fun hueForCard(type: String): TabHue = when (type) {
     "emergency_card", "incidents" -> hueFor(Repository.Section.EMERGENCY_CARD)
     // The digest, the trail, the projects and the unfiled tray belong to no
     // section, so gold and the base ladder. 4.3.
-    else -> wholeAppHue()
+    else -> goldHue()
 }
 
 /**
