@@ -13,6 +13,8 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.alertHue
+import com.kamsiob.healthtrail.ui.theme.goldHue
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.BigNumber
@@ -142,8 +144,7 @@ fun BillScreen(
                     ListRow(
                         title = Bidi.isolate(name),
                         mark = Symbols.chapters,
-                        markTint = colors.goldInk,
-                        markWash = colors.goldWash,
+                        markHue = goldHue(),
                         isDoor = true,
                         onClick = { onOpenChapter(chapterId) },
                         clickLabel = strings["open.action"],
@@ -165,8 +166,7 @@ fun BillScreen(
                         support = violation.note?.takeIf { it.isNotBlank() }
                             ?.let { Bidi.isolate(it) },
                         mark = Symbols.standingInstructions,
-                        markTint = colors.alertInk,
-                        markWash = colors.alertWash,
+                        markHue = alertHue(),
                         isDoor = true,
                         onClick = onOpenViolations,
                         clickLabel = strings["open.action"],

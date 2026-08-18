@@ -205,8 +205,7 @@ private fun BillRow(
             bill.notes?.takeIf { it.isNotBlank() },
         ).let { Bidi.join(it) }.takeIf { it.isNotBlank() },
         mark = Symbols.money,
-        markTint = hue.ink,
-        markWash = hue.wash,
+        markHue = hue,
         // **Isolated, like every other amount on the screen.** A number beside
         // a currency beside a right to left heading is three runs, and the app
         // says which is which rather than leaving it to the algorithm. Seen in

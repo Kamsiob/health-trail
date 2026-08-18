@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -91,37 +92,24 @@ class NotebookScreenTest {
     }
 
     /**
-     * Scrolls by the lazy list's own item key rather than by hunting for a test
-     * tag.
+     * Scrolls the table of contents to the group the section sits in.
      *
-     * `performScrollToNode` walks the list a viewport at a time and gives up
-     * when it has scrolled as far as it thinks it can, which it got wrong for
-     * the Arabic catalog: it stopped two rows short of the end and reported the
-     * rows as absent when they were only further down. Scrolling by key asks
-     * the list where the item is and goes there, so a test failure after this
-     * means the row is genuinely missing rather than merely out of view.
-     */
-    /**
-     * **Scrolls to the node itself rather than asking a list for a key.**
+     * **By the lazy list's own item key**, which asks the list where the item is
+     * and goes there. `performScrollToNode` walks a viewport at a time and gives
+     * up when it thinks it has scrolled as far as it can, which it got wrong for
+     * the Arabic catalog: it stopped two rows short and reported the rows as
+     * absent when they were only further down.
      *
-     * The screen became a plain scrolling column of tiles on 2026-08-03. Twelve
-     * tiles and a hero is a fixed, small screen where laziness buys nothing and
-     * costs the thing that matters: every tile exists in the tree, so a test and
-     * a screen reader both reach it without a scroll dance. `performScrollToKey`
-     * needs a lazy list to ask, and there is no longer one here.
+     * **The fold this used to open has not existed since D163**, and the helper
+     * kept hunting for its tag: with a plain scrolling column every row was
+     * composed, so the branch never ran and nobody noticed. The notebook is a
+     * `LazyColumn` again, D196, so an off-screen row is genuinely not in the
+     * tree and the dead branch fired on eight tests at once.
      */
     private fun scrollTo(section: Repository.Section) {
-        // **Eight of the twelve live behind "More sections".** The notebook
-        // became four sections and a fold on 2026-08-03, per law 1, and every
-        // test here was written when all twelve were on the front door. Opening
-        // the fold is what a person does, so it is what these do: nothing is
-        // hidden, it is one tap away, and the tests reach it the same way.
-        if (compose.onAllNodesWithTag(NotebookTags.section(section))
-                .fetchSemanticsNodes().isEmpty()
-        ) {
-            compose.onNodeWithTag(NotebookTags.FOLD).performScrollTo().performClick()
-        }
-        compose.onNodeWithTag(NotebookTags.section(section)).performScrollTo()
+        val group = NotebookGroup.entries.first { section in it.sections }
+        compose.onNodeWithTag(NotebookTags.ROOT)
+            .performScrollToKey("notebook-group-${group.name}")
     }
 
     @Test

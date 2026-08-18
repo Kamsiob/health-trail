@@ -252,8 +252,7 @@ private fun AppointmentRow(
             // wash is what makes one scannable and says which part of the
             // notebook it belongs to.
             mark = Symbols.of(Repository.Section.APPOINTMENTS),
-            markTint = hueFor(Repository.Section.APPOINTMENTS).ink,
-            markWash = hueFor(Repository.Section.APPOINTMENTS).wash,
+            markHue = hueFor(Repository.Section.APPOINTMENTS),
             value = EventDateText.render(strings, appointment.scheduledEdtf),
             isDoor = true,
             onClick = onOpen,

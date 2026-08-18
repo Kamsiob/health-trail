@@ -106,8 +106,7 @@ fun ChoosePaperScreen(
                             ?.takeIf { it.isNotBlank() }
                             ?.let { EventDateText.render(strings, it) },
                         mark = Symbols.documents,
-                        markTint = hue.ink,
-                        markWash = hue.wash,
+                        markHue = hue,
                         isDoor = true,
                         onClick = { onChoose(document.id) },
                         clickLabel = strings["project.papers.fill"],

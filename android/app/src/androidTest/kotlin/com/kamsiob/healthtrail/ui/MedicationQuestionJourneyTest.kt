@@ -3,6 +3,7 @@ package com.kamsiob.healthtrail.ui
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -23,6 +24,7 @@ import com.kamsiob.healthtrail.ui.screens.DisclaimerTags
 import com.kamsiob.healthtrail.ui.screens.EntryTags
 import com.kamsiob.healthtrail.ui.screens.MedicationTags
 import com.kamsiob.healthtrail.ui.screens.MedsTags
+import com.kamsiob.healthtrail.ui.screens.NotebookGroup
 import com.kamsiob.healthtrail.ui.screens.NotebookTags
 import com.kamsiob.healthtrail.ui.screens.SectionTags
 import com.kamsiob.healthtrail.ui.screens.SetupTags
@@ -117,17 +119,13 @@ class MedicationQuestionJourneyTest {
         // **Scrolls to the tile rather than asking a list for a key.** The
         // notebook became a plain scrolling column of tiles on 2026-08-03, so
         // there is no lazy list to ask, and every tile is in the tree.
-        // **Eight of the twelve live behind "More sections".** The notebook
-        // became four sections and a fold on 2026-08-03, per law 1, and every
-        // test here was written when all twelve were on the front door. Opening
-        // the fold is what a person does, so it is what these do: nothing is
-        // hidden, it is one tap away, and the tests reach it the same way.
-        if (compose.onAllNodesWithTag(NotebookTags.section(section))
-                .fetchSemanticsNodes().isEmpty()
-        ) {
-            compose.onNodeWithTag(NotebookTags.FOLD).performScrollTo().performClick()
-        }
-        compose.onNodeWithTag(NotebookTags.section(section)).performScrollTo()
+        // **Scrolled by the lazy list's own key**, D196: the notebook is a
+        // `LazyColumn` again, so a row further down is genuinely not in the tree
+        // until the list has been asked for it. The fold this used to open has
+        // not existed since D163.
+        val group = NotebookGroup.entries.first { section in it.sections }
+        compose.onNodeWithTag(NotebookTags.ROOT)
+            .performScrollToKey("notebook-group-${group.name}")
         compose.onNodeWithTag(NotebookTags.section(section)).performClick()
         compose.waitUntil(timeoutMillis = 10_000) { showing(SectionTags.BACK) }
     }
@@ -139,8 +137,10 @@ class MedicationQuestionJourneyTest {
         // fold.** The first run of this test failed here rather than on
         // anything it was written to check, which is the ordinary cost of
         // walking in from the front door instead of composing a screen.
-        compose.onNodeWithTag(SectionTags.root(MedsTags.NAME))
-            .performScrollToNode(hasTestTag(MedsTags.ADD))
+        // **The one action is a floating button on the scaffold, not a row in
+        // the list**, D196, so it is on screen whatever the list has scrolled
+        // to and there is nothing to scroll to it. Scrolling the list for it
+        // failed with the button in plain sight.
         compose.onNodeWithTag(MedsTags.ADD).performClick()
         compose.waitUntil(timeoutMillis = 10_000) { showing(AddMedTags.field("name")) }
         compose.onNodeWithTag(AddMedTags.field("name")).performTextInput(drug)

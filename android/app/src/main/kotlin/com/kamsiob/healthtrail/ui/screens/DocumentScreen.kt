@@ -16,6 +16,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.goldHue
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
@@ -228,8 +229,7 @@ fun DocumentScreen(
                         ListRow(
                             title = Bidi.isolate(name),
                             mark = Symbols.chapters,
-                            markTint = colors.goldInk,
-                            markWash = colors.goldWash,
+                            markHue = goldHue(),
                             isDoor = true,
                             onClick = { onOpenChapter(chapterId) },
                             clickLabel = name,
@@ -256,8 +256,7 @@ fun DocumentScreen(
                         // tile: a white square inside a sand block was the
                         // loudest thing on the screen and it named a fold on a
                         // list. Gold stays on the two rows that lead somewhere.
-                        markTint = hueFor(Repository.Section.DOCUMENTS).ink,
-                        markWash = hueFor(Repository.Section.DOCUMENTS).wash,
+                        markHue = hueFor(Repository.Section.DOCUMENTS),
                         // **No mark at the end and no tap**, because a folder is
                         // not a screen: it is a fold on the documents list. A row
                         // that looked openable and was not would be the defect
@@ -283,8 +282,7 @@ fun DocumentScreen(
                         // the half that says why this paper is there.
                         support = Bidi.isolate(filing.paperName),
                         mark = Symbols.projects,
-                        markTint = colors.goldInk,
-                        markWash = colors.goldWash,
+                        markHue = goldHue(),
                         isDoor = true,
                         onClick = { onOpenProject(filing.projectId) },
                         clickLabel = filing.projectName,

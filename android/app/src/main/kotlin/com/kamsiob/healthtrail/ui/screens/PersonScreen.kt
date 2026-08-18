@@ -23,6 +23,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.goldHue
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
@@ -263,8 +264,7 @@ fun PersonScreen(
                             ?.takeIf { it.isNotBlank() }
                             ?.let { EventDateText.render(strings, it) },
                         mark = Symbols.appointments,
-                        markTint = colors.goldInk,
-                        markWash = colors.goldWash,
+                        markHue = goldHue(),
                         isDoor = true,
                         onClick = { onOpenAppointment(appointment) },
                         clickLabel = strings["open.action"],

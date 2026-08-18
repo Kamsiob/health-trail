@@ -301,22 +301,15 @@ private fun MedicationRow(
             }
         },
         leadingContent = {
-            // **This is where the section's color belongs**: a 44dp mark, one
-            // per row, which says which part of the notebook this is and
-            // leaves the reading surface alone.
-            Box(
-                modifier = Modifier
-                    .size(Space.markTile)
-                    .clip(CircleShape)
-                    .background(hue.wash),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    painter = painterResource(Symbols.of(Repository.Section.MEDICATIONS)),
-                    contentDescription = null,
-                    tint = hue.ink,
-                )
-            }
+            // **This is where the section's color belongs**: one mark per row,
+            // which says which part of the notebook this is and leaves the
+            // reading surface alone. Saturated, D198: the pale version left a
+            // page of rows reading as one color.
+            HueMark(
+                hue = hue,
+                mark = Symbols.of(Repository.Section.MEDICATIONS),
+                size = Space.markTile,
+            )
         },
         trailingContent = {
             Icon(

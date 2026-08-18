@@ -63,6 +63,23 @@ fun ListRow(
      */
     supportTestTag: String? = null,
     @DrawableRes mark: Int? = null,
+    /**
+     * The pack the mark's disc is painted from. D198.
+     *
+     * **Saturated, and that is the whole of this app's answer on color.** The
+     * owner, 2026-08-17, on the notebook: "the colors are overwhelmingly
+     * depressing... there could never be a page that is overwhelmingly one
+     * color." Every mark in the app sat in its hue's palest wash, so a page of
+     * twelve rows was twelve pale discs on beige and read as one color with
+     * hints in it. The base carries the identity at the size a mark actually
+     * is, and [TabHue.onBase] is computed rather than chosen, so the glyph on
+     * top clears contrast in both themes without anybody deciding it.
+     *
+     * **Identity, never state.** `hueFor` is the owner's mapping and nothing
+     * here re-derives it: a section's color says which part of the notebook
+     * this is and never how the thing inside is going.
+     */
+    markHue: TabHue? = null,
     markTint: Color? = null,
     markWash: Color? = null,
     /** What stands where the mark would: a person's initials rather than a glyph. */
@@ -129,13 +146,15 @@ fun ListRow(
                     modifier = Modifier
                         .size(Space.markTile)
                         .clip(MaterialTheme.shapes.medium)
-                        .background(markWash ?: colors.surfaceContainerHighest),
+                        .background(
+                            markHue?.base ?: markWash ?: colors.surfaceContainerHighest,
+                        ),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         painter = painterResource(mark),
                         contentDescription = null,
-                        tint = markTint ?: colors.onSurfaceVariant,
+                        tint = markHue?.onBase ?: markTint ?: colors.onSurfaceVariant,
                     )
                 }
             }

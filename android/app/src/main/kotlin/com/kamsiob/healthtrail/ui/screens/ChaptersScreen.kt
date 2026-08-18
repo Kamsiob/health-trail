@@ -18,6 +18,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.goldHue
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Block
@@ -197,8 +198,7 @@ fun ChaptersScreen(
                     // nothing out.
                     support = strings["milestones.subtitle"],
                     mark = Symbols.trail,
-                    markTint = colors.goldInk,
-                    markWash = colors.goldWash,
+                    markHue = goldHue(),
                     isDoor = true,
                     onClick = onOpenMilestones,
                     clickLabel = strings["open.action"],

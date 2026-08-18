@@ -73,3 +73,27 @@ fun hueFor(section: Repository.Section): TabHue {
             TabHue(base = colors.alert, ink = colors.alertInk, wash = colors.alertWash)
     }
 }
+
+/**
+ * The three identities that belong to no section, as packs. D198.
+ *
+ * **Because a mark takes a pack and not two loose colors.** Eighteen call sites
+ * passed an ink and a wash by hand, which is how the same mark came to be drawn
+ * three different ways, and none of them could be made saturated in one place.
+ */
+@Composable
+fun goldHue(): TabHue = HealthTrail.colors.let {
+    TabHue(base = it.gold, ink = it.goldInk, wash = it.goldWash)
+}
+
+/** The emergency card, an open incident. Never a measurement, rule 2. */
+@Composable
+fun alertHue(): TabHue = HealthTrail.colors.let {
+    TabHue(base = it.alert, ink = it.alertInk, wash = it.alertWash)
+}
+
+/** The single accent. Every action, and only actions. */
+@Composable
+fun accentHue(): TabHue = HealthTrail.colors.let {
+    TabHue(base = it.blue, ink = it.blueDeep, wash = it.blueWash)
+}

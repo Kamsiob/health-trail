@@ -371,8 +371,7 @@ private fun MedicationCardRow(medication: Repository.Medication, isLast: Boolean
         ListRow(
             title = Bidi.isolate(medication.name),
             mark = Symbols.of(Repository.Section.MEDICATIONS),
-            markTint = hueFor(Repository.Section.MEDICATIONS).ink,
-            markWash = hueFor(Repository.Section.MEDICATIONS).wash,
+            markHue = hueFor(Repository.Section.MEDICATIONS),
             // One placement for the whole column, whatever each dose happens
             // to be long enough for on its own.
             valueBelow = true,

@@ -209,8 +209,7 @@ private fun QuestionRow(
         title = Bidi.isolate(question.text),
         support = detail,
         mark = Symbols.askNextTime,
-        markTint = hue.ink,
-        markWash = hue.wash,
+        markHue = hue,
         // **The one action worth taking from the list, as a mark.** A question
         // already asked has nothing to mark. The words live in the description,
         // because twenty controls all called "I asked this" is the ambiguity

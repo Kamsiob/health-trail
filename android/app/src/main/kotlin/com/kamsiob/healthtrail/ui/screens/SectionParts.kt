@@ -1,9 +1,12 @@
 package com.kamsiob.healthtrail.ui.screens
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -12,57 +15,61 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.runtime.rememberCoroutineScope
-import com.kamsiob.healthtrail.ui.v4.Action
-import kotlinx.coroutines.launch
-import com.kamsiob.healthtrail.ui.components.HeaderActions
-import com.kamsiob.healthtrail.ui.components.TipsSheet
-import com.kamsiob.healthtrail.ui.components.tipFor
-import androidx.compose.foundation.layout.Row
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.width
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
-import com.kamsiob.healthtrail.i18n.LocalStrings
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.text.style.TextAlign
-import com.kamsiob.healthtrail.data.Repository
-import com.kamsiob.healthtrail.ui.components.EmptyDrawing
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.LaunchedEffect
-import com.kamsiob.healthtrail.ui.theme.LocalMotion
-import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.theme.hueFor
-import com.kamsiob.healthtrail.ui.components.wholeAppHue
-import com.kamsiob.healthtrail.ui.components.TabChipText
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.components.EmptyDrawing
+import com.kamsiob.healthtrail.ui.components.HeaderActions
 import com.kamsiob.healthtrail.ui.components.Symbols
+import com.kamsiob.healthtrail.ui.components.TabChipText
+import com.kamsiob.healthtrail.ui.components.TipsSheet
 import com.kamsiob.healthtrail.ui.components.railWidth
+import com.kamsiob.healthtrail.ui.components.tipFor
+import com.kamsiob.healthtrail.ui.components.wholeAppHue
+import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.theme.TabHue
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.Action
+import kotlinx.coroutines.launch
 
 /**
  * What a section's way back says, when the section does not name it itself.
@@ -237,3 +244,82 @@ const val EMPTY_HEIGHT_TALL = 0.82f
  * a title that visibly collapses draws more attention on the way out than it
  * had sitting still, which is the opposite of the point.
  */
+
+/**
+ * The hue an entry wears, from what kind of thing it was. D198.
+ *
+ * **Every list of entries in this app was one color, and one color is what the
+ * owner called dreary.** 2026-08-17, on the notebook: "the colors are
+ * overwhelmingly depressing... there could never be a page that is
+ * overwhelmingly one color." A trail, a thread and a chapter are all lists of
+ * the same six kinds of thing, and each kind already belongs somewhere in the
+ * binder, so the color is not decoration: a call is the care team's red, a visit
+ * is appointments slate, a reading is progress green. Somebody who learns the
+ * marks on the notebook reads every list in the app without being taught twice.
+ *
+ * **Identity, never state.** Rule 2 and `docs/V4.md` 2.1: nothing here says an
+ * entry is good, bad, urgent or overdue, and an incident is alert red because
+ * incidents are alert red everywhere, not because this one went badly.
+ *
+ * **Paired with [entryMark], because a color never carries meaning alone.**
+ * Section 2.2: the mark and the words beside it say what the color says, so it
+ * survives grayscale and every color vision difference.
+ */
+@Composable
+fun entryHue(kind: String): TabHue = when (kind) {
+    "call" -> hueFor(Repository.Section.CARE_TEAM)
+    "visit" -> hueFor(Repository.Section.APPOINTMENTS)
+    "incident" -> hueFor(Repository.Section.EMERGENCY_CARD)
+    "measurement" -> hueFor(Repository.Section.PROGRESS)
+    "question" -> hueFor(Repository.Section.ASK_NEXT_TIME)
+    "document" -> hueFor(Repository.Section.DOCUMENTS)
+    // A note belongs to the trail itself, which is the app's own gold.
+    else -> hueFor(Repository.Section.TRAIL)
+}
+
+/** The mark for one kind of entry, from the same catalog every section uses. */
+@DrawableRes
+fun entryMark(kind: String): Int = when (kind) {
+    "call" -> Symbols.call
+    "visit" -> Symbols.stethoscope
+    "incident" -> Symbols.incidents
+    "measurement" -> Symbols.monitorWeight
+    "question" -> Symbols.askNextTime
+    "document" -> Symbols.documents
+    else -> Symbols.noteStack
+}
+
+/**
+ * The round mark a row or a card wears at its head. D198.
+ *
+ * **One shape, one size, one place, app-wide.** The notebook draws it, the
+ * medication rows draw it, a card on Today draws it, and every list of entries
+ * draws it now: a wash disc with the mark in the matching ink. It is the whole
+ * of this app's color strategy, because it puts the color on something small
+ * that means something rather than behind a paragraph.
+ */
+@Composable
+fun HueMark(
+    hue: TabHue,
+    @DrawableRes mark: Int,
+    modifier: Modifier = Modifier,
+    size: Dp = Space.markCard,
+) {
+    Box(
+        modifier = modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(hue.base),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = painterResource(mark),
+            contentDescription = null,
+            tint = hue.onBase,
+            modifier = Modifier.size(size * MARK_GLYPH_RATIO),
+        )
+    }
+}
+
+/** The drawing inside the disc, which leaves it a ring of its own wash. */
+private const val MARK_GLYPH_RATIO = 0.62f

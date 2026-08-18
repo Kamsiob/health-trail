@@ -1281,20 +1281,11 @@ fun TodayWidget(
                     // round mark that says which part of the notebook this is
                     // and leaves the reading surface alone. The same mark the
                     // section lists wear at the head of every row.
-                    Box(
-                        modifier = Modifier
-                            .size(Space.markCard)
-                            .clip(CircleShape)
-                            .background(hue.wash),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            painter = painterResource(symbolForCard(tab, hue)),
-                            contentDescription = null,
-                            tint = hue.ink,
-                            modifier = Modifier.size(Space.markCardGlyph),
-                        )
-                    }
+                    // **The saturated disc every row in the app wears.** D198:
+                    // the wash version made a field of cards read as one beige
+                    // page with hints of color in it, which is the owner's word
+                    // for the notebook, and Today is the same page one layer up.
+                    HueMark(hue = hue, mark = symbolForCard(tab, hue))
                     Spacer(Modifier.width(Space.s))
                     Text(
                         text = tab,
