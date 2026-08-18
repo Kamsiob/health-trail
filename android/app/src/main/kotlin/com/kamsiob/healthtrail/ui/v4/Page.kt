@@ -322,7 +322,18 @@ fun Page(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .windowInsetsPadding(WindowInsets.navigationBars)
+                            // **The keyboard as well as the navigation bar.**
+                            // The band is where a form's own Save lives, and
+                            // with only the navigation bar accounted for the
+                            // keyboard sat straight over it: adding a second
+                            // person put the name in the field and then hid
+                            // "Start their notebook" behind the letters that
+                            // typed it. Seen on the phone, rule 21, and it is
+                            // #129's rule one layer up: a form whose action is
+                            // unreachable is a form nobody finishes.
+                            .windowInsetsPadding(
+                                WindowInsets.navigationBars.union(WindowInsets.ime),
+                            )
                             .padding(vertical = Space.sm),
                     ) { it() }
                 }
