@@ -4,7 +4,7 @@ Current state. Nothing else. Read with `gh issue view 321`; neither repeats the 
 
 Fragments, no filler. Rewritten to current truth, never appended to. History goes to `docs/RUN-LOG.md` (never read to orient) or a commit message.
 
-**Last rewritten:** 2026-08-18, end of the visual polish session.
+**Last rewritten:** 2026-08-18, after the APK's first delivery and #399.
 
 ---
 
@@ -34,7 +34,8 @@ Worked examples, best first: `ui/v4/Arrival.kt`, `ui/v4/Press.kt`,
 | Step 7 | #394 | **Measured twice.** 750 tests, 14 failed on 2026-08-18 after the polish phase, every one a class #394 already names: the 13 pre-existing plus #391. Nothing new. |
 | Step 8 | #389 | **Done.** All six items proved on the phone with three people. |
 | Step 9 | #388 | **Done.** The bar is separated, the selected destination is the app's own mark, every empty state is one designed block, and findings 2 through 8 are answered or resolved. D201, D202. |
-| Step 10 | #395 | **Every precondition is met and it is the next thing to do.** The release build works and is signed; it needs rebuilding from current `main`, installing, and walking. |
+| Step 10 | #395 | **Delivered once and still open on purpose.** Built from `main` at b7874e24, 13,057,886 bytes, SHA-256 `65a2d9e1afa5feba9f1662a6d241bbc228ccc9bd4b78d6bc531702ec94ea17a3`, same key. Exported through the app, decrypted by the standalone decryptor, installed over a wipe, restored into, and walked. **It stays open until the second build from the finished app**, because closing and reopening it would lose which APK the owner has. |
+| Step 11 | #399 | **Done and closed.** The projects list leads with the nearest date and lists the rest as contained rows; inside a project the answer and the date are one block, the file is four tiles, and housekeeping is in the corner. D205, D206. |
 
 **"Multiple users and profiles" in #389 means people inside one notebook**, which
 is #393. It does not mean a second Android user on the device. Owner, 2026-08-18.
@@ -49,10 +50,13 @@ projects and progress**:
 
 | | |
 |---|---|
-| **#399** | **The projects section is reimagined, not repainted.** The one place the "enhance, do not replace" rule does not apply, and the owner said so himself. Eleven project screens is the finding before any of them is looked at, rule 20. `ProjectDetailScreen` is frozen and gets replaced rather than extended. |
+| ~~#399~~ | **Done, 2026-08-18.** D205 and D206, and the owner corrected it three times while it was being built: the mark did not align with the words, the rows had no container and no arrival, and three controls all looked like "update". The doors out of a project went from five rows and two loose pills to four tiles and a corner. `ProjectDetailScreen` needed no removal: it has had no live caller since 2026-08-05 and its ledger row was already written. |
 | **#398** | **Every tracked thing gets its own screen.** Progress is one page trying to be every measure at once: the hero gets a plot, every other measure gets a number, and one flat list mixes every measure's readings together. A measure card becomes a door. Rule 2 is the whole risk here. |
 | **#397** | **Notes, general and attached.** A note with no target, a note attached to an incident, a question, a visit or a person, and light rich text. Rule 18 both ways is the hard half, and the storage is a `contract/DATA-CONTRACT.md` decision before it is a screen. |
 | **#400** | **The archive carries everything, with two people in one notebook.** The gate on #397 and #398 rather than a task after them: notes, every tracked thing, a mother and a father each fully used, export, wipe, restore, and a merge with a conflict, on the signed minified build. D24 calls the export the only way back. |
+
+**The order now: #398, then #397, then #396, then #395 a second time.** #400 is
+the gate on the first two rather than an item of its own.
 
 **#396** is the dictation rule, split out of #388 finding 4: 34 `Field` call
 sites, a rule that is checkable, three of them inside a frozen file.
@@ -116,27 +120,34 @@ project's road (`ui/v4/RoadStrip.kt`), a measure's line (`ui/v4/Trace.kt`), and
 
 ## 5. What this session added that the next one builds on
 
-- **`navSurface` and `Radius.navBar`, D201.** The navigation bar is its own
-  surface, deeper than the page, with a 24dp top corner and the hairline. In
-  light this palette has no step above `sand`, which is why it is a token
-  rather than a Material role. **White was built first and rejected by
-  looking**, `nav-after-notebook-light-light.png`.
-- **`NavMark` in `BottomNav.kt`, D202.** Material's stadium indicator is off
-  and the current destination wears the app's own mark tile in `ink`. Gold
-  was ruled out: gold means the way things enter the notebook, and the
-  capture button floats a thumb's width above the bar.
-- **`SectionEmpty` is one designed block**, in the flow rather than centered
-  in a void, carrying the section's saturated mark at 64dp, an edge, the
-  sentence in `ink`, and the way in. `EMPTY_HEIGHT_FRACTION` and
-  `EMPTY_HEIGHT_TALL` are gone with the centering. **While a section is empty
-  its floating add is null**, because the block carries the verb.
-- **`SearchDoor` has callers.** It was built to `m3v4-1`'s drawing and never
-  placed. It is the lead on the notebook and on More, and the notebook's
-  top-bar search icon is gone rather than duplicated.
-- **`ListRow` takes `markSize`.** A single-kind list carries the kind's color
-  at the card size; the row size is for a screen showing several kinds.
-- **Four strings in the app's disclaimer voice are gone** from all four
-  catalogs, and `medications.record_only` is deleted.
+- **D205, the projects list.** One project leads, whichever live one has the
+  nearest date somebody else set, drawn as a tonal block with the road at full
+  width and its labels on. Everything else is a dense row in a `Block` with the
+  scheme's hairline. **The uppercase status tag above every name is gone**:
+  GOV.UK spent two years and three services on that exact pattern and came out
+  at plain sentence case. Sources on #399.
+- **`ListRow` takes an `overline`, and it is a layout decision.** Material
+  top-aligns a row's leading mark only once the row is three lines; at two, a
+  title that wraps leaves the disc floating between the words. The owner named
+  it: "the text doesn't align with the icon".
+- **The four destinations arrive rather than cut.** `ProjectsScreen` was the
+  first; `Page` had given every interior screen `arrives` and no destination
+  had it, so the screens opened most were the ones that cut into place.
+- **D206, inside a project.** Where it stands and the next date are one tonal
+  block, because they were two a gap apart with the second drawn louder. The
+  file is four tiles, rule 22's component for a fixed set of destinations.
+  Setup, the name and the removal are in a Material overflow in the top bar.
+- **"Who has it now" replaced "Update where it stands"**, and the lapse block
+  lost its button. Three controls looked like the same verb and two of them
+  were the same action.
+- **`DateRow` has a `flat` mode**, for a caller that is already a container.
+  Its rounded clip ate the first letter of its top and bottom lines, so flat is
+  square and the block around it owns the corners.
+- **"Stalled" is "Nothing moving" and "Left alone" is "Set aside"**, in all four
+  catalogs. **The five stored values did not move**, rule 3.
+- **#402 is open and release-blocking**: six merge resolutions are recorded and
+  the door on More that opens them never appears. Everything ruled out is
+  written on the issue so nobody repeats the diagnosis.
 
 ## 6. Blocked, and section 3 is the live one
 
