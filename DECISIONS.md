@@ -2612,7 +2612,7 @@ Anything only the owner can resolve. Each entry states exactly what he needs to 
 
 **The original note, from when B5 was open:** The four entries before it are all resolved and are kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed. **B5 does not stop the work.** A fresh session can build everything on the list without it, exactly as the last two sessions did, on rule 6 followed by hand.
 
-### B6. OPEN 2026-08-18. The phone is locked behind a PIN and no device work can continue
+### B6. RESOLVED 2026-08-18. The phone was unlocked, and the test that locked it was the wrong test
 
 **What happened.** `gh issue view 389` item 5 asks that a second Android user
 profile on the same device be installed to and restored from the same archive,
@@ -2628,7 +2628,18 @@ secure keyguard from here, #316: it fails every instrumented class with
 `IllegalStateException: No compose hierarchies found in the app`, and it stops
 `adb shell input` from reaching the app at all.
 
-**What the owner needs to do.** Unlock the phone. Nothing else.
+**What the owner needed to do.** Unlock the phone. He did.
+
+**And the test should never have been run.** The owner, on reading this:
+"user profiles" in #389 meant **profiles inside the app, for a caregiver
+looking after more than one person**, which is #393 and which passed. It never
+meant a second Android user on the device. Item 5 of that issue was read
+literally and cost a locked phone for the rest of the session.
+
+**The lesson is not about Android.** It is that an acceptance item written in
+the owner's words was read as a platform feature, and the reading was never
+checked against what the app is for. `MASTER_SPEC.md` has one notebook holding
+several people and no second operating system user anywhere in it.
 
 **What it stops.** Everything that needs the device: the seed, the capture
 sweep, `tools/walk.sh`, the instrumented suite for step 7 and #391, and looking

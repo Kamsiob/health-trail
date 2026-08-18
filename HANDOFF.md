@@ -12,11 +12,10 @@ Fragments, no filler. Rewritten to current truth, never appended to. History goe
 
 1. `gh issue view 321`, then this file. Nothing else.
    `gh issue list --milestone "FINISH THE APP"`. Steps 3 to 10, in order.
-2. **The phone is locked behind a PIN and the owner has to unlock it.**
-   `DECISIONS.md` B6. Until then nothing device-shaped runs: no seed, no
-   sweep, no `tools/walk.sh`, no instrumented suite, no looking at a screen.
-   Check first: `adb shell dumpsys window | grep isKeyguardShowing`.
-3. Once it is unlocked: `tools/sweep.sh audit`, **look at the captures**.
+2. **Check the phone is unlocked before planning device work**:
+   `adb shell dumpsys window | grep isKeyguardShowing`. A secure keyguard
+   stops the seed, the sweep, `walk.sh` and every instrumented class, #316.
+3. `tools/sweep.sh audit`, **look at the captures**.
 4. Take the next thing. **New file from Material's components outward, old
    file deleted in the same commit.** One unit per commit: `tools/verify.sh`,
    install, look on the phone, commit, push.
@@ -84,10 +83,12 @@ Worked examples, in order of quality: `ui/v4/Arrival.kt`, `ui/v4/Press.kt`,
 
 ## 3. Blocked
 
-**B6: the phone is locked behind a PIN.** `DECISIONS.md`. It locked when
-#389's second Android user profile test switched users and switched back,
-which the issue asked for and which passed. `docs/TRAPS.md` section 1 already
-records that there is no way past a secure keyguard from here, #316.
+**Nothing is blocked.** B6 is resolved: the phone is unlocked.
+
+**Do not repeat the mistake that opened it.** #389's "multiple users and
+profiles" means **people inside one notebook**, which is #393. It does not
+mean a second Android user on the device. Reading it literally cost a locked
+phone and proved nothing the app is about. Owner, 2026-08-18.
 
 ## 4. The direction, and it is not negotiable
 
@@ -176,10 +177,9 @@ seen on.
 ## 9. The phone
 
 - Pixel 8, `39151FDJH00506`, Android 17, USB. **A development device, not the owner's daily driver.**
-- **Locked behind a PIN as of 2026-08-18**, `DECISIONS.md` B6. Switching
-  Android user profiles re-locks it and there is no way past a secure keyguard
-  from here, #316. **Check before planning any device work**:
-  `adb shell dumpsys window | grep isKeyguardShowing`.
+- **Switching Android user profiles re-locks it** and there is no way past a
+  secure keyguard from here, #316. **Never switch users**, and check before
+  planning device work: `adb shell dumpsys window | grep isKeyguardShowing`.
 - `adb` is not on `PATH`: `/home/Kamsiob/Android/Sdk/platform-tools/adb`.
 - Baseline: font 1.0, animator 1.0, touch exploration 0, night mode `no`. Rule 19 lets these change **only** if the prior value is recorded first and restored exactly.
 - **Never screenshot**: the share sheet, the calendar app, any screen with a password field.
