@@ -405,6 +405,65 @@ Export and import are screens under design direction v4, not system dialogs. The
 
 **A source id that no longer resolves is kept, not dropped.** A card pointing at a closed project renders its source-closed state and stays until the person removes it. **Import never silently discards a card because its source is gone**, which would be the file quietly editing somebody's desk.
 
+## 8.8 A note, and the only rich text this app stores
+
+**Decided 2026-08-18 for #397, D207. No table was added and no column changed.**
+
+**A note is an entry**, `entry.kind = 'note'`, which the `CHECK` constraint has
+allowed since Phase 0. It is not a second trail and not a parallel record: it is
+a kind of entry, so it is already on the trail, already in search, already in
+the archive, already merged, and already carried by the change log. A separate
+`note` table would have been a second answer to a question this schema answered
+before the app could write one.
+
+**A note attaches to anything through `link`**, which already exists and is
+already bidirectional by construction: `source_table`, `source_id`,
+`target_table`, `target_id`. A note about Tuesday's visit is one row,
+`('entry', <note id>, 'appointment', <appointment id>)`, and both sides read it
+with the same query the project trail already uses. **Rule 18 is a property of
+the table rather than a thing each screen has to remember.**
+
+**A note with no target is a note with no link row.** That is the ordinary case
+and it is not a deficiency, rule 13.
+
+### 8.8.1 The marks, and there are exactly three
+
+**Rich text is stored in `entry.body` as plain text carrying a fixed, named
+subset of Markdown.** Not HTML, not a document model, not a serialized editor
+state.
+
+| Mark | Written | Means |
+|---|---|---|
+| Bold | `**text**` | bold |
+| Italic | `_text_` | italic |
+| Bullet | a line beginning `- ` | one item of a list |
+
+**Nothing else is a mark.** No headings, no links, no tables, no code, no
+nesting, no numbered lists, no strikethrough. A `#` at the start of a line is a
+`#`. The owner's words were "nothing too crazy", and a subset that cannot grow
+by accident is what keeps the archive readable.
+
+**Why text with marks rather than HTML.** The archive is published byte for byte
+and a stranger has read it, 8.4. Somebody opening `body` in a text editor sees
+`**call the office**` and knows exactly what was written and what was emphasized.
+The same string in HTML is `<strong>call the office</strong>`, which is markup a
+person has to see through, and it invites an editor to store attributes,
+classes and spans that no reader outside this app could interpret.
+
+**The marks survive the round trip because they are the text.** There is no
+encode step and no decode step in storage: what the person typed with emphasis
+is what is in the column, and export copies the column. **A test asserts the
+body is byte identical across export and restore**, which is the only claim that
+matters here.
+
+**A reader hears the words and never the marks.** `**` is emphasis for the eye;
+for somebody listening, the sentence is the sentence, and the marks are stripped
+before the string reaches a content description.
+
+**The readable copy renders the three marks and nothing else**, so the HTML a
+stranger opens shows bold as bold, and anything that is not one of the three
+appears exactly as typed.
+
 ## 9. Automated local backup
 
 Backup matters more here than in most apps, because the people using it are exhausted and the record is often the only continuous account of years of care.

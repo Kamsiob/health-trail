@@ -217,6 +217,7 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | D204 | Each tracked thing keeps its own hue, from the six identity colors, derived from its id and never from a reading |
 | D205 | The projects list leads with the nearest date and scans as rows, because five identical cards have no lead and a road at card width is a decoration |
 | D206 | Inside a project the order is the answer, the date, the verbs, the road, the latest word, then four tiles, and housekeeping leaves the page for the top bar |
+| D207 | A note is an entry, it attaches through the link table that already exists, and the only rich text is three Markdown marks in the body column |
 
 ---
 
@@ -3119,6 +3120,59 @@ live path on the old design language.
 frozen file, and it does not make a second live copy of anything. If a frozen
 screen is ever retired for real, its components go with it in the same commit
 and the ledger says so.
+
+### D207. A note is an entry, it attaches through `link`, and rich text is three marks
+
+**2026-08-18, #397.** The owner: "we might also need to have a notes section
+where you can just keep general notes and obviously you need to be able to
+intelligently find a way to allow people to attach a note to a specific incident
+or question or visit or whatever ... I want to have basic rich editing. nothing
+too crazy but it needs to have a very clean layout."
+
+**The issue called this the one item that changes the schema. It changes
+nothing.** Rule 3 makes that worth writing down rather than discovering twice.
+
+**A note is `entry.kind = 'note'`, which the `CHECK` constraint has allowed
+since Phase 0** and which nothing in the app could ever write, because
+`CaptureKind` had six values and none of them was a note. The issue guessed a
+seventh capture kind was the cheaper answer; it is also the only answer that
+keeps a note on the trail, in search, in the archive, in the merge and in the
+change log without a line of new plumbing.
+
+**Rejected: a `note` table.** It would have needed its own trail rendering, its
+own search, its own archive rows, its own merge handling and its own conflict
+display, all to hold a title and a body that `entry` already holds. A record
+this app already knows how to keep is not a new kind of record.
+
+**Attachment goes through `link`, which already exists.** `source_table`,
+`source_id`, `target_table`, `target_id`, and the project trail already reads it
+in both directions with one query. **Rule 18 becomes a property of the table
+rather than something each screen has to remember**, which is the difference
+between "if A shows B, B shows A" being a rule and being a habit.
+
+**A note with no target is a note with no link row**, which is the ordinary case
+and not a deficiency, rule 13.
+
+**The rich text is three marks and they are stored as text.** `**bold**`,
+`_italic_`, and a line beginning `- `. Nothing else is a mark. The subset is
+named in `contract/DATA-CONTRACT.md` 8.8.1 so it cannot grow by accident.
+
+**Rejected: HTML, or any editor's own document model.** The archive is published
+byte for byte and a stranger has read it. `**call the office**` in a text editor
+says what was written and what was emphasized; `<strong>call the office</strong>`
+is markup somebody has to see through, and an editor that stores attributes,
+classes and spans produces a column no reader outside this app can interpret.
+D67 and 8.4 are the standard here, and the standard is that the file is legible
+without this app.
+
+**There is no encode and no decode in storage.** What the person typed with
+emphasis is the column's value, and export copies the column, so "survives the
+archive byte for byte" is true by construction rather than by a converter that
+has to be right twice.
+
+**A reader hears the words, never the marks.** The marks are emphasis for the
+eye; the sentence read aloud is the sentence, so they are stripped before a
+string reaches a content description.
 
 ### D206. Inside a project the order is the answer, the date, the verbs, the road, the latest word, then four tiles, and housekeeping leaves the page
 
