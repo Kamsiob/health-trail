@@ -30,11 +30,11 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.CARD_SIZE
-import com.kamsiob.healthtrail.ui.components.FILL
-import com.kamsiob.healthtrail.ui.components.ROW_SIZE
+import com.kamsiob.healthtrail.ui.v4.CARD_SIZE
+import com.kamsiob.healthtrail.ui.v4.FILL
+import com.kamsiob.healthtrail.ui.v4.ROW_SIZE
 import com.kamsiob.healthtrail.ui.v4.rememberViewChoice
-import com.kamsiob.healthtrail.ui.components.Thumbnail
+import com.kamsiob.healthtrail.ui.v4.Thumbnail
 import com.kamsiob.healthtrail.ui.components.tileColumns
 import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail

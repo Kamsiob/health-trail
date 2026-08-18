@@ -95,11 +95,11 @@ import com.kamsiob.healthtrail.ui.v4.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.components.DistanceMarker
 import com.kamsiob.healthtrail.ui.v4.HeaderActionTags
 import com.kamsiob.healthtrail.ui.v4.PickerOption
-import com.kamsiob.healthtrail.ui.components.ROW_SIZE
+import com.kamsiob.healthtrail.ui.v4.ROW_SIZE
 import com.kamsiob.healthtrail.ui.components.RouteDash
 import com.kamsiob.healthtrail.ui.components.SpineRow
 import com.kamsiob.healthtrail.ui.components.Symbols
-import com.kamsiob.healthtrail.ui.components.Thumbnail
+import com.kamsiob.healthtrail.ui.v4.Thumbnail
 import com.kamsiob.healthtrail.ui.components.TipsSheet
 import com.kamsiob.healthtrail.ui.components.tipForDestination
 import com.kamsiob.healthtrail.ui.theme.goldHue
