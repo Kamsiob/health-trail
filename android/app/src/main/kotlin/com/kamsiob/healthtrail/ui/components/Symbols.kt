@@ -54,6 +54,16 @@ object Symbols {
     @DrawableRes val edit = R.drawable.ic_edit
 
     /**
+     * Speak it instead of typing it.
+     *
+     * **Law 3**: somebody standing in a corridor with a phone in one hand types
+     * badly and speaks fine. This was three stroked sub-paths on a `Canvas`, a
+     * capsule, a cradle and a stem, drawn on a 24 grid this app maintained by
+     * hand. It is Google's now.
+     */
+    @DrawableRes val dictate = R.drawable.ic_mic
+
+    /**
      * Take this off, which is not the same as delete it.
      *
      * **A minus rather than a cross**, and it is Google's own `remove`. A cross
