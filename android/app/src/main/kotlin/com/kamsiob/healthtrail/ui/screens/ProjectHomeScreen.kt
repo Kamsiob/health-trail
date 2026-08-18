@@ -32,10 +32,10 @@ import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.v4.DateRow
 import com.kamsiob.healthtrail.ui.v4.LatestWordCard
-import com.kamsiob.healthtrail.ui.components.SpineRow
+import com.kamsiob.healthtrail.ui.v4.SpineRow
 import com.kamsiob.healthtrail.ui.v4.StandingCard
 import com.kamsiob.healthtrail.ui.components.Symbols
-import com.kamsiob.healthtrail.ui.components.Waypoint
+import com.kamsiob.healthtrail.ui.v4.Waypoint
 import com.kamsiob.healthtrail.ui.theme.goldHue
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius

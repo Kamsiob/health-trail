@@ -22,8 +22,8 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.v4.Hero
 import com.kamsiob.healthtrail.ui.v4.HeroLine
-import com.kamsiob.healthtrail.ui.components.RouteDash
-import com.kamsiob.healthtrail.ui.components.SpineRow
+import com.kamsiob.healthtrail.ui.v4.RouteDash
+import com.kamsiob.healthtrail.ui.v4.SpineRow
 import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius

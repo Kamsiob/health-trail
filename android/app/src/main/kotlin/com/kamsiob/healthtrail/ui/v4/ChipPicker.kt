@@ -31,7 +31,7 @@ import com.kamsiob.healthtrail.ui.v4.Field
 import com.kamsiob.healthtrail.ui.v4.RowDivider
 import com.kamsiob.healthtrail.ui.v4.Sheet
 import com.kamsiob.healthtrail.ui.v4.rememberSheet
-import com.kamsiob.healthtrail.ui.components.RouteSwatch
+import com.kamsiob.healthtrail.ui.v4.RouteSwatch
 
 object ChipPickerTags {
     const val SHEET = "chip_picker_sheet"

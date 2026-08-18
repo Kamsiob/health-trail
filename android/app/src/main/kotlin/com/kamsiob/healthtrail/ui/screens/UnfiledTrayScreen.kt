@@ -44,7 +44,7 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.v4.ChipPickerSheet
 import com.kamsiob.healthtrail.ui.v4.PickerOption
-import com.kamsiob.healthtrail.ui.components.RouteSwatch
+import com.kamsiob.healthtrail.ui.v4.RouteSwatch
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface

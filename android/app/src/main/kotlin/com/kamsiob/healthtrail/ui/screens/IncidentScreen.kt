@@ -27,8 +27,8 @@ import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Avatar
 import com.kamsiob.healthtrail.ui.theme.hueFor
-import com.kamsiob.healthtrail.ui.components.SpineRow
-import com.kamsiob.healthtrail.ui.components.Waypoint
+import com.kamsiob.healthtrail.ui.v4.SpineRow
+import com.kamsiob.healthtrail.ui.v4.Waypoint
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.openableByTap
 import com.kamsiob.healthtrail.ui.components.pressedSurface

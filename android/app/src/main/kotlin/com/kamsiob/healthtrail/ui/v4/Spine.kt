@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.LayoutDirection
-import com.kamsiob.healthtrail.ui.components.RouteDash
+import com.kamsiob.healthtrail.ui.v4.RouteDash
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Trail

@@ -23,6 +23,16 @@ a few geometry constants that are not spacing at all. Those are exactly why this
 counts rather than forbids: **the number going down is the goal, not the number
 being zero tomorrow.** Lowering `BASELINE` as they go is part of doing the work.
 
+**Frozen files are not counted, and `docs/REMOVAL-LEDGER.md` is what says which
+ones are.** A frozen file is never called, never extended and never fixed, D112,
+so a literal inside one can never come down: counting it turns the ratchet into
+a number nobody is allowed to move. This matters because D199 makes retiring a
+component *raise* the count on purpose: the component is rewritten onto
+Material's own in `ui/v4` and the old file stays behind for the frozen screen
+that still calls it, so the same measurements are in the tree twice for a
+while. Only a row naming a whole file is honored; a row naming one declaration
+inside a live file, like `Tile` in `Tile.kt`, leaves that file counted.
+
     python3 tools/checks/check_token_drift.py
 """
 
@@ -34,6 +44,21 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
+LEDGER = ROOT / "docs/REMOVAL-LEDGER.md"
+SOURCE_ROOT = "android/app/src/main/kotlin/com/kamsiob/healthtrail/"
+
+# A ledger row whose first cell is nothing but a backticked path to a Kotlin
+# file. A row naming a declaration inside a file does not match, which is what
+# keeps `Tile` from taking the whole of `Tile.kt` out of the count.
+FROZEN_ROW = re.compile(r"^\|\s*`(ui/[\w/]+\.kt)`\s*\|", re.M)
+
+
+def frozen() -> set[str]:
+    """Every whole file `docs/REMOVAL-LEDGER.md` records as frozen."""
+    if not LEDGER.exists():
+        return set()
+    text = LEDGER.read_text(encoding="utf-8")
+    return {SOURCE_ROOT + m for m in FROZEN_ROW.findall(text)}
 
 # Recorded 2026-08-11 against the tree at D142. It goes down and never up.
 # 161 at D142. 158 after the first fidelity pass, 155 after the second.
@@ -74,7 +99,12 @@ UI = ROOT / "android/app/src/main/kotlin/com/kamsiob/healthtrail/ui"
 # 91, up one, for the fold's own 60dp height. **Geometry rather than spacing**,
 # the category this file's own note sets aside: it is the drawn height of a
 # control measured off `m3v4-4`, not a gap somebody chose. D195.
-BASELINE = 61
+# 55, once frozen files stopped being counted. Six went with
+# `ProjectDetailScreen.kt`, `CaptureSheet.kt`, `PinnedGroup.kt`, `StepRow.kt`
+# and `Spine.kt`, and none of the six was ever going to come down: a frozen
+# file is never fixed. **This is not a gain, it is the count telling the
+# truth**, and the live number it now watches is the one the work can move.
+BASELINE = 55
 
 LITERAL = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\.(dp|sp)\b")
 
@@ -82,8 +112,11 @@ LITERAL = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\.(dp|sp)\b")
 def drift() -> dict[str, int]:
     """Every file outside the theme package that writes its own measurements."""
     found: dict[str, int] = {}
+    skip = frozen()
     for path in sorted(UI.rglob("*.kt")):
         if "/theme/" in str(path):
+            continue
+        if str(path.relative_to(ROOT)) in skip:
             continue
         hits = LITERAL.findall(path.read_text(encoding="utf-8"))
         if hits:

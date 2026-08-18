@@ -30,10 +30,10 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.Distance
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.DistanceMarker
-import com.kamsiob.healthtrail.ui.components.SpineRow
-import com.kamsiob.healthtrail.ui.components.RouteDash
-import com.kamsiob.healthtrail.ui.components.Waypoint
+import com.kamsiob.healthtrail.ui.v4.DistanceMarker
+import com.kamsiob.healthtrail.ui.v4.SpineRow
+import com.kamsiob.healthtrail.ui.v4.RouteDash
+import com.kamsiob.healthtrail.ui.v4.Waypoint
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius

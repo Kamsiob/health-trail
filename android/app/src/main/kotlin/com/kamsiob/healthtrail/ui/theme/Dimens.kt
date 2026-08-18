@@ -530,7 +530,7 @@ object Trail {
      * without one sit next to each other and their waypoints visibly drift
      * apart.
      *
-     * [com.kamsiob.healthtrail.ui.components.SpineRow] clamps it to half the
+     * [com.kamsiob.healthtrail.ui.v4.SpineRow] clamps it to half the
      * row's own height, so a short row centers and a tall one still anchors at
      * its first line.
      */

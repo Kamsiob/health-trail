@@ -28,9 +28,9 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
-import com.kamsiob.healthtrail.ui.components.RouteSwatch
-import com.kamsiob.healthtrail.ui.components.WaypointDot
-import com.kamsiob.healthtrail.ui.components.Waypoint
+import com.kamsiob.healthtrail.ui.v4.RouteSwatch
+import com.kamsiob.healthtrail.ui.v4.WaypointDot
+import com.kamsiob.healthtrail.ui.v4.Waypoint
 import com.kamsiob.healthtrail.ui.components.focusRingAlpha
 import com.kamsiob.healthtrail.ui.components.pressedSurface
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
