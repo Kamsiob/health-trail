@@ -273,8 +273,16 @@ class RemovalIsVisibleTest {
 
     @Test
     fun noProjectCardOffersALongPress() {
-        show { ProjectsScreen(projects = listOf(project), onOpen = {}, onStart = {}) }
-        assertNoLongPress(ProjectTags.row(project.id))
+        // **Two, because one project is the lead and never a row.** D205: the
+        // screen leads with one project drawn as a block and lists the rest, so
+        // a single-project fixture has no row on it at all. Both shapes answer
+        // the same question here and both are checked.
+        val second = project.copy(id = "${project.id}-2", name = "Appeal the assessment")
+        show {
+            ProjectsScreen(projects = listOf(project, second), onOpen = {}, onStart = {})
+        }
+        assertNoLongPress(ProjectTags.LEAD)
+        assertNoLongPress(ProjectTags.row(second.id))
     }
 
     /**
