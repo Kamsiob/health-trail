@@ -123,7 +123,7 @@ The trail's route, a project's road, a measure's line (`Trace`), and `DatePicker
    each one was seen on a capture rather than guessed:** Today's incidents card
    has a blank void between its label and its count; Today carries two tonal
    blocks where `docs/V4.md` 6.1 item 3 allows one; the notebook and More have
-   no lead at all, item 1; More's row marks are grey where every other list
+   no lead at all, item 1; More's row marks are gray where every other list
    carries the kind's hue, D198; the care team draws fifteen separate cards for
    a list that is scanned, rule 22.
 4. **More than one person per notebook.**
