@@ -42,7 +42,8 @@ import com.kamsiob.healthtrail.ui.components.PinnedGroupText
 import com.kamsiob.healthtrail.ui.v4.RouteDash
 import com.kamsiob.healthtrail.ui.v4.RouteSwatch
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import com.kamsiob.healthtrail.ui.v4.ScopedSearch
 import com.kamsiob.healthtrail.ui.v4.SpineRow
 import com.kamsiob.healthtrail.ui.v4.StickySectionHeader
@@ -366,12 +367,26 @@ fun TrailScreen(
         // row of one chip is a control with no decision in it.
         if (kindGroups.size > 1) {
             item(key = "filter") {
-                FlowRow(
+                // **One row that scrolls, not two that wrap.** #388 finding 6:
+                // four chips of four different widths wrapped two and two, and
+                // both lines ended in a ragged edge a third of the way across
+                // the screen. `docs/V4.md` 6.1 item 6 asks for optical
+                // alignment and the wrap had none, and the pair of lines took
+                // 150dp of the first screen before a single entry.
+                //
+                // **The whole set is still reachable and nothing is behind a
+                // tap**, which is what law 2 asks of a filter: the row scrolls
+                // sideways the way Material's own chip rows do, and the first
+                // chips of the set are the ones on screen.
+                //
+                // **`LazyRow` rather than a `Row` in a scroll modifier**, so a
+                // notebook that grows a seventh kind of entry does not compose
+                // seven chips to draw two.
+                LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(Space.xs),
-                    verticalArrangement = Arrangement.spacedBy(Space.xs),
                     modifier = Modifier.fillMaxWidth().testTag(TrailTags.FILTER),
                 ) {
-                    kindGroups.forEach { (key, group) ->
+                    items(kindGroups.toList(), key = { it.first }) { (key, group) ->
                         val on = group.all { it in kinds }
                         ChoiceChip(
                             label = strings[key],
