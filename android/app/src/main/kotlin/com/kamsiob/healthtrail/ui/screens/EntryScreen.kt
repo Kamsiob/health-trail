@@ -466,7 +466,7 @@ private fun EditableRow(label: String, testTag: String, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // bidi-ok: every caller isolates before handing it here.
-        Text(text = label, style = HealthTrail.type.eyebrow, color = colors.ink)
+        Eyebrow(text = label, color = colors.ink)
         Spacer(Modifier.width(Space.s))
         Text(text = strings["entry.date.change"], style = HealthTrail.type.label, color = colors.blue)
     }

@@ -33,8 +33,6 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.CARD_SIZE
 import com.kamsiob.healthtrail.ui.components.FILL
 import com.kamsiob.healthtrail.ui.components.ROW_SIZE
-import com.kamsiob.healthtrail.ui.components.ViewOption
-import com.kamsiob.healthtrail.ui.components.ViewToggle
 import com.kamsiob.healthtrail.ui.components.rememberViewChoice
 import com.kamsiob.healthtrail.ui.components.Thumbnail
 import com.kamsiob.healthtrail.ui.components.tileColumns
@@ -50,6 +48,7 @@ import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
+import com.kamsiob.healthtrail.ui.v4.Segments
 
 object DocTags {
     const val NAME = "documents"
@@ -140,20 +139,18 @@ fun DocumentsScreen(
         }
 
         item(key = "toggle") {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                ViewToggle(
-                    options = listOf(
-                        ViewOption(VIEW_PICTURES, "docs.view.pictures"),
-                        ViewOption(VIEW_LIST, "docs.view.list"),
-                    ),
-                    selected = view.value,
-                    onSelect = view.onSelect,
-                    modifier = Modifier.testTag(DocTags.TOGGLE),
-                )
-            }
+            // **Full width, which is what `m3v4-3` draws.** The old toggle
+            // was a small pill pushed to the end of the row, so two views of
+            // one list read as a control somebody had to find rather than as
+            // the two halves of a question. Material's own segmented button
+            // divides the width evenly, which is what balances the labels.
+            val views = listOf(VIEW_PICTURES, VIEW_LIST)
+            Segments(
+                options = listOf(strings["docs.view.pictures"], strings["docs.view.list"]),
+                selected = views.indexOf(view.value).coerceAtLeast(0),
+                onSelect = { view.onSelect(views[it]) },
+                modifier = Modifier.testTag(DocTags.TOGGLE),
+            )
         }
 
         // **Her actual papers, at a size somebody recognizes them at.** A

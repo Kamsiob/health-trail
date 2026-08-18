@@ -23,8 +23,6 @@ import androidx.compose.ui.text.style.TextAlign
 import com.kamsiob.healthtrail.ui.components.MonthDay
 import com.kamsiob.healthtrail.ui.components.MonthGrid
 import com.kamsiob.healthtrail.ui.components.Symbols
-import com.kamsiob.healthtrail.ui.components.ViewOption
-import com.kamsiob.healthtrail.ui.components.ViewToggle
 import com.kamsiob.healthtrail.ui.components.rememberViewChoice
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
@@ -32,6 +30,7 @@ import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.Page
 import com.kamsiob.healthtrail.ui.v4.RowDivider
+import com.kamsiob.healthtrail.ui.v4.Segments
 import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
@@ -143,20 +142,19 @@ fun AppointmentsScreen(
         // empty notebook is furniture.
         if (appointments.isNotEmpty()) {
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    ViewToggle(
-                        options = listOf(
-                            ViewOption(VIEW_AGENDA, "appts.view.agenda"),
-                            ViewOption(VIEW_MONTH, "appts.view.month"),
-                        ),
-                        selected = view.value,
-                        onSelect = view.onSelect,
-                        modifier = Modifier.testTag(ApptTags.TOGGLE),
-                    )
-                }
+                // Full width, as `m3v4-3` draws a toggle: two views of one
+                // list are the two halves of a question rather than a small
+                // control at the end of a row.
+                val views = listOf(VIEW_AGENDA, VIEW_MONTH)
+                Segments(
+                    options = listOf(
+                        strings["appts.view.agenda"],
+                        strings["appts.view.month"],
+                    ),
+                    selected = views.indexOf(view.value).coerceAtLeast(0),
+                    onSelect = { view.onSelect(views[it]) },
+                    modifier = Modifier.testTag(ApptTags.TOGGLE),
+                )
             }
         }
 

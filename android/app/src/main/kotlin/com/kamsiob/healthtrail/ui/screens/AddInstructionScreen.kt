@@ -177,11 +177,7 @@ private fun StarterCard(
 
         starter.askFor.takeIf { it.isNotBlank() }?.let { askFor ->
             Spacer(Modifier.height(Space.sm))
-            Text(
-                text = strings["instructions.how_to_ask"],
-                style = HealthTrail.type.eyebrow,
-                color = colors.ink2,
-            )
+            Eyebrow(text = strings["instructions.how_to_ask"])
             Spacer(Modifier.height(Space.xs))
             // bidi-ok: a catalog label, in the app's own words rather than the person's.
             Text(text = askFor, style = HealthTrail.type.bodyM, color = colors.ink2)

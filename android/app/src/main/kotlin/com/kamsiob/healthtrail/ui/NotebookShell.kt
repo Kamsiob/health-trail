@@ -3,6 +3,9 @@ package com.kamsiob.healthtrail.ui
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.core.net.toUri
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
@@ -561,7 +564,19 @@ fun NotebookShell(
                 .testTag(ShellTags.ROOT),
             color = HealthTrail.colors.paper,
         ) {
-            Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
+            // **The status bar's inset only, and the navigation bar draws its
+            // own.** With the whole column inset, the bar stopped above the
+            // gesture area and left a strip of canvas under it, so the bar
+            // floated and the screen ended twice. `m3v4-1` runs the bar's
+            // surface to the bottom edge: measured, the drawing has 26 more
+            // pixels of bar under the handle where the app had canvas. The
+            // owner, 2026-08-17: "it's the same color as the task bar so it
+            // interrupts the visual flow."
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.statusBars),
+            ) {
                 // **The capture button is a corner FAB in v4, not a notch in the
                 // navigation bar.** It overlays the content rather than sitting in
                 // the bar, so the bar is four equal tabs, and it lands where a thumb

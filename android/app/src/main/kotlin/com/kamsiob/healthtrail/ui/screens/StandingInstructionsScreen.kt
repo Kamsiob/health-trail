@@ -400,10 +400,10 @@ private fun InstructionRow(
         if (tag != null) {
             Spacer(Modifier.height(Space.sm))
             Column(modifier = Modifier.testTag(InstructionTags.tag(instruction.id))) {
-                Text(
-                    // bidi-ok: a catalog label, in the app's own words rather than the person's.
+                Eyebrow(
+                    // bidi-ok: a catalog label, in the app's own words rather
+                    // than the person's.
                     text = tag.label,
-                    style = HealthTrail.type.eyebrow,
                     color = if (instruction.tag == "federal") {
                         colors.leafInk
                     } else {

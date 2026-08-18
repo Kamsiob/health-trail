@@ -217,7 +217,12 @@ val LightColors = HealthTrailColors(
     // rather than as atmosphere. The warmth did not leave the app, it moved:
     // into the washes, the gold, and the paper of a document itself. D167.
     paper = Color(0xFFFBFAF8),
-    sand = Color(0xFFF1EEE7),
+    // **Measured off `m3v4-1` rather than chosen**, where every block and the
+    // navigation bar are `#F3F1EC`. The app was painting `#F1EEE7`, which is
+    // two to five values yellower, and it covers about sixty percent of every
+    // screen: the owner, 2026-08-17, "that beige cream color is just
+    // overwhelming". A neutral warm gray recedes; a cream one does not.
+    sand = Color(0xFFF3F1EC),
     card = Color(0xFFFFFFFF),
 
     ink = Color(0xFF233240),

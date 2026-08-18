@@ -57,6 +57,7 @@ import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
+import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Page
 import java.time.Instant
 import java.time.ZoneId
@@ -906,11 +907,7 @@ private fun TrailRow(
         // being unfiled is a state and not a mistake.
         if (entry.isUnfiled) {
             Spacer(Modifier.height(Space.xs))
-            Text(
-                text = strings["trail.unfiled"],
-                style = HealthTrail.type.eyebrow,
-                color = colors.ink2,
-            )
+            Eyebrow(text = strings["trail.unfiled"])
         }
     }
 
