@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Avatar
 import com.kamsiob.healthtrail.ui.theme.hueFor
@@ -29,6 +30,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Block
+import com.kamsiob.healthtrail.ui.v4.BlockIconAction
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.ListRow
 import com.kamsiob.healthtrail.ui.v4.Page
@@ -329,15 +331,18 @@ private fun ContactRow(
             },
             trailing = if (phone != null) {
                 {
-                    Action(
-                        label = strings["careteam.call"],
+                    // **The same gold circle the care team draws**, `m3v4-3`.
+                    // This was a blue text action, so one thing, calling
+                    // somebody, had two costumes on two screens: on the one
+                    // screen a stranger reads under pressure, the control
+                    // should be the one they have already seen.
+                    BlockIconAction(
+                        mark = Symbols.call,
+                        label = strings("careteam.call.number", "number" to phone),
                         onClick = onCall,
-                        modifier = Modifier
-                            .semantics {
-                                contentDescription =
-                                    strings("careteam.call.number", "number" to phone)
-                            }
-                            .testTag(EmergencyTags.call(contact.id)),
+                        modifier = Modifier.testTag(EmergencyTags.call(contact.id)),
+                        container = HealthTrail.colors.goldWash,
+                        tint = HealthTrail.colors.goldInk,
                     )
                 }
             } else {
@@ -365,6 +370,9 @@ private fun MedicationCardRow(medication: Repository.Medication, isLast: Boolean
     Column {
         ListRow(
             title = Bidi.isolate(medication.name),
+            mark = Symbols.of(Repository.Section.MEDICATIONS),
+            markTint = hueFor(Repository.Section.MEDICATIONS).ink,
+            markWash = hueFor(Repository.Section.MEDICATIONS).wash,
             // One placement for the whole column, whatever each dose happens
             // to be long enough for on its own.
             valueBelow = true,
