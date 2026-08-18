@@ -40,7 +40,7 @@ import com.kamsiob.healthtrail.time.Distance
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.DistanceMarker
-import com.kamsiob.healthtrail.ui.components.EdgeScrubber
+import com.kamsiob.healthtrail.ui.v4.EdgeRail
 import com.kamsiob.healthtrail.ui.components.PinMark
 import com.kamsiob.healthtrail.ui.components.PinnedGroupText
 import com.kamsiob.healthtrail.ui.components.RouteDash
@@ -272,11 +272,11 @@ fun TrailScreen(
         listState = listState,
         rail = if (plan.years.size >= MIN_SCRUB_YEARS && query.isBlank()) {
             {
-                EdgeScrubber(
+                EdgeRail(
                     labels = plan.years.map { it.label },
                     currentIndex = currentYear,
                     onScrub = { index ->
-                        val year = plan.years.getOrNull(index) ?: return@EdgeScrubber
+                        val year = plan.years.getOrNull(index) ?: return@EdgeRail
                         // **Scrubbing scrolls, and there is nothing to open.**
                         // Every month is on the list now, so the year somebody
                         // asked for is a position rather than a door. D185.
@@ -290,16 +290,6 @@ fun TrailScreen(
             null
         },
     ) {
-        if (since != null) {
-            item {
-                Action(
-                    label = strings["trail.since.all"],
-                    onClick = { onSeeAll?.invoke() },
-                    modifier = Modifier.testTag(TrailTags.SEE_ALL),
-                )
-            }
-        }
-
         if (since != null) {
             item {
                 Action(

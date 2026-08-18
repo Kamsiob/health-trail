@@ -59,7 +59,7 @@ import com.kamsiob.healthtrail.ui.components.HeaderActions
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.components.TabChipText
 import com.kamsiob.healthtrail.ui.components.TipsSheet
-import com.kamsiob.healthtrail.ui.components.railWidth
+import com.kamsiob.healthtrail.ui.v4.railWidth
 import com.kamsiob.healthtrail.ui.components.tipFor
 import com.kamsiob.healthtrail.ui.components.wholeAppHue
 import com.kamsiob.healthtrail.ui.theme.HealthTrail

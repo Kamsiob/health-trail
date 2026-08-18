@@ -52,7 +52,6 @@ import androidx.compose.ui.platform.LocalDensity
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.ui.components.HeaderActions
 import com.kamsiob.healthtrail.ui.components.TipsSheet
-import com.kamsiob.healthtrail.ui.components.railWidth
 import com.kamsiob.healthtrail.ui.components.tipFor
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
