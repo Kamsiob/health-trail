@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -70,15 +72,26 @@ fun Block(
     hue: TabHue? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(tone.container(hue))
-            .padding(padding),
-        verticalArrangement = Arrangement.spacedBy(Space.s),
-        content = content,
-    )
+    // **Material's own card.** It owns the shape, the container color from the
+    // scheme, and the elevation contract that goes with them. This was a `Box`
+    // with a clip and a background, which is what a card is made of rather than
+    // what a card is: nothing inherited, so every state had to be painted by
+    // hand and every drawing disagreement corrected one call site at a time.
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = shape,
+        colors = CardDefaults.cardColors(
+            containerColor = tone.container(hue),
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = Space.none),
+    ) {
+        Column(
+            modifier = Modifier.padding(padding),
+            verticalArrangement = Arrangement.spacedBy(Space.s),
+            content = content,
+        )
+    }
 }
 
 /**

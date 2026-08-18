@@ -17,6 +17,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
@@ -110,71 +115,42 @@ fun ChoiceChip(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    /**
-     * A care thread's route color, as a leading dot.
-     *
-     * **Never the only difference between two chips**, because a person who
-     * cannot tell the colors apart would be choosing between two identical
-     * words. The name carries the answer and this agrees with it.
-     */
+    /** A care thread's route color, as a leading dot. Never the only difference. */
     dotColor: Color? = null,
     enabled: Boolean = true,
 ) {
-    val colors = HealthTrail.colors
-    Row(
-        modifier = modifier
-            .minimumInteractiveComponentSize()
-            .defaultMinSize(minHeight = CHIP_HEIGHT)
-            .clip(Radius.pill)
-            .background(if (selected) colors.goldWash else colors.paper)
-            .then(
-                if (selected) {
-                    Modifier
-                } else {
-                    Modifier.border(Space.hairlineWidth, colors.hairlineHeavy, Radius.pill)
-                },
-            )
-            .selectable(
-                selected = selected,
-                enabled = enabled,
-                role = Role.RadioButton,
-                onClick = onClick,
-            )
-            .padding(horizontal = Space.sm),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Space.xs),
-    ) {
-        // **The check, which is how the drawing says chosen** before any color
-        // is read at all.
-        if (selected) {
-            Symbol(
-                symbol = Symbols.check,
-                contentDescription = null,
-                tint = colors.goldInk,
-                modifier = Modifier.size(Space.markInline),
-            )
-        }
-        if (dotColor != null) {
-            Box(
-                modifier = Modifier
-                    .size(CHIP_DOT)
-                    .clip(CircleShape)
-                    .background(dotColor),
-            )
-            Spacer(Modifier.width(Space.s))
-        }
-        Text(
-            // bidi-ok: a chip's label is a person's name, a thread they named or
-            // the app's own short word, and the caller isolates what is theirs.
-            text = label,
-            style = if (selected) HealthTrail.type.label else HealthTrail.type.bodyM,
-            // **`ink2` when disabled as well.** `ink3` is not a text ink in
-            // this app, D92: it sits at 2.37:1 on paper, so an unavailable
-            // answer would be one nobody could read rather than one nobody can
-            // choose. The container says unavailable; the words stay legible.
-            color = if (selected) colors.onBlue else colors.ink2,
-        )
-    }
+    // **Material's own filter chip.** It carries the selected container, the
+    // check that appears when something is chosen, the state layer, the touch
+    // target and the semantics that say selected rather than pressed. This app
+    // drew a Row with its own background and its own border, and then had to
+    // correct the result against a drawing twice in one day.
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        // bidi-ok: a chip's label is a person's name, a thread they named, or
+        // the app's own short word, and the caller isolates what is theirs.
+        label = { Text(text = label) },
+        modifier = modifier,
+        enabled = enabled,
+        leadingIcon = dotColor?.let {
+            {
+                Box(
+                    modifier = Modifier
+                        .size(CHIP_DOT)
+                        .clip(CircleShape)
+                        .background(it),
+                )
+            }
+        },
+        colors = FilterChipDefaults.filterChipColors(
+            // **Gold when chosen**, which is the accent this app spends on a
+            // chip, `docs/V4.md` 2.1, taken from the scheme's secondary
+            // container rather than painted as a hex here.
+            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            selectedLeadingIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        ),
+    )
 }
 
 /**
@@ -194,22 +170,18 @@ fun MoreChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val colors = HealthTrail.colors
-    Row(
-        modifier = modifier
-            .minimumInteractiveComponentSize()
-            .defaultMinSize(minHeight = CHIP_HEIGHT)
-            .clip(Radius.pill)
-            .background(colors.paper)
-            .border(Space.hairlineWidth, colors.hairlineHeavy, Radius.pill)
-            .clickable(role = Role.Button, onClickLabel = label, onClick = onClick)
-            .padding(horizontal = Space.sm),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        // bidi-ok: the app's own words for the way to the rest of the set,
-        // composed from a catalog template with a count in it.
-        Text(text = label, style = HealthTrail.type.label, color = colors.blue)
-    }
+    // **An assist chip, because it is not one of the answers.** Material draws
+    // it in the same row and at the same height as the filter chips beside it
+    // and announces it as a button, which is the whole distinction: choosing it
+    // opens the full set rather than saying anything about what happened.
+    AssistChip(
+        onClick = onClick,
+        label = { Text(text = label) },
+        modifier = modifier,
+        colors = AssistChipDefaults.assistChipColors(
+            labelColor = MaterialTheme.colorScheme.primary,
+        ),
+    )
 }
 
 /**
