@@ -263,6 +263,11 @@ Precedence: verified code > `docs/V4.md` (visual) > this file > `DECISIONS.md` >
 
 **Screens composed rather than drawn** (rule 12): `gh issue list --label needs-design-review`. No second copy here.
 
+**Newest, 2026-08-18, #401**: the projects list's lead block, and a project's
+file as four tiles with the housekeeping moved to a top-bar overflow. Both are
+composed from existing components; the grid draws screens 02 and 05 and carries
+neither. D205, D206.
+
 **Reachable only from a test, not from any seed** (each on its own issue): paperwork an incident produced; the care team card's sparse rung and the trail spine's gap markers; the digest's corrected and removed counts; #273's two template hands; **the month review's `Hero` block**, which draws only when a month holds a milestone, and no month in the `year2` fixture does. Checked June, April and March on 2026-08-18 rather than assumed.
 
 **`EmptyDrawing` has no live drawing caller left.** `SectionEmpty` draws the
