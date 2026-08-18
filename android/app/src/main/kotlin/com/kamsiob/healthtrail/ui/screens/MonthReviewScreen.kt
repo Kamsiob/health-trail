@@ -386,6 +386,7 @@ private fun EntryLine(entry: Repository.TrailEntry, onOpen: () -> Unit) {
                 label = strings["review.entry.open"],
                 onTap = onOpen,
                 shape = MaterialTheme.shapes.large,
+                container = MaterialTheme.colorScheme.surfaceContainer,
             )
             .testTag(ReviewTags.entry(entry.id))
             .padding(Space.cardPadding),

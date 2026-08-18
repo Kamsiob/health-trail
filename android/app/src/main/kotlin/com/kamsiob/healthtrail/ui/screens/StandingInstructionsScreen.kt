@@ -373,6 +373,7 @@ private fun InstructionRow(
                 label = strings["open.action"],
                 onTap = onOpen,
                 shape = MaterialTheme.shapes.large,
+                container = MaterialTheme.colorScheme.surfaceContainer,
             )
             .testTag(InstructionTags.row(instruction.id))
             .padding(Space.cardPadding),
