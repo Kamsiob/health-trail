@@ -51,12 +51,19 @@ projects and progress**:
 | | |
 |---|---|
 | ~~#399~~ | **Done, 2026-08-18.** D205 and D206, and the owner corrected it three times while it was being built: the mark did not align with the words, the rows had no container and no arrival, and three controls all looked like "update". The doors out of a project went from five rows and two loose pills to four tiles and a corner. `ProjectDetailScreen` needed no removal: it has had no live caller since 2026-08-05 and its ledger row was already written. |
-| **#398** | **Every tracked thing gets its own screen.** Progress is one page trying to be every measure at once: the hero gets a plot, every other measure gets a number, and one flat list mixes every measure's readings together. A measure card becomes a door. Rule 2 is the whole risk here. |
-| **#397** | **Notes, general and attached.** A note with no target, a note attached to an incident, a question, a visit or a person, and light rich text. Rule 18 both ways is the hard half, and the storage is a `contract/DATA-CONTRACT.md` decision before it is a screen. |
+| ~~#398~~ | **Done, 2026-08-18.** `MeasureScreen` per tracked thing, Progress is a lead plus rows, the flat mixed list is gone. **Three of the five shapes in `docs/TRACKED-THINGS.md` 7 need schema the contract does not have and are on #403**, blood pressure being the sharpest: the form has one field called "The number". |
+| **#397** | **In progress.** **The storage is decided and it changed nothing**, D207 and contract 8.8: a note is `entry.kind = 'note'`, which the schema has allowed since Phase 0, and it attaches through the `link` table that already reads from both sides. Rich text is three marks stored as text, `**bold**`, `_italic_`, `- bullet`. **Built so far**: `ui/v4/RichText.kt` with 11 unit tests, and `Repository.addNote` / `notesAbout`. **Left**: the note screen, the way in, the attachment shown on both sides, the readable archive and the decryptor. |
 | **#400** | **The archive carries everything, with two people in one notebook.** The gate on #397 and #398 rather than a task after them: notes, every tracked thing, a mother and a father each fully used, export, wipe, restore, and a merge with a conflict, on the signed minified build. D24 calls the export the only way back. |
 
-**The order now: #398, then #397, then #396, then #395 a second time.** #400 is
-the gate on the first two rather than an item of its own.
+**The order now: #397, then #396, then #395 a second time.** #400 is the gate
+rather than an item of its own, and #402 is the one thing standing in its way.
+
+**A trap #397 hit and the next session will hit again.** `CaptureKind` cannot
+grow: `CaptureSheet.kt` is frozen and switches on it exhaustively, so adding a
+seventh value is a compile error in a file D199 forbids editing *and* forbids
+deleting. **The note takes its own route rather than becoming a seventh capture
+kind**, which also keeps the six positions people reach for by muscle memory
+exactly where they are.
 
 **#396** is the dictation rule, split out of #388 finding 4: 34 `Field` call
 sites, a rule that is checkable, three of them inside a frozen file.
