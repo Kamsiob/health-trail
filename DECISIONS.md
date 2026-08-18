@@ -211,6 +211,7 @@ The BLOCKED section at the end lists anything only the owner can resolve, each w
 | D198 | Color lives in the marks, saturated, and no page is one color |
 | D199 | `ui/components` empties of the live path, and what stays is the frozen tail |
 | D200 | A section's add control floats on the scaffold, because the capture button is not on a section screen |
+| D201 | The navigation bar is its own surface, deeper than the page, so it never blends into the content above it |
 
 ---
 
@@ -3113,6 +3114,51 @@ live path on the old design language.
 frozen file, and it does not make a second live copy of anything. If a frozen
 screen is ever retired for real, its components go with it in the same commit
 and the ledger says so.
+
+### D201. The navigation bar is its own surface, deeper than the page, so it never blends into the content above it
+
+**2026-08-18. An owner requirement rather than a finding**, #388 section 2: "I
+don't want the taskbar area with the today button and notebook button, project
+button and more button to blend into any content above it. so maybe we need to
+give it a different shape and make it a little bit transparent? or maybe we
+need to give it a different color?"
+
+**Why it blended.** `ShortNavigationBar` with no `containerColor` takes
+`surfaceContainer`. In this palette `surfaceContainer`, `surfaceContainerHigh`
+and `surfaceContainerHighest` are all `sand` on light, and `sand` is what every
+`Block` and every group of rows is drawn in. On the notebook the last group and
+the bar met with no boundary at all. **This was drawn that way on purpose**:
+`Color.kt` records `sand` as measured off `m3v4-1`, "where every block and the
+navigation bar are `#F3F1EC`". **The owner's words are newer than the drawing**,
+so the drawing gives way on this one surface and nowhere else.
+
+**Three separations, because no single one carries it.** M3's own elevation
+guidance says an overlapping element is exactly the case for a container change,
+a tonal step or a scrim rather than leaving it to blend.
+
+1. **`navSurface`, a token of its own**: `#EAE6DC` on light, `sand` on dark.
+2. **`Radius.navBar`**, 24dp on the top corners only.
+3. **The hairline** every other surface in the app carries.
+
+**Deeper rather than brighter, and that was decided by looking.** White was
+built first, installed and captured, `nav-after-notebook-light-light.png`. It
+separates, and it makes the bottom of every screen the brightest thing on it,
+which is the opposite of what permanent furniture should do. `navSurface` is
+`sand` carried two steps further from white, on the paper's own warm axis: a
+neutral bar under a warm page reads as dirty rather than as deep. The deeper
+version is `nav-deep-notebook-light.png`.
+
+**What it must not break, and what was checked.** The bottom edge still runs to
+the bottom of the screen, so the screen does not end twice, which is what the
+owner objected to on 2026-08-17. The gold selection pill stays legible on the
+new surface in both themes. `ink2` on `navSurface` measures 4.6:1, above the
+small text floor, and `check_contrast.py` carries the pair now rather than
+assuming it equals `sand`. Looked at in light and dark on the phone; night mode
+was recorded as `no` first and restored to `no` after, rule 19.
+
+**No shadow.** `Surfaces.kt` and `docs/V4.md` 2.1: this language is flat and
+tonal, depth is color against color. One exception at the bottom of every
+screen is how a language stops being one.
 
 ### D200. A section's add control floats on the scaffold, because the capture button is not on a section screen
 
