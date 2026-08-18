@@ -38,6 +38,14 @@ import com.kamsiob.healthtrail.ui.theme.Radius
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
+import com.kamsiob.healthtrail.ui.components.Symbols
+import com.kamsiob.healthtrail.ui.theme.hueFor
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Card
 
 object ProjectTags {
     const val ROOT = "projects_root"
@@ -277,12 +285,26 @@ private fun ProjectRow(
     // **`openableByTap` paints the surface as well as taking the tap**, which
     // is why the background is no longer set here: one place decides what a
     // tappable card looks like at rest and under a finger, per 5.14.
+    // **Material's card owns the surface and the press.** `openableByTap`
+    // bundled a background, a hand animated pressed surface, a focus ring
+    // border and an `indication = null` `clickable`; `Card` with an `onClick`
+    // is all four, and one more call site comes off `Press`.
+    Card(
+        onClick = onOpen,
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = Space.none),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(ProjectTags.row(project.id))
+            .semantics { onClick(label = strings["open.action"]) { onOpen(); true } },
+    ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(Radius.cardLarge)
-            .openableByTap(label = strings["open.action"], onTap = onOpen)
-            .testTag(ProjectTags.row(project.id))
             .padding(Space.cardPadding),
     ) {
         // **The eyebrow, capitals and all**, which is what it is: the app's
@@ -294,7 +316,24 @@ private fun ProjectRow(
         //
         // Waiting and stalled are stated, never colored as a problem. The app
         // does not have a view about how a bureaucracy is going.
-        Eyebrow(text = strings["projects.status.${project.status}"])
+        // **The project's own mark, beside the word for where it stands.**
+        // D198: every list in this app carries the kind's mark in the kind's
+        // color, and this screen carried none, so four cards were four gray
+        // boxes with a gold dotted line in each. The hue is the project's,
+        // which `hueFor` gives every surface belonging to no section.
+        //
+        // **The mark says "project" and never says how it is going.** Rule 2:
+        // waiting and stalled are stated in words, never colored as a problem.
+        // The app does not have a view about how a bureaucracy is going.
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            HueMark(
+                hue = hueFor(Repository.Section.PROJECTS),
+                mark = Symbols.projects,
+                size = Space.markCard,
+            )
+            Spacer(Modifier.width(Space.s))
+            Eyebrow(text = strings["projects.status.${project.status}"])
+        }
         Spacer(Modifier.height(Space.xs))
 
         Text(
@@ -377,6 +416,7 @@ private fun ProjectRow(
                 )
             }
         }
+    }
     }
 }
 
