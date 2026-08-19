@@ -53,10 +53,13 @@ projects and progress**:
 | ~~#399~~ | **Done, 2026-08-18.** D205 and D206, and the owner corrected it three times while it was being built: the mark did not align with the words, the rows had no container and no arrival, and three controls all looked like "update". The doors out of a project went from five rows and two loose pills to four tiles and a corner. `ProjectDetailScreen` needed no removal: it has had no live caller since 2026-08-05 and its ledger row was already written. |
 | ~~#398~~ | **Done, 2026-08-18.** `MeasureScreen` per tracked thing, Progress is a lead plus rows, the flat mixed list is gone. **Three of the five shapes in `docs/TRACKED-THINGS.md` 7 need schema the contract does not have and are on #403**, blood pressure being the sharpest: the form has one field called "The number". |
 | ~~#397~~ | **Done, 2026-08-18.** D207: a memo is `entry.kind = 'note'`, attached through `link`, and rich text is three marks stored as text. `RichText`, `addNote`/`notesAbout`/`aboutFor`, the memo screen, **Memos as the fourth destination**, the memos page as a grid or list with keep-in-view and a bin, local and universal search, **rule 18 both ways on six kinds of thing**, and **the readable archive rendering the marks while the column stays byte for byte**. Gate proved with two people. |
-| **#400** | **The archive carries everything, with two people in one notebook.** The gate on #397 and #398 rather than a task after them: notes, every tracked thing, a mother and a father each fully used, export, wipe, restore, and a merge with a conflict, on the signed minified build. D24 calls the export the only way back. |
+| **#400** | **The archive gate, and everything except two things is proved on the issue.** Two people, every area, in the container, read by the standalone decryptor, export, wipe, restore three times with no leakage, and a merge with a genuine divergence. **Two things left**: #402, because "a conflict log the person can actually open" is not satisfied while the door never appears; and the same run **on the signed minified build**, which this issue asks for and which has only been done in parts. |
 
-**The order now: #397, then #395 a second time.** #400 is the gate
-rather than an item of its own, and #402 is the one thing standing in its way.
+**The order now: #402, then #400's run on the signed build, then #395.** #397,
+#398, #399, #396 and #405 are closed. **#402 is the one thing standing in the
+way of #400**, and it is narrowed to the shell: two tests added on 2026-08-18
+prove the repository writes, counts and reads resolutions, and that `MoreScreen`
+draws the door when handed a count.
 
 **What the owner added to #397 on 2026-08-18**, after looking at the first pass,
 in his words on the issue: the marks belong in the body with buttons rather than
