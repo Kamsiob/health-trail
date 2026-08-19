@@ -621,7 +621,7 @@
   "entry.kind.document": "A document",
   "entry.kind.incident": "Something that went wrong",
   "entry.kind.measurement": "A measurement",
-  "entry.kind.note": "A note",
+  "entry.kind.note": "A memo",
   "entry.kind.question": "Something to ask",
   "entry.kind.visit": "A visit",
   "entry.medication": "Medication",

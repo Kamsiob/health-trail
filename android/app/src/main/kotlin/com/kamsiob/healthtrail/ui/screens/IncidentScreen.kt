@@ -18,6 +18,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.v4.MemosAbout
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Avatar
@@ -305,6 +306,11 @@ fun IncidentScreen(
     onCorrect: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The memos written about this. Rule 18, #397. */
+    memos: List<Repository.TrailEntry> = emptyList(),
+    onOpenMemo: (Repository.TrailEntry) -> Unit = {},
+    /** Writes one already knowing what it is about. */
+    onWriteMemo: () -> Unit = {},
     /**
      * Opens the list of what this family has asked for.
      *
@@ -532,6 +538,17 @@ fun IncidentScreen(
                 Spacer(Modifier.height(Space.headerGap))
                 Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyL, color = colors.ink)
             }
+        }
+
+        // **Rule 18's other half**, #397: a memo written about this appears
+        // here, and this appears on the memo.
+        item {
+            MemosAbout(
+                memos = memos,
+                onOpen = onOpenMemo,
+                onWrite = onWriteMemo,
+                modifier = Modifier.padding(top = Space.betweenGroups, bottom = Space.betweenGroups),
+            )
         }
 
         item {

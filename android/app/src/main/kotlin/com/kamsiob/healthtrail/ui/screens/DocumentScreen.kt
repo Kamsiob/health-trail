@@ -2,6 +2,7 @@ package com.kamsiob.healthtrail.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -18,6 +19,7 @@ import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.goldHue
 import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.MemosAbout
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
@@ -83,6 +85,11 @@ fun DocumentScreen(
     onOpenChapter: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The memos written about this. Rule 18, #397. */
+    memos: List<Repository.TrailEntry> = emptyList(),
+    onOpenMemo: (Repository.TrailEntry) -> Unit = {},
+    /** Writes one already knowing what it is about. */
+    onWriteMemo: () -> Unit = {},
     /** Opens the project this is filed as a paper of. Rule 18, #286. */
     onOpenProject: (String) -> Unit = {},
     /** Where this document is filed among the projects' papers. */
@@ -293,6 +300,17 @@ fun DocumentScreen(
         )
 
         // **Sized to its label**, D118, and quiet, because removing the record
+        // **Rule 18's other half**, #397: a memo written about this appears
+        // here, and this appears on the memo.
+        item {
+            MemosAbout(
+                memos = memos,
+                onOpen = onOpenMemo,
+                onWrite = onWriteMemo,
+                modifier = Modifier.padding(top = Space.betweenGroups, bottom = Space.betweenGroups),
+            )
+        }
+
         // is never what this screen is for. **Removing the document removes the
         // record of it**, and the confirmation says so in the same words it
         // says everywhere else.

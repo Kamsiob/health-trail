@@ -621,7 +621,7 @@
   "entry.kind.document": "مستند",
   "entry.kind.incident": "أمر حدث فيه خطأ",
   "entry.kind.measurement": "قياس",
-  "entry.kind.note": "ملاحظة",
+  "entry.kind.note": "مذكرة",
   "entry.kind.question": "سؤال لطرحه",
   "entry.kind.visit": "زيارة",
   "entry.medication": "دواء",

@@ -1,6 +1,7 @@
 package com.kamsiob.healthtrail.ui.screens
 
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,6 +17,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.alertHue
 import com.kamsiob.healthtrail.ui.theme.goldHue
 import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.MemosAbout
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.BigNumber
 import com.kamsiob.healthtrail.ui.v4.Block
@@ -65,6 +67,11 @@ fun BillScreen(
     onOpenChapter: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The memos written about this. Rule 18, #397. */
+    memos: List<Repository.TrailEntry> = emptyList(),
+    onOpenMemo: (Repository.TrailEntry) -> Unit = {},
+    /** Writes one already knowing what it is about. */
+    onWriteMemo: () -> Unit = {},
     /**
      * Every time a request was not followed that names this bill.
      *
@@ -175,6 +182,17 @@ fun BillScreen(
                 }
             },
         )
+
+        // **Rule 18's other half**, #397: a memo written about this appears
+        // here, and this appears on the memo.
+        item {
+            MemosAbout(
+                memos = memos,
+                onOpen = onOpenMemo,
+                onWrite = onWriteMemo,
+                modifier = Modifier.padding(top = Space.betweenGroups, bottom = Space.betweenGroups),
+            )
+        }
 
         // **Sized to its label rather than to the screen**, D118. Removal is the
         // rarer errand, it sits last, and it opens the confirmation rather than

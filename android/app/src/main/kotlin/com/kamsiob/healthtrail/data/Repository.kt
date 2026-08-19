@@ -1946,6 +1946,25 @@ class Repository private constructor(
      * conflict notice and the readable copy must call the same record the same
      * thing.
      */
+    /**
+     * What each table calls the thing a person would recognize it by. #397.
+     *
+     * **Named per table rather than derived**, because the columns genuinely
+     * differ and a wrong guess would put a row id on somebody's screen, which
+     * is rule 20 exactly.
+     */
+    private val ABOUT_HEADINGS = mapOf(
+        "person" to "display_name",
+        "appointment" to "title",
+        "incident" to "title",
+        "document" to "title",
+        "bill" to "description",
+        "project" to "name",
+        "question" to "text",
+        "medication" to "name",
+        "entry" to "title",
+    )
+
     private val HEADING_COLUMNS = listOf(
         "display_name", "title", "name", "question", "label", "text",
     )
@@ -6775,6 +6794,51 @@ class Repository private constructor(
                 }
             }
         }
+
+    /** What one entry is attached to, as the person would name it. #397. */
+    data class About(val table: String, val id: String, val label: String)
+
+    /**
+     * What a memo is about, read from `link` and named in the person's words.
+     *
+     * **Rule 18's other direction.** `notesAbout` answers "what memos are on
+     * this thing"; this answers "what thing is this memo on", and both read the
+     * same row from either end, because a link is a fact about two things.
+     *
+     * **The heading column is looked up per table rather than guessed**, which
+     * is the same problem the conflict screen already solved: a person is a
+     * `display_name`, an appointment a `title`, a project a `name`. Rule 20
+     * says the interface never shows somebody a table name or a row id.
+     */
+    suspend fun aboutFor(entryId: String): About? = withContext(Dispatchers.IO) {
+        val database = db().database
+        // **Ordered, because `LIMIT 1` without one picks whichever row the
+        // storage engine happens to hand back first**, and that changes after a
+        // vacuum, an index or a version upgrade. 8.4, and the check that holds
+        // it. A memo has one target today; the order is what keeps the answer
+        // the same on two devices if it ever has two.
+        val target = database.rawQuery(
+            "SELECT target_table, target_id, created_at FROM live_link " +
+                "WHERE source_table = 'entry' AND source_id = ? " +
+                "UNION ALL " +
+                "SELECT source_table, source_id, created_at FROM live_link " +
+                "WHERE target_table = 'entry' AND target_id = ? " +
+                "ORDER BY created_at, 1, 2 LIMIT 1",
+            arrayOf(entryId, entryId),
+        ).use { cursor ->
+            if (cursor.moveToFirst()) cursor.getString(0) to cursor.getString(1) else null
+        } ?: return@withContext null
+
+        val (table, id) = target
+        val column = ABOUT_HEADINGS[table] ?: return@withContext null
+        val label = database.rawQuery(
+            "SELECT \"$column\" FROM \"live_$table\" WHERE id = ?",
+            arrayOf(id),
+        ).use { cursor ->
+            if (cursor.moveToFirst()) cursor.getString(0) else null
+        } ?: return@withContext null
+        About(table = table, id = id, label = label)
+    }
 
     /** Connects an entry to a project, so each can show the other. Rule 18. */
     suspend fun linkEntryToProject(entryId: String, projectId: String): String = insert(

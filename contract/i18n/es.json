@@ -621,7 +621,7 @@
   "entry.kind.document": "Un documento",
   "entry.kind.incident": "Algo que salió mal",
   "entry.kind.measurement": "Una medición",
-  "entry.kind.note": "Una nota",
+  "entry.kind.note": "Un memo",
   "entry.kind.question": "Algo que preguntar",
   "entry.kind.visit": "Una visita",
   "entry.medication": "Medicamento",

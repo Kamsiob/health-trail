@@ -251,9 +251,15 @@ internal fun MilestoneOverlays(
             val fresh = documents.firstOrNull { it.id == current.id } ?: current
             LaunchedEffect(current.id, revision) {
                 documentFilings = repository.filingsForDocument(current.id)
+                memosAbout = repository.notesAbout("document", current.id)
             }
             DocumentScreen(
                 document = fresh,
+                memos = memosAbout,
+                onOpenMemo = { openEntry = it.id },
+                onWriteMemo = {
+                    writingNote = NoteTarget("document", fresh.id, fresh.title)
+                },
                 filings = documentFilings,
                 // **The project itself**, and it keeps the papers screen
                 // underneath so back returns where the person came from.
@@ -319,9 +325,15 @@ internal fun MilestoneOverlays(
             val fresh = bills.firstOrNull { it.id == current.id } ?: current
             LaunchedEffect(fresh.id, revision) {
                 billViolations = repository.violationsLinkedTo(fresh.id)
+                memosAbout = repository.notesAbout("bill", fresh.id)
             }
             BillScreen(
                 bill = fresh,
+                memos = memosAbout,
+                onOpenMemo = { openEntry = it.id },
+                onWriteMemo = {
+                    writingNote = NoteTarget("bill", fresh.id, fresh.description)
+                },
                 violations = billViolations,
                 onOpenViolations = {
                     openBill = null
@@ -346,6 +358,8 @@ internal fun MilestoneOverlays(
         openEntry?.let { entryId ->
             LaunchedEffect(entryId, revision) {
                 entryDetail = repository.entry(entryId)
+                // **The other end of the link**, rule 18, #397.
+                entryAbout = repository.aboutFor(entryId)
                 // An entry that is gone closes rather than showing a blank
                 // screen, which is what a removal from underneath looks like.
                 if (entryDetail == null) openEntry = null
@@ -353,6 +367,30 @@ internal fun MilestoneOverlays(
             entryDetail?.takeIf { it.entry.id == entryId }?.let { detail ->
                 EntryScreen(
                     detail = detail,
+                    about = entryAbout,
+                    // **Opening what it is about**, which is what makes the row
+                    // a door rather than a label. Each table lands on the
+                    // screen that holds that thing.
+                    onOpenAbout = { target ->
+                        openEntry = null
+                        when (target.table) {
+                            "person" -> openPerson = people.firstOrNull { it.id == target.id }
+                            "project" -> openProject = projects.firstOrNull { it.id == target.id }
+                            "document" -> openDocument = documents
+                                .firstOrNull { it.id == target.id }
+                            "bill" -> openBill = bills.firstOrNull { it.id == target.id }
+                            "appointment" -> openPrepFor = target.id
+                            "incident" -> openIncident = incidents
+                                .firstOrNull { it.id == target.id }
+                            // **A table this screen cannot open lands nowhere
+                            // rather than somewhere wrong.** The row is only
+                            // drawn for a link that exists, and every table the
+                            // app can attach from is above; anything else is a
+                            // link written by a newer version, which 8.3 says
+                            // to carry rather than to guess at.
+                            else -> Unit
+                        }
+                    },
                     // **The way back names where it actually goes.** An entry
                     // opened from a project's "What was said" returns to that
                     // project and said "Back to the notebook" while doing it,
@@ -470,10 +508,16 @@ internal fun IncidentAndReviewOverlays(
             } else {
                 LaunchedEffect(current.id, revision) {
                     incidentDetail = repository.incidentDetail(current.id)
+                    memosAbout = repository.notesAbout("incident", current.id)
                 }
                 IncidentScreen(
                     incident = current,
                     detail = incidentDetail,
+                    memos = memosAbout,
+                    onOpenMemo = { openEntry = it.id },
+                    onWriteMemo = {
+                        writingNote = NoteTarget("incident", current.id, current.title)
+                    },
                     // **The way back from a request that was not followed**,
                     // which is the list of what was asked for, since a request
                     // has no screen of its own while B6 stands.

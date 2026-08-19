@@ -178,6 +178,9 @@ internal class ShellState {
      * at a time and each branch loads it for what it is showing.
      */
     var memosAbout by mutableStateOf<List<Repository.TrailEntry>>(emptyList())
+
+    /** What the open entry is attached to, or null. Rule 18, #397. */
+    var entryAbout by mutableStateOf<Repository.About?>(null)
     var correctingMeasure by mutableStateOf<Repository.Measure?>(null)
     var savingMeasureCorrection by mutableStateOf<Triple<String, String, String?>?>(null)
 

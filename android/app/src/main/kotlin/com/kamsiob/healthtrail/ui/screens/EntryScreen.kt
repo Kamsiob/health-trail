@@ -32,7 +32,11 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.v4.RouteSwatch
 import com.kamsiob.healthtrail.ui.v4.WaypointDot
 import com.kamsiob.healthtrail.ui.v4.Waypoint
+import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
+import com.kamsiob.healthtrail.ui.v4.ListRow
+import com.kamsiob.healthtrail.ui.theme.goldHue
+import com.kamsiob.healthtrail.ui.v4.RichText
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.Trail
 import com.kamsiob.healthtrail.ui.v4.Action
@@ -40,6 +44,8 @@ import com.kamsiob.healthtrail.ui.v4.Eyebrow
 import com.kamsiob.healthtrail.ui.v4.Page
 
 object EntryTags {
+    /** What this entry is attached to, as a door. #397. */
+    const val ABOUT = "entry_about"
     const val NAME = "entry"
     const val DATE = "entry_date"
     const val CORRECT = "entry_correct"
@@ -107,6 +113,15 @@ fun EntryScreen(
     onSetPinned: (Boolean) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * What this memo is about, when it is about something. Rule 18, #397.
+     *
+     * **The other end of the link the thing's own screen already shows.** A
+     * memo written from Tuesday's visit appears on that appointment; this is
+     * the appointment appearing on the memo, and it opens it.
+     */
+    about: Repository.About? = null,
+    onOpenAbout: (Repository.About) -> Unit = {},
     backLabelKey: String = "section.back",
 ) {
     val strings = LocalStrings.current
@@ -138,10 +153,39 @@ fun EntryScreen(
         // **Not repeated when the heading is already the whole of it.** Saying
         // the same sentence twice, once large and once small, reads as a
         // rendering fault rather than emphasis.
+        // **What it is about, right under the heading.** Rule 18: if A shows B,
+        // B shows A, and the half that gets forgotten is this one. It is a door
+        // rather than a label, because somebody reading a memo about an
+        // appointment usually wants the appointment.
+        about?.let { target ->
+            item {
+                ListRow(
+                    // **No mark.** It carried `Symbols.forward` in a gold disc
+                    // and the row already ends in a chevron, so the same arrow
+                    // was drawn twice on one line. The door's own chevron says
+                    // it opens.
+                    title = strings("note.about", "what" to Bidi.isolate(target.label)),
+                    isDoor = true,
+                    onClick = { onOpenAbout(target) },
+                    modifier = Modifier.testTag(EntryTags.ABOUT),
+                )
+                Spacer(Modifier.height(Space.withinGroup))
+            }
+        }
+
         if (heading.repeatBody) {
             entry.body?.takeIf { it.isNotBlank() }?.let {
                 item {
-                    Text(text = Bidi.isolate(it), style = HealthTrail.type.bodyL, color = colors.ink)
+                    Text(
+                        // **The three marks are drawn, never shown.** D207: a
+                        // memo's body carries them as characters, and printing
+                        // them is showing somebody the storage, rule 20. Every
+                        // other kind of entry has no marks in it, so this reads
+                        // as plain text for all of them.
+                        text = RichText.annotated(Bidi.isolate(it)),
+                        style = HealthTrail.type.bodyL,
+                        color = colors.ink,
+                    )
                 }
             }
         } else {
@@ -376,7 +420,13 @@ fun headingFor(entry: Repository.TrailEntry, untitled: String): EntryHeading =
 fun headingFor(title: String?, body: String?, untitled: String): EntryHeading {
     title?.takeIf { it.isNotBlank() }?.let { return EntryHeading(it.trim(), true) }
 
-    val body = body?.trim()?.takeIf { it.isNotBlank() }
+    // **The words, never the marks.** #397 and D207: a memo's body carries
+    // `**bold**` as characters, and a heading built from it printed them, so
+    // the biggest text on the screen showed somebody the storage. Rule 20.
+    // Stripped here rather than at each caller, because every screen that turns
+    // a body into a heading wants the same thing, and the trail, the tray and
+    // the search results are all callers.
+    val body = body?.let { RichText.plain(it) }?.trim()?.takeIf { it.isNotBlank() }
         ?: return EntryHeading(untitled, false)
 
     val firstLine = body.lineSequence().first().trim()
