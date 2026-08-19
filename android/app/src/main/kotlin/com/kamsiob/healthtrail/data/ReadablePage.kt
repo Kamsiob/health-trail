@@ -107,11 +107,66 @@ internal object ReadablePage {
     fun notRecorded(label: String, word: String): String =
         "<div class=\"f\"><dt>${escape(label)}</dt><dd class=\"none\">${escape(word)}</dd></div>"
 
+    /**
+     * The three marks a memo can carry, turned into tags. D207, 8.8.1.
+     *
+     * **Escaped first and marked second, and that order is the whole of the
+     * safety.** The person's own text becomes harmless characters before any
+     * tag is introduced, so nothing anybody typed can open an element. The only
+     * tags this ever produces are `strong`, `em` and a `ul` of `li`.
+     *
+     * **Only the three**, `contract/DATA-CONTRACT.md` 8.8.1: `**bold**`,
+     * `_italic_`, and a line beginning `- `. Anything else stays exactly as it
+     * was typed, which is what makes the file legible without this app.
+     *
+     * **An unclosed mark stays the characters it is**, the same rule the app
+     * itself follows, so a half written memo reads as what somebody wrote
+     * rather than swallowing the rest of the page.
+     */
+    fun marked(value: String): String {
+        val out = StringBuilder()
+        var inList = false
+        for ((index, raw) in value.lines().withIndex()) {
+            val bullet = raw.startsWith("- ")
+            if (bullet && !inList) {
+                out.append("<ul>")
+                inList = true
+            } else if (!bullet && inList) {
+                out.append("</ul>")
+                inList = false
+            } else if (!bullet && index > 0) {
+                out.append("<br>")
+            }
+            val line = inline(escape(if (bullet) raw.removePrefix("- ") else raw))
+            if (bullet) out.append("<li>").append(line).append("</li>") else out.append(line)
+        }
+        if (inList) out.append("</ul>")
+        return out.toString()
+    }
+
+    /** Bold and italic within one already escaped line. */
+    private fun inline(line: String): String {
+        var out = line
+        for ((mark, tag) in listOf("**" to "strong", "_" to "em")) {
+            val parts = out.split(mark)
+            // An odd number of pieces means every opener found its closer.
+            if (parts.size >= 3 && parts.size % 2 == 1) {
+                out = parts.mapIndexed { i, part ->
+                    if (i % 2 == 1 && part.isNotEmpty()) "<$tag>$part</$tag>" else part
+                }.joinToString("")
+            }
+        }
+        return out
+    }
+
     fun field(label: String, value: String?, notRecordedWord: String): String =
         if (value.isNullOrBlank()) {
             notRecorded(label, notRecordedWord)
         } else {
-            "<div class=\"f\"><dt>${escape(label)}</dt><dd>${escape(value)}</dd></div>"
+            // **Marked rather than escaped alone**, so the three a memo can
+            // carry read as emphasis in the file a stranger opens. `marked`
+            // escapes first, so this is not a hole. 8.8.1.
+            "<div class=\"f\"><dt>${escape(label)}</dt><dd>${marked(value)}</dd></div>"
         }
 
     /**
