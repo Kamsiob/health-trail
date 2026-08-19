@@ -1431,6 +1431,46 @@ object ExportContainer {
      * stale the first time a table was added.
      */
     private fun unknownShape(open: SQLiteDatabase, expected: Schema): Problem? {
+        // **Views are validated, and they were not.** #415.
+        //
+        // This enumerated `type = 'table'` only. `sqlcipher_export` copies views
+        // and triggers, so an archive's views land in the live database, and
+        // `Backup.userTables` then reads `type = 'view' AND name LIKE 'live_%'`,
+        // strips the prefix and puts the result into statement text. Every
+        // integrity check passes by construction, because the passphrase, the
+        // manifest and the databaseSha256 are all produced by whoever made the
+        // file.
+        //
+        // **Whitelisted structurally rather than rejected**, exactly as the
+        // issue requires: every legitimate archive carries forty of these, so
+        // refusing views outright would break every real restore. A view is
+        // expected when it is `live_` plus a table this build actually has,
+        // which is derived from the live schema rather than listed a second
+        // time in Kotlin, per D16.
+        //
+        // Triggers are deliberately not covered here. Nothing reads a trigger
+        // name into SQL text, so they are not the path this closes, and
+        // enumerating the eighty the contract creates would be the second
+        // declaration D16 exists to prevent.
+        open.rawQuery(
+            "SELECT name FROM sqlite_master WHERE type = 'view'",
+            null,
+        ).use { views ->
+            while (views.moveToNext()) {
+                val view = views.getString(0)
+                val backing = view.removePrefix("live_")
+                if (!view.startsWith("live_") || backing !in expected) {
+                    return Problem.UnknownSchema(
+                        view,
+                        "This export holds a kind of record this version of Health Trail " +
+                            "does not have, called \"$view\". It says it is a format this " +
+                            "app understands, so it has been altered since it was made. " +
+                            "Nothing was changed.",
+                    )
+                }
+            }
+        }
+
         open.rawQuery(
             "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
             null,

@@ -397,11 +397,32 @@ object Backup {
             buildList { while (it.moveToNext()) add(it.getString(0).removePrefix("live_")) }
         }
 
+    /**
+     * A SQLite identifier, quoted so it cannot be read as SQL. #415.
+     *
+     * **Every one of these names comes out of a restored archive.**
+     * `sqlcipher_export` copies views along with tables, `userTables` reads
+     * them back out of `sqlite_master` and strips a prefix, and the result was
+     * interpolated straight into statement text with no bound arguments. The
+     * archive's passphrase, manifest and databaseSha256 are all produced by
+     * whoever made the file, so every integrity check passes by construction
+     * and the name is attacker chosen.
+     *
+     * **Impact was bounded and the defect was not.** One statement is compiled
+     * per `rawQuery`, so the realistic outcome sat between a crash mid restore
+     * and a single rewritten statement rather than arbitrary execution.
+     * Unvalidated input reaching SQL text is still the thing to fix.
+     *
+     * Doubling the quote is SQLite's own escape for a quoted identifier.
+     */
+    private fun quoted(identifier: String): String =
+        "\"" + identifier.replace("\"", "\"\"") + "\""
+
     private fun countOf(database: SQLiteDatabase, table: String): Int =
         // allow-base-table: the manifest describes what is in the file, and the
         // file carries tombstones. Counting the view would understate it and an
         // importer checking counts against the payload would reject the export.
-        database.rawQuery("SELECT COUNT(*) FROM $table", null)
+        database.rawQuery("SELECT COUNT(*) FROM ${quoted(table)}", null)
             .use { if (it.moveToFirst()) it.getInt(0) else 0 }
 
     /**
@@ -414,7 +435,7 @@ object Backup {
     internal fun edtfGroups(database: SQLiteDatabase): List<Pair<String, String>> =
         buildList {
             for (table in userTables(database)) {
-                database.rawQuery("PRAGMA table_info($table)", null).use { cursor ->
+                database.rawQuery("PRAGMA table_info(${quoted(table)})", null).use { cursor ->
                     val nameColumn = cursor.getColumnIndexOrThrow("name")
                     while (cursor.moveToNext()) {
                         val column = cursor.getString(nameColumn)
@@ -451,8 +472,8 @@ object Backup {
         var updated = 0
         for ((table, group) in edtfGroups(database)) {
             val rows = database.rawQuery(
-                "SELECT id, ${group}_edtf, ${group}_zone FROM $table " +
-                    "WHERE ${group}_edtf IS NOT NULL",
+                "SELECT id, ${quoted(group + "_edtf")}, ${quoted(group + "_zone")} " +
+                    "FROM ${quoted(table)} WHERE ${quoted(group + "_edtf")} IS NOT NULL",
                 null,
             ).use { cursor ->
                 buildList {
@@ -474,7 +495,8 @@ object Backup {
                     .getOrElse { ZoneId.systemDefault() }
                 val range = Edtf.resolve(parsed, zone)
                 database.execSQL(
-                    "UPDATE $table SET ${group}_start = ?, ${group}_end = ? WHERE id = ?",
+                    "UPDATE ${quoted(table)} SET ${quoted(group + "_start")} = ?, " +
+                        "${quoted(group + "_end")} = ? WHERE id = ?",
                     arrayOf<Any?>(range.start, range.end, id),
                 )
                 updated++
