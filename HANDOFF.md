@@ -52,10 +52,10 @@ order, not effort order.** `gh issue view 321` holds it. Four new milestones:
 
 | Milestone | What it is | Why it is where it is |
 |---|---|---|
-| **9. The record survives** | #407 to #418 | The app deletes its own database on corruption, the declared journal mode has never been applied, restore replaces the live file with a stream copy, and anything but a lost key crashes at launch forever. Two archive import holes ride along because the same file reaches them. |
-| **10. The wiring under the screens** | #419 to #433 | Columns with a reader and no writer. Transactions claimed in a comment and absent from the code. Filing that happens only at capture, so nothing can be re-filed. |
-| **11. What the notebook still needs** | #434 to #442 | The nine additions agreed in **D208**. Two need schema first. |
-| **12. One chrome, one motion** | #443 to #450 | Seven header implementations become one. Then the repeats. |
+| **9. The record survives** | 18 issues, #407 to #420, #451, #454, #455, #457 | The app deletes its own database on corruption, the declared journal mode has never been applied, restore replaces the live file with a stream copy, and anything but a lost key crashes at launch forever. Two archive import holes ride along because the same file reaches them. |
+| **10. The wiring under the screens** | 18 issues, #421 to #434, #452, #453, #458, #459 | Columns with a reader and no writer. Transactions claimed in a comment and absent from the code. Filing that happens only at capture, so nothing can be re-filed. |
+| **11. What the notebook still needs** | 9 issues, #435 to #442, #456 | The nine additions agreed in **D208**. Two need schema first. |
+| **12. One chrome, one motion** | 8 issues, #443 to #450 | Seven header implementations become one. Then the repeats. |
 
 **The single most important fact in this file:** `HealthTrailDatabase.kt:101`
 passes `null` as the `DatabaseErrorHandler`, and no handler exists anywhere in
@@ -82,7 +82,7 @@ were wrong and both mattered:
 carries a risk of fix. Anything marked SCHEMA stops and goes to `DECISIONS.md`
 BLOCKED, rule 3.
 
-**Still true and unchanged.** 85 issues were open before this work and most are
+**53 issues were opened, #407 to #459, and 138 are now open.** 85 were open before this work and most are
 open on purpose: 28 owner review, 13 deferred by D141 and D180 which **must not
 be closed**, 9 beyond v1, 8 release blocking (#1, #9, #15, #44, #210, #211,
 #212, #319), and the maintenance tail. **Count with
