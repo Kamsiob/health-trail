@@ -4922,6 +4922,14 @@ class Repository private constructor(
             hasChapter = false)
         run(Section.PROJECTS, "live_project", "name", "waiting_on", "started",
             listOf("name", "waiting_on", "notes"))
+        // **Care threads were not searched at all.** #429. A thread's label is
+        // how somebody refers to a whole running situation, "the appeal", "the
+        // wound", and the empty state promises this looks through every section
+        // at once. The end note goes in with it, since a finished thread's last
+        // word is exactly the kind of thing somebody comes back for.
+        run(Section.THREADS, "live_care_thread", "label", "end_note", "started",
+            listOf("label", "end_note"),
+            hasChapter = false)
 
         hits
     }
@@ -5278,10 +5286,41 @@ class Repository private constructor(
         )
         columns.putAll(dates)
         val assignments = columns.keys.joinToString(", ") { "$it = ?" }
-        db().database.write(
-            "UPDATE incident SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",
-            (columns.values + listOf(System.currentTimeMillis(), incidentId)).toTypedArray(),
-        )
+        val now = System.currentTimeMillis()
+        val database = db().database
+        database.beginTransaction()
+        try {
+            database.write(
+                "UPDATE incident SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",
+                (columns.values + listOf(now, incidentId)).toTypedArray(),
+            )
+
+            // **The mirror entry is re-stamped, and it never was.** #429.
+            //
+            // `reportIncident` writes an `entry` beside the incident carrying
+            // the same title and description, and **search reads `live_entry`,
+            // not `incident`**. Correcting an incident updated only the
+            // incident, so the trail went on showing the old title and the
+            // corrected words matched nothing: **a corrected incident was
+            // findable only by the words the person had just replaced.**
+            //
+            // Written in the same transaction as the correction, because a
+            // record and the copy search reads are one fact, and half of that
+            // is what produced the defect.
+            database.write(
+                "UPDATE entry SET title = ?, body = ?, updated_at = ?, rev = rev + 1 " +
+                    "WHERE incident_id = ? AND deleted_at IS NULL",
+                arrayOf<Any?>(
+                    title.trim().ifBlank { null },
+                    description?.ifBlank { null },
+                    now,
+                    incidentId,
+                ),
+            )
+            database.setTransactionSuccessful()
+        } finally {
+            database.endTransaction()
+        }
     }
 
     /**
