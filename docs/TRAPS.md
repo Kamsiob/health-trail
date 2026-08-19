@@ -13,6 +13,7 @@ Every line cost real time at least once. Written for a machine: fragments, no fi
 | Change a screen | [5](#5-screens) |
 | Commit | [6](#6-committing) |
 | Run any command | [7](#7-this-machine) |
+| Touch the record, the archive or a write | [8](#8-the-record-and-the-archive) |
 
 ---
 
@@ -196,3 +197,21 @@ every `empty3-*` and `empty4-*` capture was taken.
 - **Versions**: Gradle 9.7.0, AGP 9.3.1, Kotlin 2.4.10, Compose BOM 2026.08.00, **material3 pinned past it at 1.5.0-alpha26**, JDK 21, compileSdk 37, targetSdk 36, minSdk 26. minSdk 26 is why `java.time` reaches `Edtf.kt` without desugaring.
 - **A classfile listing is not an API, and it cost this project its whole plan's premise.** `unzip -l` and `javap` show a Kotlin `internal` function as a public JVM method, because `internal` lives in the metadata rather than in the bytecode. Three documents and an issue said Material 3 Expressive was already on the classpath in material3 1.4.0, unused; it is there and none of it can be called. Tell: a confident sentence about a library's contents with no compile error quoted next to it. **Write the import, compile, read the error.** D179.
 - **Android's `execSQL` refuses any statement returning rows** and `PRAGMA journal_mode` returns one, so `ContractAssets.splitStatements` handles splitting including trigger bodies and routes pragmas through `rawQuery`. **Reuse it rather than writing a second splitter.**
+
+---
+
+## 8. The record and the archive
+
+**Everything here is a shape that produced no error.** That is why each one survived: nothing failed, nothing logged, and the screen looked right.
+
+- **A comment claiming a transaction is not a transaction.** `makeSubjectActive`, `recordMedicationEvent` and `moveToChapter` each carry a doc comment naming the invariant they hold, above two or three unwrapped writes. **Read the code under the comment, not the comment.** The tell: the failure needs a process death to appear, so it never shows up in testing and shows up in a year.
+- **A `PRAGMA` inside `beginTransaction()` is silently ignored.** SQLite refuses a journal mode change inside a transaction and returns the current mode instead. `applySchema` routes pragmas through `rawQuery` and discards the row, so the declared `journal_mode = WAL` has never once been applied and nothing said so. **Apply a pragma outside any transaction, and read back what it actually became.**
+- **A null `DatabaseErrorHandler` means the library deletes the database.** `openOrCreateDatabase(file, key, null, null)` gets the default handler, whose `onCorruption` erases the file. The next open sees no file and creates a fresh one. **The tell is the worst one in the project: the app opens to "Before you start" and there is nothing to find.**
+- **`runCatching` catches `Throwable`.** Disk full, a revoked URI grant, a provider crash and `OutOfMemoryError` all collapse into one `null`, and the caller then reports whatever single cause it assumed. `storePicked` told people their file was over 25 MB when the disk was full. **Catch the exceptions you mean.**
+- **`requireSafeName` is not a path check.** It tests ASCII, length, characters some filesystems refuse, and reserved device names. `..` passes all four. **A containment check is `canonicalPath.startsWith(root)` and nothing else is.**
+- **`sqlcipher_export` copies views and triggers, and the import validator checks tables.** `unknownShape` enumerates `type = 'table'`, so a view name from an archive reaches `recomputeRanges` and is interpolated into SQL unquoted. **Whitelist the expected views rather than rejecting them, or every legitimate restore breaks.**
+- **A column with a reader and no writer is a screen section that is permanently empty**, and it looks exactly like a section nobody has filled in yet. `documentsOnIncident` inner joins `document.entry_id`, which nothing writes. **Grep both sides of every foreign key before believing a screen is merely empty.**
+- **`-1` passes a `>` comparison.** `AssetFileDescriptor` returns `-1` for unknown length, so `if (size > MAX) return null` lets an undeclared file through uncapped. **Guard unknown separately from large.**
+- **A write in a `LaunchedEffect` over plain `remember` is lost on process death**, with no trace and no error, and 77 writes are that shape. The tell: the person is certain they saved it.
+- **Search covers ten tables listed by hand.** Adding a kind of record does not add it to search, and editing an incident does not update the mirror entry that search actually reads, so a corrected incident is findable only by its original words.
+- **Attachments must be written before the rows that point at them.** The capture path does this. `Backup.restore` does not, and a lost file renders as "No photograph of this one yet", which tells somebody they never took a picture they did take.

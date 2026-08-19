@@ -4425,3 +4425,51 @@ This was an owner decision, and it dissolves the problem rather than solving it.
 **What this cannot do.** It cannot make the disclaimer skippable on a phone that has never seen it. The flag is a preferences file, created with the app and cleared with its data, so a fresh install and a cleared install both still gate. **`connectedAndroidTest` uninstalls the app**, which is why the suite still meets the gate on every run.
 
 **What it deliberately does not change.** The notebook still carries the timestamp and the archive still carries it, so the record of when somebody accepted is unchanged. And the gate still shows on a restore onto a phone that has never run the app, which is correct: that person has not read it here.
+
+## D208. What the notebook still needs, and what it does not
+
+**2026-08-18, the owner.** A review of the record, the archive and every write
+path produced a list of additions. He ruled on all of them in one pass.
+
+**Accepted, milestone 11:**
+
+1. **Hand over a chosen range and set of sections.** #436. The largest gap by
+   count of problems it solves. Five fixed artifacts leave the app today and
+   nothing else does, so a stay, an authorization period, or the therapy record
+   on its own cannot be given to anybody without giving them everything.
+2. **Count how many times a thing has been written down.** #437. **Rule 2 reads
+   "record, organize, count", so this is inside the rule, not an exception to
+   it.** The line is that a count is arithmetic on the person's own writing and
+   a direction, delta, rate or trend is a conclusion. Build the count, refuse
+   the arrow.
+3. **Repeat the last entry of a kind.** #438. Prefilled, never pre-committed.
+4. **A screen for an organization, and a person's screen gathering what already
+   points at them.** #435.
+5. **A document holding several pages, and accepting PDFs.** #439.
+   `ACTION_OPEN_DOCUMENT` needs no permission, so the permission stance that
+   chose `PickVisualMedia` is unaffected.
+6. **The date of the last export, stated as a fact.** #413. Rule 13 forbids the
+   nag, not the date.
+7. **An appointment that repeats.** #440. Nothing fires; a repeat writes rows.
+8. **A reading that holds a pair.** #441. Blood pressure and pre/post weight.
+   **Schema, so it needs the contract written before the code.**
+9. **Their things.** #442. A list of what somebody has with them, kept by hand,
+   so a thing that goes missing and comes back is one object rather than two
+   incidents. **Schema.** The name is "Their things" and **"inventory" never
+   appears in a string a person reads**: it is what a facility calls it, not
+   what a daughter calls it.
+
+**Deferred, not canceled:**
+
+- **Cycles and episodes**, grouping a course of treatment into rounds.
+- **A per-dose log.** `contract/schema.sql:531-533` states the app deliberately
+  does not track doses. It stays that way for now.
+
+**Refused for version one, and the owner's reason is that he has not decided
+how he envisions them, not that they are wrong:** anything that notices a
+pattern or reports on how somebody is doing, reminders and notifications of any
+kind, and two devices syncing. The first of these is also barred by rule 2 for
+as long as rule 2 stands.
+
+**Why the order puts none of this first.** Milestones 9 and 10 come before all
+of it. A feature built on a record that can silently vanish vanishes with it.

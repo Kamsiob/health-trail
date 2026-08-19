@@ -4,7 +4,7 @@ Current state. Nothing else. Read with `gh issue view 321`; neither repeats the 
 
 Fragments, no filler. Rewritten to current truth, never appended to. History goes to `docs/RUN-LOG.md` (never read to orient) or a commit message.
 
-**Last rewritten:** 2026-08-18, after the APK's first delivery and #399.
+**Last rewritten:** 2026-08-18, after the durability and archive review. **The order of work changed: the interface is now last.**
 
 ---
 
@@ -41,113 +41,53 @@ Worked examples, best first: `ui/v4/Arrival.kt`, `ui/v4/Press.kt`,
 is #393. It does not mean a second Android user on the device. Owner, 2026-08-18.
 Reading it literally cost a locked phone and proved nothing.
 
-## 2. What is left, and the owner opened it on 2026-08-18
+## 2. What is left, and the order changed on 2026-08-18
 
-**`FINISH THE APP` is finished except for delivering the APK, #395.** The
-visual polish phase closed the same day it started, and the owner then named
-three bodies of new work in his own words. They are milestone **8. Notes,
-projects and progress**:
+**The interface is built and milestone 8 is empty.** Projects, tracked things,
+memos, the bin and the dictation rule all landed and closed the same day.
 
-| | |
-|---|---|
-| ~~#399~~ | **Done, 2026-08-18.** D205 and D206, and the owner corrected it three times while it was being built: the mark did not align with the words, the rows had no container and no arrival, and three controls all looked like "update". The doors out of a project went from five rows and two loose pills to four tiles and a corner. `ProjectDetailScreen` needed no removal: it has had no live caller since 2026-08-05 and its ledger row was already written. |
-| ~~#398~~ | **Done, 2026-08-18.** `MeasureScreen` per tracked thing, Progress is a lead plus rows, the flat mixed list is gone. **Three of the five shapes in `docs/TRACKED-THINGS.md` 7 need schema the contract does not have and are on #403**, blood pressure being the sharpest: the form has one field called "The number". |
-| ~~#397~~ | **Done, 2026-08-18.** D207: a memo is `entry.kind = 'note'`, attached through `link`, and rich text is three marks stored as text. `RichText`, `addNote`/`notesAbout`/`aboutFor`, the memo screen, **Memos as the fourth destination**, the memos page as a grid or list with keep-in-view and a bin, local and universal search, **rule 18 both ways on six kinds of thing**, and **the readable archive rendering the marks while the column stays byte for byte**. Gate proved with two people. |
-| ~~#400~~ | **Done, 2026-08-18, on the signed minified build.** Two people each with memos, projects and tracked things, built up on the release build itself; exported from it; read by the standalone decryptor with no phone; wiped, restored, both people back with no leakage; and a merge with a genuine conflict whose resolution is readable field by field. |
+**Then the record itself was reviewed**, and the app was found able to lose
+everything a person put in it with no error on screen. **The order is now risk
+order, not effort order.** `gh issue view 321` holds it. Four new milestones:
 
-**The owner, 2026-08-18: "I don't want anything hanging. before I move to the
-next step and before the APK, I want everything else cleared and/or complete."**
-
-**There are 85 open issues, not 39 and not 8.** Both smaller numbers were
-reported to him during this session and both were wrong: `gh issue list` was run
-with a `--limit` that truncated, twice. **Always count with
-`--limit 100 --json number -q '.[].number' | wc -l`.**
-
-They are not one queue and most of them are open on purpose:
-
-| Bucket | Count | What it is |
+| Milestone | What it is | Why it is where it is |
 |---|---|---|
-| **Owner review, no code needed** | 28 | Rule 12 records and decisions only he can make. **These wait on his eyes; no amount of work closes them.** |
-| **Deferred by D141 and D180** | 13 | Spanish, Chinese and Arabic. **Rule 24: deferred, not canceled**, and D180 says letting them rot is how a deferral becomes a cancelation. **Closing these would be reversing an owner decision.** |
-| **Beyond v1, no dates promised** | 9 | Parked by milestone. |
-| **Release-blocking** | 8 | #1, #9, #15, #44, #210, #211, #212, #319. The archive's own acceptance boxes, the accessibility gate, golden vectors, NFC normalization. **This is the real remaining work and it is substantial.** |
-| **The rest of the v4 conversion** | 9 | #203-#208 are per-screen v4 tasks, #46, #57, #370. |
-| **Maintenance, flakes, search, foundation** | ~18 | #308, #316, #322, #346, #391, #394, #45, #47, #131, #228, #10, #16, and the rest. |
+| **9. The record survives** | #407 to #418 | The app deletes its own database on corruption, the declared journal mode has never been applied, restore replaces the live file with a stream copy, and anything but a lost key crashes at launch forever. Two archive import holes ride along because the same file reaches them. |
+| **10. The wiring under the screens** | #419 to #433 | Columns with a reader and no writer. Transactions claimed in a comment and absent from the code. Filing that happens only at capture, so nothing can be re-filed. |
+| **11. What the notebook still needs** | #434 to #442 | The nine additions agreed in **D208**. Two need schema first. |
+| **12. One chrome, one motion** | #443 to #450 | Seven header implementations become one. Then the repeats. |
 
-**Cleared on 2026-08-18** as superseded by the rebuild, each with the reason on
-the issue: #288, #303, #304, #310, #345, #361, #368, #369, #375, #376. **#303 is
-the worked example**: it said nothing could link an entry to a project, and
-memos write exactly that link, proved by walking it.
+**The single most important fact in this file:** `HealthTrailDatabase.kt:101`
+passes `null` as the `DatabaseErrorHandler`, and no handler exists anywhere in
+the codebase, so the library's default **deletes the notebook** on the first
+corruption report and the app opens at "Before you start". #407. Nothing else
+outranks it.
 
-**The filter he set is the important part**: "make sure nothing impacts the new
-direction that we took or the functionality." A defect list written against the
-pre-rebuild app is an instruction to rebuild backwards, which is why those ten
-were closed rather than left standing.
+**`docs/TRAPS.md` section 8 is new** and is the shapes all of this takes: a
+comment claiming a transaction, a pragma silently ignored inside a transaction,
+`runCatching` swallowing `Throwable`, a column with a reader and no writer,
+`-1` passing a `>` comparison. **Read it before touching a write path.**
 
-**Milestone 8 is empty.** #396, #397, #398, #399, #400, #402 and #405 are all
-closed. **The only thing left in the owner's order is #395**, the build from the
-finished app, and he has asked for that to wait.
+**Verified by the main session rather than taken on report**, because two claims
+were wrong and both mattered:
 
-**#402 was closed as a misdiagnosis rather than a fix.** The conflict door
-always worked; it sits below the fold on More and `walk.sh see` reports what is
-laid out. Section 8 carries the trap.
+- `requireSafeName` does **not** reject `..`, so it is not a path check and
+  reusing it does not close #414.
+- Subject scoping **holds** at the query layer. The two unscoped reads,
+  `ownTemplates` and `organizationNamed`, hold shared reference data rather than
+  one person's records, and the dedup in the second reads as deliberate. No
+  medical record crosses between people.
 
-**What is still open on the board is older**, in milestone 3: #9 and its
-children #210, #211, #212, plus #319 on Unicode normalization. Several of their
-acceptance boxes are genuinely unticked, so they are not stale bookkeeping, and
-none of them is what the owner asked for in this phase.
+**The owner, 2026-08-18: breaking the app is not an option.** Every new issue
+carries a risk of fix. Anything marked SCHEMA stops and goes to `DECISIONS.md`
+BLOCKED, rule 3.
 
-**What the owner added to #397 on 2026-08-18**, after looking at the first pass,
-in his words on the issue: the marks belong in the body with buttons rather than
-floating, the microphone goes and there must not be two styles of it, notes are
-viewable as a grid or a list, pin and delete from both places, and **a universal
-trash can in More that restores anything deleted anywhere back to its own place
-on the timeline**, which is **#405** and is buildable today because deletion is
-always a tombstone, rule 3.
-
-**The person reads "Memos"; the record says `note`.** The owner, 2026-08-18:
-"the name is problematic since we have Notebook. let's call it Memo", then
-"memos, plural please". **Only the catalogs changed.** `entry.kind` is `'note'`
-in the schema's `CHECK` constraint and stays, rule 3, and so do
-`Section.NOTES`, `Destination.NOTES` and `NotesScreen`: renaming a stored value
-would make every archive written before today unreadable by the app that wrote
-it.
-
-**A trap #397 hit and the next session will hit again.** `CaptureKind` cannot
-grow: `CaptureSheet.kt` is frozen and switches on it exhaustively, so adding a
-seventh value is a compile error in a file D199 forbids editing *and* forbids
-deleting. **The note takes its own route rather than becoming a seventh capture
-kind**, which also keeps the six positions people reach for by muscle memory
-exactly where they are.
-
-~~**#396**~~ **Done, 2026-08-18.** The rule is written where `DictatableField`
-is defined, the component enforces it rather than each caller, and
-`check_dictation.py` is the 31st check. 32 fields across 19 screens gained a
-microphone. **The memo screen is an exemption the issue did not anticipate**:
-the owner asked for no microphone there and confirmed it is the memo section
-alone.
-
-**Two conditions the owner set on all of milestone 8**, and both are on each
-issue:
-
-1. **The archive is a gate.** Nothing closes until its rows are in the
-   container, the standalone decryptor reads them, and two people in one
-   notebook with every area populated survive the round trip. #400.
-2. **Material 3 Expressive first, then the same polish pass.** Each screen is
-   built on Material's own components, D196, then taken through `docs/V4.md`
-   6.1's eleven items with 6.2's pass on a real capture, which is the loop #388
-   just ran. **Consistent where appropriate**: D198 color, D201 the bar, D202
-   the selected destination, D203 actions, D204 a tracked thing's hue, and
-   `SectionEmpty` for every empty state. A new screen inventing its own version
-   of any of those is what rule 16 calls two answers to one question.
-
-**The owner's own words, 2026-08-18**, in order: "I don't want the taskbar
-area ... to blend into any content above it"; "the little yellow oval
-highlight for the active tab in the taskbar looks ugly and lazy. not polished
-and premium"; "one style across all empty pages with the button inside the
-card"; "'nothing here is worked out by the app'? remove that from anywhere it
-appears"; "the whole project thing needs to be revisualized and reimagined".
-The first four are done. The last is #399.
+**Still true and unchanged.** 85 issues were open before this work and most are
+open on purpose: 28 owner review, 13 deferred by D141 and D180 which **must not
+be closed**, 9 beyond v1, 8 release blocking (#1, #9, #15, #44, #210, #211,
+#212, #319), and the maintenance tail. **Count with
+`--limit 100 --json number -q '.[].number' | wc -l`**; a bare `gh issue list`
+truncates and reported the wrong number three times in one session.
 
 ## 3. Blocked
 
