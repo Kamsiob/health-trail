@@ -1568,6 +1568,8 @@
   "unfiled.title": "A la espera de archivar",
   "unfiled.waiting": "{count, plural, =0 {Nada a la espera de archivar} one {1 cosa a la espera de archivar} other {# cosas a la espera de archivar}}",
   "unrecoverable.body": "La clave que lo abría ya no está en este teléfono. Un restablecimiento de fábrica la borra, y algunas transferencias a un teléfono nuevo también. Lo que escribió sigue en este teléfono, y sin esa clave nada puede leerlo, ni siquiera esta aplicación.",
+  "unrecoverable.damaged.body": "El archivo donde se guarda está dañado, así que no se puede leer. Esto puede pasar si el teléfono se quedó sin energía a mitad de un guardado, o si su almacenamiento está fallando. No se ha borrado nada, y esta aplicación no ha eliminado nada.",
+  "unrecoverable.damaged.next": "Si exportó un archivo, ese archivo se sigue abriendo. Puede restaurar desde él aquí.",
   "unrecoverable.next": "Si exportó un archivo, ese archivo se sigue abriendo. Instale la aplicación de nuevo y restaure desde él.",
   "unrecoverable.restore": "Restaurar desde un archivo",
   "unrecoverable.title": "Este cuaderno no se puede abrir",

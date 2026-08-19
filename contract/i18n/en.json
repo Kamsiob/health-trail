@@ -1568,6 +1568,8 @@
   "unfiled.title": "Waiting to be filed",
   "unfiled.waiting": "{count, plural, =0 {Nothing waiting to be filed} one {1 thing waiting to be filed} other {# things waiting to be filed}}",
   "unrecoverable.body": "The key that unlocked it is gone from this phone. A factory reset takes it, and so do some transfers to a new phone. What you wrote is still on this phone, and without that key nothing can read it, including this app.",
+  "unrecoverable.damaged.body": "The file it is kept in is damaged, so it cannot be read. This can happen if the phone lost power partway through a save, or if its storage is failing. Nothing has been deleted, and this app has not erased anything.",
+  "unrecoverable.damaged.next": "If you exported a file, that file still opens. You can restore from it here.",
   "unrecoverable.next": "If you exported a file, that file still opens. Install the app again and restore from it.",
   "unrecoverable.restore": "Restore from a file",
   "unrecoverable.title": "This notebook cannot be opened",

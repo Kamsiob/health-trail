@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.data.DatabaseKey
 import com.kamsiob.healthtrail.data.DatabaseKeyLost
+import com.kamsiob.healthtrail.data.DatabaseUnreadable
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.WelcomeSeen
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -97,6 +98,12 @@ fun AppRoot(
             }
         } catch (_: DatabaseKeyLost) {
             RootState.Unrecoverable
+        } catch (_: DatabaseUnreadable) {
+            // **The same dead end, and not the same sentence.** #407. The key
+            // being gone and the file being torn both end here, and the screen
+            // says which, because "the key that unlocked it is gone" is a false
+            // account of a damaged file and the person acts on what it says.
+            RootState.Damaged
         }
     }
 
@@ -113,18 +120,32 @@ fun AppRoot(
         when (val current = state) {
             RootState.Opening -> OpeningScreen()
 
+            RootState.Damaged -> UnrecoverableScreen(
+                reason = UnreadableReason.DAMAGED,
+                onRestore = { state = RootState.Replacing(UnreadableReason.DAMAGED) },
+            )
+
             RootState.Unrecoverable -> UnrecoverableScreen(
                 // **The app does it rather than telling somebody to.** #343 and
                 // rule 20: this screen said "install the app again and restore
                 // from it", which is honest and is the app declining to absorb
                 // its own complexity. The flow it opens is the same one More
                 // uses, which is why that flow is a composable of its own.
-                onRestore = { state = RootState.Replacing },
+                onRestore = { state = RootState.Replacing(UnreadableReason.KEY_LOST) },
             )
 
-            RootState.Replacing -> {
+            is RootState.Replacing -> {
                 RestoreFlow(
-                    onBack = { state = RootState.Unrecoverable },
+                    // **Back to the sentence they were reading**, not to the
+                    // other one. #407 gave this screen two accounts of why the
+                    // notebook will not open, and returning from the restore
+                    // flow used to land on whichever one was written first.
+                    onBack = {
+                        state = when (current.from) {
+                            UnreadableReason.KEY_LOST -> RootState.Unrecoverable
+                            UnreadableReason.DAMAGED -> RootState.Damaged
+                        }
+                    },
                     onApplied = {
                         // The database the archive was restored into is this
                         // phone's now, so the decision at the top runs again
@@ -288,6 +309,15 @@ internal sealed interface RootState {
     data object Unrecoverable : RootState
 
     /**
+     * The file is on disk and cannot be read as a database. #407.
+     *
+     * **Its own state rather than a flag**, because the difference between this
+     * and [Unrecoverable] is what the person is told and therefore what they do
+     * next. Both offer the same one action.
+     */
+    data object Damaged : RootState
+
+    /**
      * The person chose to replace a notebook this phone cannot open. #343.
      *
      * **A state rather than a flag on the screen**, because what happens here
@@ -296,7 +326,7 @@ internal sealed interface RootState {
      * can read. `RootStatesTest` walks it, which is the only way this screen
      * gets looked at: reaching it for real means a factory reset.
      */
-    data object Replacing : RootState
+    data class Replacing(val from: UnreadableReason) : RootState
     data class Gate(val repository: Repository) : RootState
     data class Setup(val repository: Repository) : RootState
     data class Saving(val repository: Repository, val answers: SetupAnswers) : RootState
@@ -378,9 +408,28 @@ internal fun OpeningScreen() {
  * **What it still does not do is offer restore from here**, which is #343.
  * Telling somebody to install the app again is honest and it is not finished.
  */
+/**
+ * Which of the two dead ends this is. #407.
+ *
+ * The title and the one action are the same either way. The account of what
+ * happened is not, and it is the part the person acts on.
+ */
+internal enum class UnreadableReason { KEY_LOST, DAMAGED }
+
 @Composable
-internal fun UnrecoverableScreen(onRestore: () -> Unit = {}) {
+internal fun UnrecoverableScreen(
+    reason: UnreadableReason = UnreadableReason.KEY_LOST,
+    onRestore: () -> Unit = {},
+) {
     val strings = LocalStrings.current
+    val bodyKey = when (reason) {
+        UnreadableReason.KEY_LOST -> "unrecoverable.body"
+        UnreadableReason.DAMAGED -> "unrecoverable.damaged.body"
+    }
+    val nextKey = when (reason) {
+        UnreadableReason.KEY_LOST -> "unrecoverable.next"
+        UnreadableReason.DAMAGED -> "unrecoverable.damaged.next"
+    }
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -401,7 +450,7 @@ internal fun UnrecoverableScreen(onRestore: () -> Unit = {}) {
             )
             Spacer(Modifier.height(Space.s))
             Text(
-                text = strings["unrecoverable.body"],
+                text = strings[bodyKey],
                 style = HealthTrail.type.bodyL,
                 color = HealthTrail.colors.ink,
             )
@@ -410,7 +459,7 @@ internal fun UnrecoverableScreen(onRestore: () -> Unit = {}) {
             // export, so it is the last thing read and it is the only thing
             // here that tells somebody what to do next.
             Text(
-                text = strings["unrecoverable.next"],
+                text = strings[nextKey],
                 style = HealthTrail.type.bodyM,
                 color = HealthTrail.colors.ink2,
             )
