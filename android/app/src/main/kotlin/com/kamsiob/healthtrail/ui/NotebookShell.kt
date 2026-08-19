@@ -1912,9 +1912,61 @@ fun NotebookShell(
             savingNewSubject?.let { name ->
                 LaunchedEffect(name) {
                     // bidi-ok: on its way to the database.
-                    repository.addSubject(displayName = name)
+                    val added = repository.addSubject(displayName = name)
                     savingNewSubject = null
                     subjectsOpen = false
+                    // **And now they are asked the same question the first
+                    // person was asked.** #452. The copy on the screen before
+                    // this one promises "their own care team, medications,
+                    // papers and trail", and what they got was a name.
+                    situationForNewSubject = added
+                    revision += 1
+                }
+            }
+
+            // **The situation picker, for a person added later.** #452.
+            //
+            // The same screen and the same two answers as first run, because
+            // giving a second person a different beginning is what produced the
+            // difference in the first place. Skipping is a real answer here
+            // exactly as it is there: every section still exists, and the
+            // default starting hand means nobody meets a blank Today, 21.5.
+            situationForNewSubject?.let { newSubjectId ->
+                var catalog by remember { mutableStateOf<TemplateCatalog.Situations?>(null) }
+                LaunchedEffect(newSubjectId) {
+                    catalog = TemplateCatalog.situations(context)
+                }
+                catalog?.let { loaded ->
+                    SituationPickerScreen(
+                        situations = loaded,
+                        onChoose = { situation ->
+                            applyingSituationFor = newSubjectId to situation
+                            situationForNewSubject = null
+                        },
+                        onSkip = {
+                            applyingSituationFor = newSubjectId to null
+                            situationForNewSubject = null
+                        },
+                    )
+                }
+            }
+
+            applyingSituationFor?.let { (newSubjectId, situation) ->
+                LaunchedEffect(newSubjectId, situation?.id) {
+                    if (situation == null) {
+                        repository.applyDefaultStartingHand(newSubjectId)
+                    } else {
+                        repository.applySituation(
+                            subjectId = newSubjectId,
+                            templateId = situation.id,
+                            threads = situation.threads.map { it.id to it.label },
+                            startingHand = situation.startingHand,
+                            checklist = situation.checklist,
+                            documents = situation.documents,
+                            firstDaysName = strings["situation.firstdays"],
+                        )
+                    }
+                    applyingSituationFor = null
                     revision += 1
                 }
             }

@@ -264,6 +264,24 @@ internal class ShellState {
 
     var subjectsOpen by mutableStateOf(false)
     var addingSubject by mutableStateOf(false)
+
+    /**
+     * The person just added, waiting to be asked about their setting. #452.
+     *
+     * **A second person used to get a name and nothing else.** The first run
+     * path creates a chapter, a contact and a situation; `addSubject` called
+     * `createSubject` and `makeSubjectActive` and stopped. So a father added to
+     * a notebook that had held a mother for a year got no care threads, no
+     * chapter and no Today layout, which meant his entries were written with a
+     * null chapter, nothing of his ever reached the unfiled tray, because that
+     * gate requires at least one thread, and his front door was permanently the
+     * fallback Today that cannot be arranged.
+     */
+    var situationForNewSubject by mutableStateOf<String?>(null)
+
+    /** The new person and the setting they chose, or null for skipped. #452. */
+    var applyingSituationFor by
+        mutableStateOf<Pair<String, TemplateCatalog.Situation?>?>(null)
     var switchingSubject by mutableStateOf<String?>(null)
     var savingNewSubject by mutableStateOf<String?>(null)
     var heldSubjects by mutableStateOf<List<Repository.Subject>>(emptyList())
