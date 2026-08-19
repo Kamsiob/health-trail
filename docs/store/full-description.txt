@@ -1,0 +1,31 @@
+A private care notebook for family caregivers. Everything stays on your phone.
+
+When someone in a family needs ongoing care, one person ends up holding the whole picture. They make the phone calls, sit in the meetings, chase the paperwork, and remember what the night nurse said three weeks ago. Health Trail is that work, given structure: one trail of every call, visit, incident, medication change, document, and dollar, kept for years and searchable in seconds.
+
+It is for the son, daughter, spouse, or parent doing that work.
+
+WHAT IT DOES
+
+- Capture that forgives. Log a call, a visit, an incident, a measurement, a question for next time, a memo, or a document. Every field is optional, and the button says "Save what you have."
+- Rough dates are fine. "August 2026" stays August 2026 and never quietly becomes August 1st. "Not sure" is a real answer that saves.
+- Twelve places that never move. Care team, medications, appointments, the trail, documents, money, standing instructions, the emergency card, and more, always where you left them.
+- The trail. Everything you have written down, in the order it happened, not the order you typed it.
+- Appointments that arrive prepared. A question you save turns up on the visit it belongs to, so you walk in with it ready.
+- The emergency card. Who to call, current medications, allergies, and what the signed paperwork says, worded so it can be handed to a paramedic.
+- Projects. Sixteen long processes, such as a Medicaid application or a records request, each arriving with its ordered steps, all of them yours to change.
+- More than one person in one notebook. A mother and a father each get their own care team, medications, papers and trail, and switching between them never mixes the two.
+- Encrypted export. Your notebook leaves the phone only when you export it, locked with a passphrase you choose, and it restores on another phone.
+
+BUILT TO KEEP WHAT YOU WRITE
+
+The record is the whole point, so the app is built to survive the phone it lives on. A damaged file is reported rather than replaced. A restore that is interrupted part way leaves the notebook it was replacing intact. An export says it saved only after the file has been read back and opened again.
+
+PRIVATE BY CONSTRUCTION
+
+There is no account, no cloud, and no sync. The app works entirely offline. Nothing you write leaves your phone unless you export it yourself. The source code is public, under the AGPL-3.0 license.
+
+HONEST LIMITS
+
+Health Trail is a record-keeping app. It is not a medical app, and it gives no medical advice. It records, organizes, and counts. It never interprets a measurement, sets a target range, or tells you what a number means. Those questions belong to the people providing the care.
+
+Version one ships in English. Spanish, Chinese, and Arabic are built into the app's structure and planned for a later release.
