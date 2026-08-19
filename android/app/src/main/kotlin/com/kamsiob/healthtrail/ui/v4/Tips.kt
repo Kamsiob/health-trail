@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -111,11 +112,24 @@ fun TipsSheet(
         state = sheet,
         modifier = Modifier.testTag(TipsTags.SHEET),
     ) {
+        // **Top buffer, and it had none at all.** #460, reported by the owner
+        // on 2026-08-19: the panel sits clipped up against the top edge and
+        // needs more room above it.
+        //
+        // It was a hand rolled `Column` with horizontal and bottom padding and
+        // **no top padding**, it did not use `SheetBody`, which is the component
+        // that exists to own a sheet's margins and insets, and `Sheet` passes
+        // `dragHandle = null`, so nothing anywhere contributed space above the
+        // title. The lamp tile sat against the sheet's own edge.
+        //
+        // The top now matches the bottom rather than merely existing, because a
+        // panel with more air below than above reads as having slipped upward.
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .navigationBarsPadding()
                 .padding(horizontal = Space.screenHorizontal)
-                .padding(bottom = Space.xl),
+                .padding(top = Space.xl, bottom = Space.xl),
             verticalArrangement = Arrangement.spacedBy(Space.m),
         ) {
             Row(
