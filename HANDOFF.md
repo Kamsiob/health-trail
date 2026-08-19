@@ -57,20 +57,32 @@ projects and progress**:
 
 **The owner, 2026-08-18: "I don't want anything hanging. before I move to the
 next step and before the APK, I want everything else cleared and/or complete."**
-**39 issues are open** and they are four different kinds of thing. Do not treat
-them as one queue.
 
-| Kind | Count | What to do |
+**There are 85 open issues, not 39 and not 8.** Both smaller numbers were
+reported to him during this session and both were wrong: `gh issue list` was run
+with a `--limit` that truncated, twice. **Always count with
+`--limit 100 --json number -q '.[].number' | wc -l`.**
+
+They are not one queue and most of them are open on purpose:
+
+| Bucket | Count | What it is |
 |---|---|---|
-| **Owner review, no code needed** | 17 | Rule 12 records: 304, 309-313, 317, 333-335, 337, 338, 350, 359, 401, 404, 406. **These wait on his eyes, not on work.** Several are stale because #399 and #398 rebuilt those exact screens; those can be closed as superseded with the reason, the rest cannot be closed by anybody but him. |
-| **Superseded by this phase** | ~10 | 268, 288, 345, 361, 368, 369, 370, 375, 376, 379. **Verify before closing**: #303 read as stale and was, and the proof took one walk on the phone. Each needs a device check or a grep, not an assumption. |
-| **Real work left** | ~10 | **319** NFC normalization, release-blocking. **9, 210, 211, 212** the archive's own acceptance boxes, several genuinely unticked. **44** the accessibility gate across every screen. **15** golden vectors. **403** the three tracked-thing shapes needing schema. **378, 382** two UI bugs. |
-| **Flakes and meta** | 6 | 308, 316, 322, 346, 391, 394, plus 321 and 395. |
+| **Owner review, no code needed** | 28 | Rule 12 records and decisions only he can make. **These wait on his eyes; no amount of work closes them.** |
+| **Deferred by D141 and D180** | 13 | Spanish, Chinese and Arabic. **Rule 24: deferred, not canceled**, and D180 says letting them rot is how a deferral becomes a cancelation. **Closing these would be reversing an owner decision.** |
+| **Beyond v1, no dates promised** | 9 | Parked by milestone. |
+| **Release-blocking** | 8 | #1, #9, #15, #44, #210, #211, #212, #319. The archive's own acceptance boxes, the accessibility gate, golden vectors, NFC normalization. **This is the real remaining work and it is substantial.** |
+| **The rest of the v4 conversion** | 9 | #203-#208 are per-screen v4 tasks, #46, #57, #370. |
+| **Maintenance, flakes, search, foundation** | ~18 | #308, #316, #322, #346, #391, #394, #45, #47, #131, #228, #10, #16, and the rest. |
 
-**#303 is the worked example.** It said nothing in the app could link an entry
-to a project, so the latest word was permanently absent. #397's memos write
-exactly that link, and writing one from a project's own screen now fills the
-card. Closed with the walk on the issue.
+**Cleared on 2026-08-18** as superseded by the rebuild, each with the reason on
+the issue: #288, #303, #304, #310, #345, #361, #368, #369, #375, #376. **#303 is
+the worked example**: it said nothing could link an entry to a project, and
+memos write exactly that link, proved by walking it.
+
+**The filter he set is the important part**: "make sure nothing impacts the new
+direction that we took or the functionality." A defect list written against the
+pre-rebuild app is an instruction to rebuild backwards, which is why those ten
+were closed rather than left standing.
 
 **Milestone 8 is empty.** #396, #397, #398, #399, #400, #402 and #405 are all
 closed. **The only thing left in the owner's order is #395**, the build from the
