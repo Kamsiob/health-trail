@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
@@ -63,6 +64,15 @@ object NotesTags {
  * screens come to disagree about what a stored preference means.
  */
 private const val VIEW_GRID = "grid"
+
+/**
+ * The font scale past which a grid stops being two columns wide.
+ *
+ * **Not a guess about a device, a fact about the text.** Above this the words
+ * in a half-width card wrap to roughly one per line, which is the truncation
+ * rule 11 forbids arriving by a different route.
+ */
+private const val WIDE_FONT = 1.5f
 
 /** How much of a note a card shows before the rest waits inside it. */
 private const val CARD_LINES = 6
@@ -113,6 +123,7 @@ fun NotesScreen(
 ) {
     val strings = LocalStrings.current
     val view = rememberViewChoice(section = NotesTags.NAME, fallback = VIEW_GRID)
+    val columns = if (LocalDensity.current.fontScale >= WIDE_FONT) 1 else 2
 
     // **Searched here as well as in the universal search**, because a person
     // already looking at their notes should not have to leave them to find one.
@@ -235,11 +246,11 @@ fun NotesScreen(
                 )
                 Spacer(Modifier.height(Space.withinGroup))
             }
-            notesIn(view.value, pinned, onOpen, onPin, onRemove)
+            notesIn(view.value, columns, pinned, onOpen, onPin, onRemove)
             item { Spacer(Modifier.height(Space.betweenGroups)) }
         }
 
-        notesIn(view.value, rest, onOpen, onPin, onRemove)
+        notesIn(view.value, columns, rest, onOpen, onPin, onRemove)
     }
 }
 
@@ -253,12 +264,24 @@ fun NotesScreen(
  */
 private fun androidx.compose.foundation.lazy.LazyListScope.notesIn(
     view: String,
+    /**
+     * How many cards fit across, which is two until the font is large.
+     *
+     * **At font scale 2.0 two columns is not a grid, it is two gutters.** Seen
+     * on the phone: each card had about 40% of the width and "She asked for the
+     * appeal letter" wrapped to a word a line. Somebody who has raised their
+     * font has asked for bigger text, and the honest answer is to give it the
+     * whole width. **The toggle still means something**: a grid card is the
+     * roomy shape that shows six lines of the memo, a list row is the dense one
+     * that shows two. Rule 22, density chosen per surface.
+     */
+    columns: Int,
     notes: List<Repository.TrailEntry>,
     onOpen: (Repository.TrailEntry) -> Unit,
     onPin: (Repository.TrailEntry, Boolean) -> Unit,
     onRemove: (Repository.TrailEntry) -> Unit,
 ) {
-    if (view == VIEW_GRID) {
+    if (view == VIEW_GRID && columns > 1) {
         // **Rows of two, laid out here rather than in a nested lazy grid.** A
         // scrolling grid inside a scrolling column is the layout that measures
         // to zero, `docs/TRAPS.md`, and this list is tens of notes rather than
@@ -390,7 +413,12 @@ private fun NoteCard(
                     color = colors.ink2,
                     maxLines = lines,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false),
+                    // **No weight.** `docs/TRAPS.md`: a weighted child of a
+                    // column with no bounded height measures to zero. It worked
+                    // in the two column grid, whose row is measured with
+                    // `IntrinsicSize.Min`, and the moment a large font dropped
+                    // the grid to one column the body disappeared from every
+                    // card. `maxLines` already caps it and needs no weight.
                 )
             }
             // **The date and the two marks share the foot**, which also gives
