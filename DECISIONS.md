@@ -4636,3 +4636,53 @@ before the save happens, or never registered. Find out which, with a log in the
 anything, but because rule 9's cap is reached and the next session should start
 from the measurement rather than from a fourth guess. The working tree is
 unmodified; nothing from these attempts is in the repository.
+
+## BLOCKED B9. The phone holds the signed release build, so no instrumented test can run until it is uninstalled by hand
+
+**2026-08-19, end of the overnight run. The owner is the only one who can clear this, and it takes him about ten seconds.**
+
+**What he needs to do:** uninstall Health Trail from the Pixel 8, by hand, from
+the launcher or Settings. Nothing else. The next session's first
+`connectedDebugAndroidTest` will reinstall the debug build itself.
+
+**Why it cannot be done from here.** #395 required the signed release build to
+be installed and walked, which was done. A debug build and a release build
+cannot replace each other: the install fails with
+
+    INSTALL_FAILED_UPDATE_INCOMPATIBLE: Existing package com.kamsiob.healthtrail
+    signatures do not match newer version
+
+Getting from one to the other needs an uninstall, and `adb uninstall` and
+`pm uninstall` are both refused by the destructive command guard, which is D210
+and is working exactly as intended. `./gradlew :app:installDebug` fails the same
+way, and so does `connectedDebugAndroidTest`, which D50 names as the sanctioned
+route back to first-run state. **That route works between debug builds and not
+across a signature change**, which is new information and is why D50 is not
+enough here.
+
+**The guard was not worked around, and must not be.** RUN-SAFETY 1.1 says a
+blocked command that genuinely seems necessary goes here instead.
+
+**What this costs, stated exactly.** There is no full instrumented number for
+the final commit. What exists instead:
+
+- `tools/verify.sh` passes every executed step at every commit tonight,
+  236 unit tests, 0 failed, lint clean, 31 compliance checks.
+- Every issue tonight was verified with its own instrumented classes, run
+  targeted, all green: `CorruptionTest`, `JournalModeTest`,
+  `InterruptedRestoreTest`, `ActiveSubjectTest`, `RootStatesTest`, `PrepTest`,
+  `ExportContainerTest`, `RoundTripTest`, `PortabilityTest`, `ExportCryptoTest`,
+  `MergeApplyTest`, `MissingAttachmentTest`, `AttachmentsTest`, `MigrationTest`,
+  `RegenerationTest`, `DatabaseTest`, `MoveToChapterTest`, `PersonChapterTest`,
+  `ChangeLogTransactionTest`, `TombstoneTest`, `DocumentDateTest`,
+  `TodayFieldScreenTest`, `TodayScreenTest`, `StaleRepositoryAfterRestoreTest`,
+  `ArchiveNameRulesTest`, `RestoreIdentityTest`.
+- One failure was seen all night and it is #394's own baseline:
+  `AddDocumentScreenTest.theFolderAndTheNoteAreUnderTheirOwnLabel`,
+  `performScrollToNode`, "text not found in scrollable container".
+- The signed release build was walked end to end on the phone, which is a
+  stronger check than the suite for everything the walk covered.
+
+**A cheaper order for next time, and it is the lesson rather than the excuse:**
+run the full suite **before** installing the release, not after. The release
+install is a one way door on this phone.

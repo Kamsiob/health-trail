@@ -150,6 +150,14 @@ truncates and reported the wrong number three times in one session.
 
 ## 3. Blocked
 
+**Read this first if you are about to run a test.** The Pixel 8 currently holds
+the **signed release build**, installed for #395's walk. No instrumented test
+can run until it is uninstalled **by hand**, because a debug build cannot
+replace a release one and every uninstall command is refused by the guard.
+**B9** in `DECISIONS.md`. It is ten seconds of the owner's time and nothing else
+is blocked by it.
+
+
 **B8, and it is the only one.** #451: the capture screen is not restored after
 process death, and the mirror that should restore it arrives null while
 `captureDraft` beside it arrives intact. Three attempts, all reverted, nothing
