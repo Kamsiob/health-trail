@@ -1863,6 +1863,15 @@ internal fun ExportContainer.Manifest.Companion.from(json: JSONObject): ExportCo
         subjectCount = json.optInt("subject_count"),
         readableLocale = json.optJSONObject("readable")
             ?.optString("locale")?.takeIf { it.isNotBlank() },
+        // **Written since the format existed and never once read back.** #412.
+        // `MANIFEST.json` carries `readable.pages` and the writer fills it in,
+        // and this parser took `locale` out of the same object and left the
+        // count behind, so `Manifest.readablePages` came back 0 for every
+        // archive ever made. Nothing noticed because nothing read it: the field
+        // exists so a missing human copy is loud rather than silent, and it was
+        // the quietest thing in the file. Found by the export readback becoming
+        // the first caller.
+        readablePages = json.optJSONObject("readable")?.optInt("pages") ?: 0,
         exportedZone = json.optString("exported_zone").takeIf { it.isNotBlank() },
         missingAttachments = attachments.optJSONArray("missing")
             ?.let { array ->
