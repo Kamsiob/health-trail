@@ -62,10 +62,16 @@ half wrong and is closed either way.** See #407.
 #414, #415, #416, #417, #418, #419, #420, #454, #457. Open: #451 (B8), #455,
 #461.
 
-**Milestone 10, 5 of 18 closed:** #422, #432, #433, #452, #453. Partly done and
-commented rather than closed: #423 three of five transactions, #425 mechanism
-plus two of eight call sites, #429 two of three parts. Open and untouched:
-#421, #424, #426, #427, #428, #430, #431, #434, #458, #459.
+**Milestone 10, 6 of 18 closed:** #421, #422, #428, #432, #433, #452, #453.
+Partly done and commented rather than closed: #423 three of five transactions,
+#425 mechanism plus two of eight call sites, #429 two of three parts, #430 the
+writers without the prep sheet read, #434 the medication block without the
+measure hosts. Open and untouched: #424, #426, #427, #431, #458, #459.
+
+**#426 is scoped on the issue rather than started.** Both sides of the key are
+confirmed, and the fix needs a new control on the incident rather than a column
+change, because "Add what happened next" opens a call capture and there is no
+document flow there at all. #427 is the same shape and probably one pass.
 
 **Milestones 11 and 12 are not started**, except #460, the owner's tips panel
 report, whose one verifiable defect is fixed and whose design work is his call.
@@ -115,8 +121,11 @@ substance of #451 and is **B8** in `DECISIONS.md` after three failed attempts.
 
 ---
 
-**Counts as of the end of the run:** 3 open in milestone 9, 14 in 10, 9 in 11,
+**Counts as of the end of the run:** 3 open in milestone 9, 11 in 10, 9 in 11,
 9 in 12.
+
+**The delivered build is `0cfdd14e`.** APK 13,134,110 bytes, AAB 14,076,052
+bytes, hashes and the walk on #395. **The Pixel 8 holds it**, which is B9.
 
 | Milestone | What it is | Why it is where it is |
 |---|---|---|
