@@ -2414,6 +2414,33 @@ fun NotebookShell(
             // are new: ended_edtf and end_note existed in the schema, were read
             // in two places, and nothing anywhere wrote them, so the ended group
             // on the threads screen could never hold anything.
+            // **The corrected chapter dates.** #432, rule 17. Two writes because
+            // the picker asks one date at a time, and the second carries the
+            // first forward so backing out of the end does not undo the start.
+            savingChapterDates?.let { (chapterId, started, endedEdtf) ->
+                LaunchedEffect(chapterId, started.canonical) {
+                    repository.updateChapterDates(
+                        chapterId = chapterId,
+                        started = started,
+                        ended = endedEdtf?.takeIf { it.isNotBlank() }?.let { Edtf.parse(it) },
+                    )
+                    savingChapterDates = null
+                    revision += 1
+                }
+            }
+
+            savingChapterEnd?.let { (chapterId, startedEdtf, ended) ->
+                LaunchedEffect(chapterId, ended.canonical) {
+                    repository.updateChapterDates(
+                        chapterId = chapterId,
+                        started = startedEdtf?.takeIf { it.isNotBlank() }?.let { Edtf.parse(it) },
+                        ended = ended,
+                    )
+                    savingChapterEnd = null
+                    revision += 1
+                }
+            }
+
             endingThread?.let { thread ->
                 LaunchedEffect(thread.id) {
                     repository.endThread(thread.id, Edtf.day(LocalDate.now()))

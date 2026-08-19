@@ -35,6 +35,8 @@ object ChapterTags2 {
     fun incident(id: String) = "chapter_incident_$id"
     fun document(id: String) = "chapter_document_$id"
     const val RENAME = "chapter_rename"
+    /** Correcting when the chapter started or ended. #432. */
+    const val DATES = "chapter_dates"
     fun milestone(id: String) = "chapter_milestone_$id"
     const val REMOVE = "chapters_remove"
 
@@ -76,6 +78,16 @@ fun ChapterScreen(
     backLabelKey: String = "section.back.chapters",
     /** Opens the screen that corrects this chapter's name. #374. */
     onRename: () -> Unit = {},
+    /**
+     * Corrects when this chapter started or ended. #432, rule 17.
+     *
+     * **`moveToChapter` stamps today and nothing could change it afterward**,
+     * so somebody recording a move three days late had a permanently wrong
+     * admission date, on the axis the whole record is organized by. Rule 17
+     * says a date is editable forever from the thing itself, and that held for
+     * entries and not for chapters.
+     */
+    onCorrectDates: () -> Unit = {},
     /**
      * Takes it out of the notebook, with the confirmation the caller owns.
      * **Anything that can be added can be removed**, the owner's rule,
@@ -246,6 +258,12 @@ fun ChapterScreen(
                     onClick = onRename,
                     mark = Symbols.edit,
                     modifier = Modifier.testTag(ChapterTags2.RENAME),
+                )
+                Action(
+                    label = strings["chapters.dates.edit"],
+                    onClick = onCorrectDates,
+                    mark = Symbols.appointments,
+                    modifier = Modifier.testTag(ChapterTags2.DATES),
                 )
                 Action(
                     label = strings["remove.action"],

@@ -226,6 +226,24 @@ internal class ShellState {
      * decided somebody may not fix a name they typed wrong.
      */
     var renamingChapter by mutableStateOf<Repository.Chapter?>(null)
+
+    /**
+     * The chapter whose dates are being corrected, and which of the two. #432.
+     *
+     * Two steps rather than one screen, because the picker this opens is the
+     * same one every other date in the app opens, rule 17, and it asks about
+     * one date at a time.
+     */
+    var correctingChapterStart by mutableStateOf<Repository.Chapter?>(null)
+    var correctingChapterEnd by mutableStateOf<Repository.Chapter?>(null)
+
+    /** The corrected start, with the end as it stands, on its way to the write. #432. */
+    var savingChapterDates by
+        mutableStateOf<Triple<String, com.kamsiob.healthtrail.time.Edtf.Date, String?>?>(null)
+
+    /** The corrected end, with the start carried forward. #432. */
+    var savingChapterEnd by
+        mutableStateOf<Triple<String, String?, com.kamsiob.healthtrail.time.Edtf.Date>?>(null)
     var savingChapterRename by mutableStateOf<Pair<String, String>?>(null)
 
     /** #377: saying they are somewhere new, and the name on its way in. */

@@ -13,6 +13,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.kamsiob.healthtrail.data.Repository
+import com.kamsiob.healthtrail.time.Edtf
+import com.kamsiob.healthtrail.ui.components.DatePickerSheet
 import com.kamsiob.healthtrail.ui.v4.Share
 import com.kamsiob.healthtrail.data.Attachments
 import java.time.LocalDate
@@ -740,6 +742,9 @@ internal fun IncidentAndReviewOverlays(
                     },
                     onBack = { openChapter = null },
                     onRename = { renamingChapter = detail.chapter },
+                    // #432, rule 17: the start first, then the end, through the
+                    // same picker every other date in the app opens.
+                    onCorrectDates = { correctingChapterStart = detail.chapter },
                     // **The screen closes as the confirmation opens**, the
                     // same as a medication's. Anything added can be removed,
                     // 2026-08-16; what was filed here stays on the trail.
@@ -790,6 +795,37 @@ internal fun IncidentAndReviewOverlays(
         // **Correcting a chapter's name**, #374, and the surface #373 made room
         // for. The same screen the care thread rename uses, asking the same one
         // question in the chapter's own words and wearing the chapters chip.
+        // **A chapter's dates, corrected through the ordinary picker.** #432.
+        // The start is asked first and picking it opens the end, so the two
+        // reads as one correction rather than two errands.
+        correctingChapterStart?.let { chapter ->
+            DatePickerSheet(
+                initial = chapter.startedEdtf?.takeIf { it.isNotBlank() }?.let { Edtf.parse(it) },
+                titleKey = "chapters.dates.started",
+                onPick = { picked ->
+                    savingChapterDates = Triple(chapter.id, picked, chapter.endedEdtf)
+                    correctingChapterStart = null
+                    correctingChapterEnd = chapter
+                },
+                onDismiss = { correctingChapterStart = null },
+            )
+        }
+
+        correctingChapterEnd?.let { chapter ->
+            DatePickerSheet(
+                initial = chapter.endedEdtf?.takeIf { it.isNotBlank() }?.let { Edtf.parse(it) },
+                titleKey = "chapters.dates.ended",
+                onPick = { picked ->
+                    savingChapterEnd = Triple(chapter.id, chapter.startedEdtf, picked)
+                    correctingChapterEnd = null
+                },
+                // **Dismissing leaves the end alone rather than clearing it.**
+                // A person who corrected the start and backed out of the end has
+                // not said the chapter is still running.
+                onDismiss = { correctingChapterEnd = null },
+            )
+        }
+
         renamingChapter?.let { chapter ->
             AddThreadScreen(
                 onStart = { name ->

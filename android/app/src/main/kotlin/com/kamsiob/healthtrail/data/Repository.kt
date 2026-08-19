@@ -449,6 +449,56 @@ class Repository private constructor(
     }
 
     /**
+     * Corrects when a chapter started, or when it ended. #432, rule 17.
+     *
+     * **`moveToChapter` stamps today and `renameChapter` was the only other
+     * mutator**, so a chapter's dates could never be changed by anything. Rule
+     * 17 says dates are flexible, always editable, never falsely precise, and
+     * editable forever from the entry itself. That held for entries and not for
+     * the axis the whole record is organized by: somebody recording a move
+     * three days after it happened had a permanently wrong admission date.
+     *
+     * **Either date can be null, and null means unknown rather than absent.**
+     * A chapter with no end date is the one the person is in now, which is what
+     * `currentChapterId` reads, so clearing the end reopens a place and setting
+     * it closes one. That is the same meaning the rest of the app already gives
+     * those columns, not a new one invented here.
+     *
+     * **Unknown is a first class value that saves**, rule 17 again. Passing an
+     * `Edtf.unknown()` stores the unknown form rather than refusing.
+     */
+    suspend fun updateChapterDates(
+        chapterId: String,
+        started: Edtf.Date?,
+        ended: Edtf.Date?,
+    ) = withContext(Dispatchers.IO) {
+        val columns = linkedMapOf<String, Any?>()
+        columns.putAll(
+            started?.let { dateColumns("started", it) }
+                ?: mapOf(
+                    "started_edtf" to null,
+                    "started_zone" to null,
+                    "started_start" to null,
+                    "started_end" to null,
+                ),
+        )
+        columns.putAll(
+            ended?.let { dateColumns("ended", it) }
+                ?: mapOf(
+                    "ended_edtf" to null,
+                    "ended_zone" to null,
+                    "ended_start" to null,
+                    "ended_end" to null,
+                ),
+        )
+        val assignments = columns.keys.joinToString(", ") { "$it = ?" }
+        db().database.write(
+            "UPDATE chapter SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            (columns.values + listOf(System.currentTimeMillis(), chapterId)).toTypedArray(),
+        )
+    }
+
+    /**
      * Corrects a question's own words. #374.
      *
      * **A question is typed in a corridor and read out in an appointment**, so
