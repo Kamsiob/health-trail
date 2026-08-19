@@ -4,7 +4,7 @@ Current state. Nothing else. Read with `gh issue view 321`; neither repeats the 
 
 Fragments, no filler. Rewritten to current truth, never appended to. History goes to `docs/RUN-LOG.md` (never read to orient) or a commit message.
 
-**Last rewritten:** 2026-08-18, after the durability and archive review. **The order of work changed: the interface is now last.**
+**Last rewritten:** 2026-08-19, during the overnight durability run. **The order of work changed on 2026-08-18: the interface is last.** Milestone 9 is substantially done and section 2a is what moved.
 
 ---
 
@@ -50,6 +50,62 @@ memos, the bin and the dictation rule all landed and closed the same day.
 everything a person put in it with no error on screen. **The order is now risk
 order, not effort order.** `gh issue view 321` holds it. Four new milestones:
 
+### 2a. What the overnight run of 2026-08-19 changed
+
+**17 commits, every one on `origin/main`, every one with `tools/verify.sh`
+passing every executed step.** The single most important fact in the previous
+version of this file, that `HealthTrailDatabase.kt:101` passes `null` as the
+`DatabaseErrorHandler` and the library therefore deletes the notebook, **was
+half wrong and is closed either way.** See #407.
+
+**Milestone 9, 15 of 18 closed.** #407, #408, #409, #410, #411, #412, #413,
+#414, #415, #416, #417, #418, #419, #420, #454, #457.
+
+| What is true now that was not | Where |
+|---|---|
+| **Write ahead logging is actually on.** Proved by `health-trail.db-wal` existing on the phone, where it never did. The contract declared it and it had never once applied | #408 |
+| **The database open names its own error handler**, so surviving corruption is a property of our code rather than of a native flag in a dependency | #407 |
+| **A file that will not open reaches a screen** instead of crashing at launch forever, and that screen asks the person not to uninstall | #410 |
+| **The restore swap is a rename**, and startup adopts the safety copy a half finished restore leaves | #409 |
+| **Attachments are written before the rows that point at them**, and a missing photograph has its own sentence | #411 |
+| **"Saved" means an archive that was reopened and read back** | #412 |
+| **Two silent losses are gone**: a prep answer overwritten by a racing write, and a photographed paper discarded for having no title | #420, #419 |
+| **A merge says what it did**, and an archive from a newer build is no longer called tampering | #454 |
+| **A second person gets the same beginning as the first**, situation picker included | #452 |
+| **The person with two people in the notebook can switch**, which only the fallback Today allowed before | #453 |
+| **A care thread can be finished and started again.** The columns existed, were read in two places, and had no writer | #433 |
+
+**Three transactions that were only ever a comment are now transactions**:
+`makeSubjectActive`, `moveToChapter`, `recordMedicationEvent`. #423 stays open
+for `createPerson` and `applySituation`.
+
+**New tests**, all on the phone: `CorruptionTest`, `JournalModeTest`,
+`InterruptedRestoreTest`, `ActiveSubjectTest`, plus three on `RootStatesTest`
+and one on `PrepTest`. **`ActiveSubjectTest` is the one the run instructions
+asked for**, since nothing had ever exercised `addSubject` or
+`makeSubjectActive`.
+
+**The milestone 9 gate was walked**, not just coded: type a call, `am kill`,
+relaunch. A saved entry survives and is findable. A half written note survives
+too. What does **not** come back is which screen was open, which is now the
+substance of #451 and is **B8** in `DECISIONS.md` after three failed attempts.
+
+**Do not re-derive these three**, they cost real time:
+
+- **`DefaultDatabaseErrorHandler` returns before deleting when `hasCodec()` is
+  true**, and this build logs `hasCodec() = true`. #407's premise was wrong on
+  the deletion and right that nothing routed the failure anywhere.
+- **The SQLCipher pool is capped at exactly one connection until WAL is on**,
+  and the driver's configuration holds the passphrase array **by reference**.
+  Turning WAL on woke both. D209.
+- **`readablePages` returning an empty map is deliberate** and changing it to
+  throw fails 11 `ExportContainerTest` tests, because that class writes payloads
+  that are not databases. The check belongs on the manifest's page count. #412.
+
+**Still open in milestone 9:** #451 (B8), #455, #461.
+
+---
+
 | Milestone | What it is | Why it is where it is |
 |---|---|---|
 | **9. The record survives** | 18 issues, #407 to #420, #451, #454, #455, #457 | The app deletes its own database on corruption, the declared journal mode has never been applied, restore replaces the live file with a stream copy, and anything but a lost key crashes at launch forever. Two archive import holes ride along because the same file reaches them. |
@@ -57,11 +113,12 @@ order, not effort order.** `gh issue view 321` holds it. Four new milestones:
 | **11. What the notebook still needs** | 9 issues, #435 to #442, #456 | The nine additions agreed in **D208**. Two need schema first. |
 | **12. One chrome, one motion** | 8 issues, #443 to #450 | Seven header implementations become one. Then the repeats. |
 
-**The single most important fact in this file:** `HealthTrailDatabase.kt:101`
-passes `null` as the `DatabaseErrorHandler`, and no handler exists anywhere in
-the codebase, so the library's default **deletes the notebook** on the first
-corruption report and the app opens at "Before you start". #407. Nothing else
-outranks it.
+**That paragraph is gone because the work is done.** It said
+`HealthTrailDatabase.kt:101` passing `null` as the `DatabaseErrorHandler` meant
+the library deletes the notebook on corruption. Measured on 2026-08-19: the
+library's default returns before deleting when `hasCodec()` is true, which it is
+here. The open names its own handler now regardless, and the real defect, that
+nothing routed an unopenable file anywhere, is #410.
 
 **`docs/TRAPS.md` section 8 is new** and is the shapes all of this takes: a
 comment claiming a transaction, a pragma silently ignored inside a transaction,
@@ -82,7 +139,9 @@ were wrong and both mattered:
 carries a risk of fix. Anything marked SCHEMA stops and goes to `DECISIONS.md`
 BLOCKED, rule 3.
 
-**53 issues were opened, #407 to #459, and 138 are now open.** 85 were open before this work and most are
+**53 issues were opened, #407 to #459. 120 are open as of 2026-08-19**, after
+the overnight run closed 19 and opened three: #460 the tips panel, #461 export
+from the stuck screen, and the owner's two additions to #395. 85 were open before this work and most are
 open on purpose: 28 owner review, 13 deferred by D141 and D180 which **must not
 be closed**, 9 beyond v1, 8 release blocking (#1, #9, #15, #44, #210, #211,
 #212, #319), and the maintenance tail. **Count with
@@ -91,7 +150,13 @@ truncates and reported the wrong number three times in one session.
 
 ## 3. Blocked
 
-**Nothing is blocked.** The phone is unlocked and at baseline: font 1.0,
+**B8, and it is the only one.** #451: the capture screen is not restored after
+process death, and the mirror that should restore it arrives null while
+`captureDraft` beside it arrives intact. Three attempts, all reverted, nothing
+of them in the repository. `DECISIONS.md` B8 has what was tried and the one
+question to answer before a fourth.
+
+Otherwise nothing is blocked. The phone is unlocked and at baseline: font 1.0,
 animator 1.0, no reader, night mode `no`, appearance "Follow the phone".
 
 ## 4. The direction, and it is not negotiable
@@ -168,7 +233,7 @@ project's road (`ui/v4/RoadStrip.kt`), a measure's line (`ui/v4/Trace.kt`), and
 
 ## 6. Blocked, and section 3 is the live one
 
-**Section 3.** Nothing is blocked.
+**Section 3.** B8 only, and it is #451.
 
 ## 7. Rules that get broken
 
