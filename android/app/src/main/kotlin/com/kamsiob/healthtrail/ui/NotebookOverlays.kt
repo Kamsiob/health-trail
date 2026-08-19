@@ -174,10 +174,16 @@ internal fun MilestoneOverlays(
         openPerson?.let { person ->
             LaunchedEffect(person.id, revision) {
                 personEntries = repository.entriesForPerson(person.id)
+                memosAbout = repository.notesAbout("person", person.id)
             }
             PersonScreen(
                 person = person,
                 entries = personEntries,
+                memos = memosAbout,
+                onOpenMemo = { openEntry = it.id },
+                onWriteMemo = {
+                    writingNote = NoteTarget("person", person.id, person.displayName)
+                },
                 // **The other end of "who it is with", rule 18**, and it costs
                 // no query: every appointment is loaded for its own section.
                 appointments = appointments.filter { it.personId == person.id },
@@ -1849,43 +1855,6 @@ internal fun ProjectOverlays(
                     papersOpen = false
                 },
             )
-        }
-
-        // == Writing a note, #397 ============================================
-        //
-        // **Above whatever it was opened from**, so back lands where the person
-        // was rather than closing the thing underneath it.
-        writingNote?.let { target ->
-            NoteScreen(
-                aboutLabel = target.label,
-                onSave = { title, body ->
-                    savingNote = SavedNote(title, body, target)
-                    writingNote = null
-                },
-                onBack = { writingNote = null },
-            )
-        }
-
-        savingNote?.let { note ->
-            LaunchedEffect(note) {
-                repository.activeSubject()?.id?.let { who ->
-                    // **The note and its link in one transaction**, D207, so a
-                    // note never exists attached to nothing.
-                    repository.addNote(
-                        subjectId = who,
-                        // bidi-ok: on its way to the database, exactly as typed.
-                        title = note.title,
-                        // bidi-ok: on its way to the database, exactly as typed.
-                        body = note.body,
-                        aboutTable = note.target.table,
-                        aboutId = note.target.id,
-                    )
-                }
-                savingNote = null
-                // **Reread rather than patched**, so the trail and whatever the
-                // note is attached to both show it without either being told.
-                revision += 1
-            }
         }
 
         if (startingProject) {

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.items
@@ -26,6 +27,7 @@ import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.goldHue
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
+import com.kamsiob.healthtrail.ui.v4.MemosAbout
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Avatar
 import com.kamsiob.healthtrail.ui.v4.Block
@@ -116,6 +118,11 @@ fun PersonScreen(
     onOpenEntry: (Repository.TrailEntry) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The memos written about this person. Rule 18, #397. */
+    memos: List<Repository.TrailEntry> = emptyList(),
+    onOpenMemo: (Repository.TrailEntry) -> Unit = {},
+    /** Writes one already knowing who it is about. */
+    onWriteMemo: () -> Unit = {},
     /**
      * Every appointment this person is on, soonest first.
      *
@@ -325,6 +332,18 @@ fun PersonScreen(
                     }
                 }
             }
+        }
+
+        // **Rule 18, and this is the half that is easy to forget.** A memo
+        // written about this person appears here, and the person appears on the
+        // memo. #397.
+        item {
+            MemosAbout(
+                memos = memos,
+                onOpen = onOpenMemo,
+                onWrite = onWriteMemo,
+                modifier = Modifier.padding(top = Space.betweenGroups),
+            )
         }
 
         // **The rarest things last, and each says what it does.** Somebody

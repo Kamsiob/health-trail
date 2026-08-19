@@ -129,6 +129,7 @@ import com.kamsiob.healthtrail.ui.screens.StageSheet
 import com.kamsiob.healthtrail.ui.screens.LogCallSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectDateSheet
 import com.kamsiob.healthtrail.ui.screens.StandingSheet
+import com.kamsiob.healthtrail.ui.screens.NoteScreen
 import com.kamsiob.healthtrail.ui.screens.NotesScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectStepsScreen
@@ -1687,6 +1688,53 @@ fun NotebookShell(
                 repository,
                 captureDraftState,
             )
+
+            // == Writing a memo, #397 =====================================
+            //
+            // **Above every overlay group, and that is the whole reason it
+            // lives here.** It was inside `ProjectOverlays`, which
+            // `NotebookShell` composes first, so a memo opened from a person
+            // rendered *underneath* `PersonScreen` and the screen looked like a
+            // control that did nothing. Back proved otherwise: one press closed
+            // the invisible memo and left the person standing. Seen on the
+            // phone, and it is the same z-order rule the document viewer's own
+            // comment above already states.
+            //
+            // **Above whatever it was opened from**, so back lands where the
+            // person was rather than closing the thing underneath it.
+            writingNote?.let { target ->
+            NoteScreen(
+                aboutLabel = target.label,
+                onSave = { title, body ->
+                    savingNote = SavedNote(title, body, target)
+                    writingNote = null
+                },
+                onBack = { writingNote = null },
+            )
+            }
+
+            savingNote?.let { note ->
+            LaunchedEffect(note) {
+                repository.activeSubject()?.id?.let { who ->
+                    // **The note and its link in one transaction**, D207, so a
+                    // note never exists attached to nothing.
+                    repository.addNote(
+                        subjectId = who,
+                        // bidi-ok: on its way to the database, exactly as typed.
+                        title = note.title,
+                        // bidi-ok: on its way to the database, exactly as typed.
+                        body = note.body,
+                        aboutTable = note.target.table,
+                        aboutId = note.target.id,
+                    )
+                }
+                savingNote = null
+                // **Reread rather than patched**, so the trail and whatever the
+                // note is attached to both show it without either being told.
+                revision += 1
+            }
+            }
+
 
             // **The paper at reading size, above every other surface.** #378.
             // Painted after the overlay groups so a viewer opened from a

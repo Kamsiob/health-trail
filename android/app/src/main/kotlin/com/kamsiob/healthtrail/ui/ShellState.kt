@@ -170,6 +170,14 @@ internal class ShellState {
 
     /** A note on its way to the database, cleared when the write is done. */
     var savingNote by mutableStateOf<SavedNote?>(null)
+
+    /**
+     * The memos written about whatever detail screen is open. Rule 18, #397.
+     *
+     * **One state rather than one per screen**, because only one detail is open
+     * at a time and each branch loads it for what it is showing.
+     */
+    var memosAbout by mutableStateOf<List<Repository.TrailEntry>>(emptyList())
     var correctingMeasure by mutableStateOf<Repository.Measure?>(null)
     var savingMeasureCorrection by mutableStateOf<Triple<String, String, String?>?>(null)
 
