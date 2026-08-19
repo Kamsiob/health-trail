@@ -1510,9 +1510,25 @@ class Repository private constructor(
      * belongs at the top of somebody's screen.
      */
     suspend fun clearEveryLeadForTest(subjectId: String) = withContext(Dispatchers.IO) {
+        // **`updated_at` and `rev` move, and they did not.** #424. This ships in
+        // the main source set and wrote neither, so the rows it touched carried
+        // a stale revision and an old timestamp while their contents had
+        // changed. A peer merging on last-write-wins would then keep whichever
+        // copy happened to have the newer stamp, which is not the newer edit,
+        // and the Today lead is exactly the kind of single-row-wins column that
+        // resolves wrongly and silently.
+        //
+        // **Left in `main` rather than moved to `androidTest`, deliberately.**
+        // The KDoc above says why it exists: it produces a state the app itself
+        // cannot, so the reader can be proved to report a broken layout rather
+        // than quietly promoting the first card. Moving it would mean the test
+        // builds that state through a different door than the app's own writer,
+        // which is the thing `applySchema` being `internal` already argues
+        // against. What was wrong was the write, not the address.
         db().database.write(
-            "UPDATE today_card SET is_lead = 0 WHERE subject_id = ?",
-            arrayOf<Any?>(subjectId),
+            "UPDATE today_card SET is_lead = 0, updated_at = ?, rev = rev + 1 " +
+                "WHERE subject_id = ?",
+            arrayOf<Any?>(System.currentTimeMillis(), subjectId),
         )
     }
 
