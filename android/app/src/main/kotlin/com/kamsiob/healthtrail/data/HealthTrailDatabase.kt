@@ -101,6 +101,19 @@ class HealthTrailDatabase private constructor(
         const val FILE_NAME = "health-trail.db"
 
         /**
+         * The safety copy a restore takes of the notebook it is replacing. #409.
+         *
+         * Named here rather than in `Backup` because startup is what adopts it,
+         * and a name that only the writer knows is a file nothing ever reads.
+         * That was the defect: this was written at two places in `Backup.kt`
+         * and appeared nowhere else in the codebase.
+         */
+        const val REPLACING_SUFFIX = ".replacing"
+
+        /** The rebuilt notebook a restore is about to swap in. #409. */
+        const val ARRIVING_SUFFIX = ".arriving"
+
+        /**
          * The schema version this build expects. It is written to
          * `schema_migration` on creation, so an upgrade never has to guess what
          * state it is looking at.
@@ -163,6 +176,12 @@ class HealthTrailDatabase private constructor(
 
             val file = context.getDatabasePath(FILE_NAME)
             file.parentFile?.mkdirs()
+
+            // **Before anything decides whether this is a first run.** #409.
+            // A restore that died part way leaves files behind, and the one
+            // that decides "fresh" is the live file's existence.
+            reconcileInterruptedRestore(file)
+
             val fresh = !file.exists()
 
             val key = DatabaseKey(context)
@@ -189,28 +208,40 @@ class HealthTrailDatabase private constructor(
             // So the driver gets its own copy and keeps it for the life of the
             // process, and ours is wiped here. The key material stays in heap
             // where SQLCipher needs it to open connections. See D209.
-            val forDriver = passphrase.copyOf()
-
-            // **The fourth argument is the error handler and it used to be
-            // `null`**, which the library replaces with its own default. #407.
-            // Nothing about the record's survival should depend on what a
-            // dependency's default happens to do, so the handler is named here.
-            NeverDeleteOnCorruption.reported = null
             val database = try {
-                SQLiteDatabase.openOrCreateDatabase(
-                    file, forDriver, null, NeverDeleteOnCorruption,
-                )
-            } catch (error: SQLiteException) {
-                forDriver.fill(0)
-                // **A file that exists and will not open is damage, not a
-                // missing key.** Surfaced under its own name so the screen can
-                // say which of the two happened. A file that never existed
-                // cannot be damaged, so a fresh create that fails is left to
-                // travel as itself.
-                if (!fresh) throw DatabaseUnreadable(error) else throw error
+                try {
+                    openEncrypted(file, passphrase)
+                } catch (error: SQLiteException) {
+                    // **A file that exists and will not open is damage, not a
+                    // missing key.** Surfaced under its own name so the screen
+                    // can say which of the two happened. A file that never
+                    // existed cannot be damaged, so a fresh create that fails
+                    // is left to travel as itself.
+                    if (fresh) throw error
+
+                    // **The last thing to try before calling it damaged.** #409.
+                    // A restore that was interrupted part way through its swap
+                    // left a complete copy of the notebook beside the torn one,
+                    // and until this commit nothing ever read it. Adopting it
+                    // is what turns "everything is gone" back into "you are
+                    // where you were before you started the restore".
+                    if (!adoptSafetyCopy(file)) throw DatabaseUnreadable(error)
+                    try {
+                        openEncrypted(file, passphrase)
+                    } catch (second: SQLiteException) {
+                        throw DatabaseUnreadable(second)
+                    }
+                }
             } finally {
                 passphrase.fill(0)
             }
+
+            // **The restore is over, so its safety copy is not needed.** #409.
+            // Reaching here means the live file opens, which is true both when
+            // the restore finished and when it never started. Either way the
+            // copy is a duplicate of a whole notebook sitting on a phone that
+            // may not have room for it.
+            File(file.path + REPLACING_SUFFIX).delete()
 
             // **Foreign keys are set on the pool, not on one connection.** #457.
             //
@@ -272,6 +303,95 @@ class HealthTrailDatabase private constructor(
 
             val deviceId = ensureDeviceId(database)
             return HealthTrailDatabase(database, deviceId)
+        }
+
+        /**
+         * Opens the file at [file], giving the driver its own passphrase. #408.
+         *
+         * The copy is deliberate and it is explained at the call site: the
+         * connection pool keeps the array it is handed and opens later
+         * connections from it, so the caller's array is wiped and this one is
+         * not.
+         */
+        private fun openEncrypted(file: File, passphrase: ByteArray): SQLiteDatabase {
+            val forDriver = passphrase.copyOf()
+            // **The fourth argument is the error handler and it used to be
+            // `null`**, which the library replaces with its own default. #407.
+            // Nothing about the record's survival should depend on what a
+            // dependency's default happens to do, so the handler is named here.
+            NeverDeleteOnCorruption.reported = null
+            return try {
+                SQLiteDatabase.openOrCreateDatabase(
+                    file, forDriver, null, NeverDeleteOnCorruption,
+                )
+            } catch (error: Throwable) {
+                forDriver.fill(0)
+                throw error
+            }
+        }
+
+        /**
+         * Clears up what an interrupted restore left behind. #409.
+         *
+         * **Three files were being written and none of them was ever read.**
+         * `.arriving` is the rebuilt notebook before the swap, `.replacing` is
+         * the safety copy of the notebook being replaced, and neither appeared
+         * anywhere in the codebase except at the lines that wrote them.
+         *
+         * **`.arriving` existing means the swap never happened**, because the
+         * swap is now a rename and a rename either happened or did not. So the
+         * live file is still the notebook and this is scrap.
+         *
+         * **`.replacing` is only adopted when there is no live file to lose.**
+         * Adopting it whenever it exists would undo a restore that finished:
+         * dying between the rename and the cleanup leaves a live file that is
+         * the newly restored notebook and a `.replacing` that is the old one,
+         * and rolling that back would throw away exactly what the person asked
+         * for. The other half of this decision is in [adoptSafetyCopy], which
+         * runs only after the live file has failed to open.
+         */
+        internal fun reconcileInterruptedRestore(file: File) {
+            val arriving = File(file.path + ARRIVING_SUFFIX)
+            if (arriving.exists()) {
+                arriving.delete()
+                File(arriving.path + "-wal").delete()
+                File(arriving.path + "-shm").delete()
+            }
+
+            if (!file.exists()) {
+                val replacing = File(file.path + REPLACING_SUFFIX)
+                if (replacing.exists()) {
+                    android.util.Log.w(
+                        "HealthTrail",
+                        "#409: no live notebook, adopting the safety copy a restore left",
+                    )
+                    replacing.renameTo(file)
+                    File(file.path + "-wal").delete()
+                    File(file.path + "-shm").delete()
+                }
+            }
+        }
+
+        /**
+         * Puts the restore's safety copy back, when the live file will not
+         * open. #409. True when something was adopted.
+         *
+         * **The write ahead log and shared memory files go with it.** They
+         * describe pages of the file that is being replaced, and left beside a
+         * different database they are how a recovery that reported success
+         * opens corrupt afterward.
+         */
+        private fun adoptSafetyCopy(file: File): Boolean {
+            val replacing = File(file.path + REPLACING_SUFFIX)
+            if (!replacing.isFile) return false
+            android.util.Log.w(
+                "HealthTrail",
+                "#409: the live notebook will not open, adopting the restore's safety copy",
+            )
+            file.delete()
+            File(file.path + "-wal").delete()
+            File(file.path + "-shm").delete()
+            return replacing.renameTo(file)
         }
 
         /**

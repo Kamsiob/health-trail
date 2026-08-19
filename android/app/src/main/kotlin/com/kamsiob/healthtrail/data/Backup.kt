@@ -488,7 +488,7 @@ object Backup {
         opened: ExportContainer.Opened,
     ): Result<Int> = withContext(Dispatchers.IO) {
         val live = context.getDatabasePath(HealthTrailDatabase.FILE_NAME)
-        val backup = File(live.parentFile, "${HealthTrailDatabase.FILE_NAME}.replacing")
+        val backup = File(live.path + HealthTrailDatabase.REPLACING_SUFFIX)
 
         HealthTrailDatabase.closeForTest()
         Repository.closeForTest()
@@ -503,10 +503,31 @@ object Backup {
             // The one built here is keyed by this phone's Keystore, so a
             // notebook that arrives from another device is protected here the
             // same way it was there.
-            val rebuilt = File(live.parentFile, "${HealthTrailDatabase.FILE_NAME}.arriving")
+            val rebuilt = File(live.path + HealthTrailDatabase.ARRIVING_SUFFIX)
             try {
                 encryptedCopy(context, opened.database, rebuilt)
-                rebuilt.copyTo(live, overwrite = true)
+
+                // **A rename, not a delete and a stream copy.** #409.
+                //
+                // `copyTo(live, overwrite = true)` truncates the live file and
+                // then writes it back a buffer at a time. Process death inside
+                // that window leaves a half written `health-trail.db` next to a
+                // complete `.arriving` and a complete `.replacing`, and until
+                // this commit nothing on earth read either of them: the next
+                // launch opened the truncated file, which is reported as
+                // corruption. **The record was lost at the exact moment the
+                // person was recovering it.**
+                //
+                // `rename` on one filesystem is atomic and replaces the target,
+                // so the live path is either the old notebook or the new one
+                // and never a piece of both. `Attachments.put` already stores
+                // every photograph this way, for the same reason.
+                if (!rebuilt.renameTo(live)) {
+                    throw java.io.IOException(
+                        "the restored notebook could not be moved into place, " +
+                            "so nothing was changed",
+                    )
+                }
                 // The write ahead log and shared memory file belong to the
                 // database that was just replaced. Left behind, they describe
                 // pages that no longer exist in the file beside them, which is
