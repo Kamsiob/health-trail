@@ -58,8 +58,17 @@ version of this file, that `HealthTrailDatabase.kt:101` passes `null` as the
 `DatabaseErrorHandler` and the library therefore deletes the notebook, **was
 half wrong and is closed either way.** See #407.
 
-**Milestone 9, 15 of 18 closed.** #407, #408, #409, #410, #411, #412, #413,
-#414, #415, #416, #417, #418, #419, #420, #454, #457.
+**Milestone 9, 16 of 18 closed.** #407, #408, #409, #410, #411, #412, #413,
+#414, #415, #416, #417, #418, #419, #420, #454, #457. Open: #451 (B8), #455,
+#461.
+
+**Milestone 10, 5 of 18 closed:** #422, #432, #433, #452, #453. Partly done and
+commented rather than closed: #423 three of five transactions, #425 mechanism
+plus two of eight call sites, #429 two of three parts. Open and untouched:
+#421, #424, #426, #427, #428, #430, #431, #434, #458, #459.
+
+**Milestones 11 and 12 are not started**, except #460, the owner's tips panel
+report, whose one verifiable defect is fixed and whose design work is his call.
 
 | What is true now that was not | Where |
 |---|---|
@@ -105,6 +114,9 @@ substance of #451 and is **B8** in `DECISIONS.md` after three failed attempts.
 **Still open in milestone 9:** #451 (B8), #455, #461.
 
 ---
+
+**Counts as of the end of the run:** 3 open in milestone 9, 14 in 10, 9 in 11,
+9 in 12.
 
 | Milestone | What it is | Why it is where it is |
 |---|---|---|
