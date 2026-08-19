@@ -39,6 +39,7 @@ object IncidentTags {
     const val NAME = "incident"
     fun row(id: String) = "incident_row_$id"
     const val RESOLVE = "incident_resolve"
+    const val SAY_DONE = "incident_say_done"
     const val REOPEN = "incident_reopen"
     const val ADD = "incident_add"
     const val SHARE = "incident_share"
@@ -306,6 +307,20 @@ fun IncidentScreen(
     onCorrect: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * Writes what was actually done about this, which nothing could. #421.
+     *
+     * **`resolution_note` had no writer anywhere.** `resolveIncident` took the
+     * parameter and its only caller never passed it, `updateIncident` did not
+     * touch the column, and the blocks that render it were unreachable in real
+     * use. "What did we do about this last time" is the question a recurring
+     * problem exists to answer.
+     *
+     * **Its own action rather than a field on Resolve**, because rule 13 says
+     * never require completion to save: resolving must stay one tap, and the
+     * note is something somebody adds when they have it.
+     */
+    onSayWhatWasDone: () -> Unit = {},
     /** The memos written about this. Rule 18, #397. */
     memos: List<Repository.TrailEntry> = emptyList(),
     onOpenMemo: (Repository.TrailEntry) -> Unit = {},
@@ -593,6 +608,23 @@ fun IncidentScreen(
                     modifier = Modifier.testTag(IncidentTags.RESOLVE),
                 )
             } else {
+                // **What was done about it, and only once it is settled.** #421.
+                // Offered above reopening because it is the thing somebody
+                // comes back to a closed incident to write, and it is optional
+                // in both directions: an incident with no note is finished, and
+                // one with a note can have it changed.
+                Action(
+                    label = strings[
+                        if (incident.resolutionNote.isNullOrBlank()) {
+                            "incident.note.add"
+                        } else {
+                            "incident.note.change"
+                        },
+                    ],
+                    onClick = onSayWhatWasDone,
+                    modifier = Modifier.testTag(IncidentTags.SAY_DONE),
+                )
+                Spacer(Modifier.height(Space.cardGap))
                 // **Reopening is offered plainly.** Somebody who resolved the
                 // wrong one, or whose answer turned out not to hold, must be
                 // able to say so without the app treating it as a correction to

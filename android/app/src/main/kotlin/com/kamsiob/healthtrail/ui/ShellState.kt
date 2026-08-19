@@ -492,6 +492,12 @@ internal class ShellState {
     var addingToIncident by mutableStateOf<String?>(null)
     /** The incident to settle or reopen, and which of the two. */
     var resolvingIncident by mutableStateOf<Pair<String, Boolean>?>(null)
+
+    /** The settled incident whose note is being written or changed. #421. */
+    var notingIncident by mutableStateOf<Repository.Incident?>(null)
+
+    /** The note on its way to the write. #421. */
+    var savingIncidentNote by mutableStateOf<Pair<String, String>?>(null)
     /** The entry waiting to be pinned to the top of the trail, or unpinned. */
     var pinningEntry by mutableStateOf<Pair<String, Boolean>?>(null)
     /** True while the emergency card is on its way to the share sheet. */

@@ -2414,6 +2414,27 @@ fun NotebookShell(
             // are new: ended_edtf and end_note existed in the schema, were read
             // in two places, and nothing anywhere wrote them, so the ended group
             // on the threads screen could never hold anything.
+            savingIncidentNote?.let { (incidentId, note) ->
+                LaunchedEffect(incidentId, note) {
+                    // **Resolved stays as it is.** The note is about an incident
+                    // that is already settled, so passing the existing
+                    // resolved_at keeps it settled rather than re-stamping it.
+                    val existing = repository.activeSubject()?.id
+                        ?.let { repository.incidents(it) }
+                        ?.firstOrNull { it.id == incidentId }
+                    repository.resolveIncident(
+                        incidentId = incidentId,
+                        resolvedAt = existing?.resolvedAt,
+                        resolutionNote = note,
+                    )
+                    savingIncidentNote = null
+                    revision += 1
+                    openIncident = repository.activeSubject()?.id
+                        ?.let { subjectId -> repository.incidents(subjectId) }
+                        ?.firstOrNull { incident -> incident.id == incidentId }
+                }
+            }
+
             // **The corrected chapter dates.** #432, rule 17. Two writes because
             // the picker asks one date at a time, and the second carries the
             // first forward so backing out of the end does not undo the start.

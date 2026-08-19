@@ -5406,15 +5406,22 @@ class Repository private constructor(
         // The same shape `markQuestionAsked` uses, so the change log trigger
         // sees an ordinary update and `rev` moves the way every other write
         // moves it.
+        //
+        // **The note is written only when it is given.** #421, and it is the
+        // same defect #420 had: this wrote `resolution_note = ?`
+        // unconditionally, so **reopening an incident wrote NULL over the note
+        // saying what was done about it last time.** That is exactly the thing
+        // a recurring problem is looked up for.
+        //
+        // Reopening passes no note because reopening has nothing to say about
+        // one, so leaving the column alone is both the fix and the honest
+        // shape.
+        val columns = linkedMapOf<String, Any?>("resolved_at" to resolvedAt)
+        resolutionNote?.ifBlank { null }?.let { columns["resolution_note"] = it }
+        val assignments = columns.keys.joinToString(", ") { "$it = ?" }
         db().database.write(
-            "UPDATE incident SET resolved_at = ?, resolution_note = ?, " +
-                "updated_at = ?, rev = rev + 1 WHERE id = ?",
-            arrayOf<Any?>(
-                resolvedAt,
-                resolutionNote?.ifBlank { null },
-                System.currentTimeMillis(),
-                incidentId,
-            ),
+            "UPDATE incident SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            (columns.values + listOf(System.currentTimeMillis(), incidentId)).toTypedArray(),
         )
     }
 

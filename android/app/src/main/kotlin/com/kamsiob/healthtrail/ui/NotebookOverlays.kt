@@ -575,6 +575,9 @@ internal fun IncidentAndReviewOverlays(
                     onCorrect = { correctingIncident = current },
                     onResolve = { resolvingIncident = current.id to true },
                     onReopen = { resolvingIncident = current.id to false },
+                    // #421: what was actually done about it, which nothing
+                    // could write before.
+                    onSayWhatWasDone = { notingIncident = current },
                     onBack = { openIncident = null },
                 )
             }
@@ -823,6 +826,25 @@ internal fun IncidentAndReviewOverlays(
                 // A person who corrected the start and backed out of the end has
                 // not said the chapter is still running.
                 onDismiss = { correctingChapterEnd = null },
+            )
+        }
+
+        // **What was done about a settled incident.** #421. The same one field
+        // screen a thread and a person are named with, because this is one
+        // sentence and it deserves the same shape rather than a new one.
+        notingIncident?.let { incident ->
+            AddThreadScreen(
+                onStart = { note ->
+                    savingIncidentNote = incident.id to note
+                    notingIncident = null
+                },
+                onCancel = { notingIncident = null },
+                titleKey = "incident.note.label",
+                labelKey = "incident.note.label",
+                hintKey = null,
+                saveKey = "common.save",
+                leadKey = "incident.note.lead",
+                section = Repository.Section.TRAIL,
             )
         }
 
