@@ -4527,3 +4527,72 @@ as long as rule 2 stands.
 
 **Why the order puts none of this first.** Milestones 9 and 10 come before all
 of it. A feature built on a record that can silently vanish vanishes with it.
+
+---
+
+## D209. SQLCipher keeps the passphrase, so the driver gets its own copy and keeps it
+
+**2026-08-19, milestone 9, forced by #408 and found by a test rather than by reading.**
+
+`create()` handed `DatabaseKey.passphrase()` straight to
+`SQLiteDatabase.openOrCreateDatabase` and then wiped that array in a `finally`,
+on the stated reasoning that SQLCipher had taken the bytes and the caller should
+zero what it held.
+
+**SQLCipher had not taken the bytes. It kept the array.**
+`SQLiteDatabaseConfiguration.password` stores the reference it is handed with no
+copy, and the connection pool opens every later connection from that same
+configuration. Wiping the array did not tidy up after an open, it armed a trap
+for the next connection.
+
+**It had never fired, for one reason that #408 was about to remove.**
+`SQLiteConnectionPool.setMaxConnectionPoolSizeLocked` caps the pool at exactly
+one connection unless the write ahead logging flag is set. There was never a
+second connection to fail. Turning WAL on raises the cap to
+`SQLiteGlobal.getWALConnectionPoolSize()`, and the first run of
+`JournalModeTest.thePoolCanOpenMoreThanOneConnection` failed with
+`SQLiteNotADatabaseException: file is not a database` on a perfectly good
+notebook.
+
+**That failure is the worst shape this milestone has.** A working record
+reporting itself corrupt, on a screen that offers to replace it.
+
+**Decided:** the driver is handed `passphrase.copyOf()` and that copy is not
+wiped. The array from `DatabaseKey` still is.
+
+**What this costs, stated plainly rather than buried.** The passphrase now lives
+in heap for the life of the process instead of being cleared after the open.
+That is a real reduction and it is accepted because there is no alternative that
+keeps the contract's journal mode: the pool needs the bytes to open a connection
+at any later moment, and the library offers no callback to re-supply them. It is
+also smaller than it looks, since SQLCipher holds the derived key in native
+memory for the whole time the database is open anyway, and reading either one
+requires code already running as this app on this device, at which point the
+notebook is open and readable regardless.
+
+**Rejected:** staying on rollback journal to avoid the question. That leaves
+`synchronous = NORMAL` without a journal fsync, which is a power loss away from
+the torn file #407 exists to not delete, and it leaves the contract's own
+declaration false.
+
+## D210. The destructive command guard is installed and it fires
+
+**2026-08-19.** `RUN-SAFETY.md` 1.1 says the guard has never fired through
+Claude Code on any day in any session, and that B5 is what the owner needs to do.
+
+**Both are now out of date.** The guard refused a command from this session at
+00:0x on 2026-08-19:
+
+    Blocked by the Health Trail destructive command guard (RUN-SAFETY.md section 1.1).
+
+The command was an `rm -rf` of a scratch directory used to unpack an `.aar` for
+inspection, which is exactly the class it exists to refuse. The work was done in
+the session scratchpad instead, which is what the guard's own message tells you
+to do.
+
+`tools/checks/check_guard.py` also passes and reports 21 destructive commands
+refused and 12 ordinary ones and sentences about them let through.
+
+**So the count of working guards is one, not zero.** Guard 2, the pre-compaction
+state save, still has no evidence and `HANDOFF.md` is still kept current by hand.
+Guard 3, the retry cap, is still a command line tool nothing calls.
