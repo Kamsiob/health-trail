@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Block
@@ -161,7 +162,7 @@ fun SetupScreen(
                 // structure. Grouping the fields into objects lets somebody
                 // finish one part and scroll past a thing they have completed.
                 FieldBlock(label = strings["setup.group.who"]) {
-                    Field(
+                    DictatableField(
                         label = strings["setup.name.label"],
                         value = name,
                         onValueChange = { name = it },
@@ -171,7 +172,7 @@ fun SetupScreen(
 
                     Spacer(Modifier.height(Space.m))
 
-                    Field(
+                    DictatableField(
                         label = strings["setup.relationship.label"],
                         value = relationship,
                         onValueChange = { relationship = it },
@@ -182,7 +183,7 @@ fun SetupScreen(
                 Spacer(Modifier.height(Space.betweenGroups))
 
                 FieldBlock(label = strings["setup.group.where"]) {
-                    Field(
+                    DictatableField(
                         label = strings["setup.where.label"],
                         value = where,
                         onValueChange = { where = it },
@@ -194,7 +195,7 @@ fun SetupScreen(
                 Spacer(Modifier.height(Space.betweenGroups))
 
                 FieldBlock(label = strings["setup.group.reach"]) {
-                    Field(
+                    DictatableField(
                         label = strings["setup.phone.person.label"],
                         value = phoneName,
                         onValueChange = { phoneName = it },
@@ -203,7 +204,7 @@ fun SetupScreen(
 
                     Spacer(Modifier.height(Space.m))
 
-                    Field(
+                    DictatableField(
                         label = strings["setup.phone.number.label"],
                         value = phoneNumber,
                         onValueChange = { phoneNumber = it },

@@ -17,6 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
@@ -221,7 +222,7 @@ fun ExportScreen(
             Eyebrow(text = strings["export.passphrase"])
             Spacer(Modifier.height(Space.headerGap))
 
-            Field(
+            DictatableField(
                 label = strings["export.passphrase"],
                 value = passphrase,
                 onValueChange = { passphrase = it },
@@ -246,7 +247,7 @@ fun ExportScreen(
             // field is an interrogation. Here the label is already the
             // instruction, and "Type it again" repeated inside the box would
             // be the same words in two slots, which section 1 bans by name.
-            Field(
+            DictatableField(
                 label = strings["export.passphrase.again"],
                 value = again,
                 onValueChange = { again = it },
@@ -294,7 +295,7 @@ fun ExportScreen(
             // "Where the passphrase is written down, not the passphrase" is the
             // whole instruction, and it teaches the safe answer instead of
             // leaving somebody to invent one and then be told off.
-            Field(
+            DictatableField(
                 label = strings["export.hint.label"],
                 value = hint,
                 onValueChange = { hint = it },

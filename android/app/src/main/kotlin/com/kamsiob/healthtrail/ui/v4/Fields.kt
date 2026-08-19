@@ -204,14 +204,32 @@ fun Field(
 }
 
 /**
- * A field and its dictation control, which is the pairing every text area uses.
+ * A field somebody writes their own words into, with a way to speak them.
  *
- * Exists so that "every text area offers dictation" is one call rather than a
- * habit twelve screens have to remember, and so the spacing between the two is
- * decided once.
+ * **The rule, and this is where it lives.** #396, and `tools/checks/check_dictation.py`
+ * fails the build when a `Field` breaks it:
  *
- * **Spoken text is appended with a space**, so half typed and half spoken is a
- * sentence rather than two words jammed together.
+ * > **Every field somebody writes their own words into offers dictation.** A
+ * > plain `Field` is for the four things that are not that: a passphrase, a
+ * > value that is not words, a field whose trailing slot is already taken by a
+ * > unit or a picker, and the handful of screens named in the check with their
+ * > reason.
+ *
+ * **Reach for this one by default.** The two components are the same control
+ * with one difference, so a screenshot of a field with dictation and one
+ * without differ by a twenty dp glyph. That is why thirty-four call sites drifted
+ * onto the plain one without anybody noticing: the medication form's dose and
+ * frequency had a microphone and its own name did not.
+ *
+ * **The judgment is here rather than at the call site.** A caller says what the
+ * field asks for, through [keyboardType] and [masked], and this decides whether
+ * a microphone appears. A rule spread across thirty-four judgments is a rule
+ * that will be got wrong at least once, and it already had been.
+ *
+ * **Why it matters more here than in most apps.** This is written one handed in
+ * a corridor, in a car park, or at two in the morning, often by somebody who
+ * has just been told something they will not remember in an hour. Typing is the
+ * fallback, not the other way round.
  */
 @Composable
 fun DictatableField(
@@ -231,7 +249,32 @@ fun DictatableField(
     prominentVoice: Boolean = false,
     /** How tall the box stands before anything is typed. See [Field]. */
     minLines: Int = 1,
+    /**
+     * What kind of keyboard this asks for, and **the rule lives here**. #396.
+     *
+     * **A number, a phone number and a date are not somebody's own words**, so
+     * a field asking for one gets no microphone even when it is called through
+     * this component. Encoded here rather than at each of thirty-four call
+     * sites, because a rule spread across thirty-four judgments is a rule that
+     * will be got wrong at least once, and it already had been.
+     *
+     * **This is what makes the component safe to reach for everywhere.** A
+     * caller no longer has to decide whether their field is dictatable: they
+     * say what it asks for and the component answers.
+     */
+    keyboardType: KeyboardType = KeyboardType.Text,
+    /**
+     * A passphrase, which is never spoken into a recognizer. See [Field].
+     *
+     * **Also here rather than at the call site**, and for the same reason: it
+     * is a property of the field, so the component can be told once.
+     */
+    masked: Boolean = false,
 ) {
+    // **The rule, in one place**, `DictatableField`'s own contract and #396's
+    // "done means". Everything else is a field somebody writes their own words
+    // into, and every one of those offers a way to speak them.
+    val speakable = keyboardType == KeyboardType.Text && !masked
     val append: (String) -> Unit = { spoken ->
         onValueChange(if (value.isBlank()) spoken else "${value.trimEnd()} $spoken")
     }
@@ -250,16 +293,18 @@ fun DictatableField(
             singleLine = singleLine,
             imeAction = imeAction,
             minLines = minLines,
+            keyboardType = keyboardType,
+            masked = masked,
             // **Inside the field**, unless this is the one screen where
             // speaking is the point rather than an alternative.
-            trailing = if (prominentVoice) {
+            trailing = if (prominentVoice || !speakable) {
                 null
             } else {
                 { DictateAction(inField = true, enabled = enabled, onText = append) }
             },
         )
 
-        if (prominentVoice) {
+        if (prominentVoice && speakable) {
             DictateAction(prominent = true, enabled = enabled, onText = append)
         }
     }

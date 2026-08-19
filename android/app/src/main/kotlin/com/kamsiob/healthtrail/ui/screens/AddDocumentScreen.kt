@@ -494,7 +494,7 @@ fun AddDocumentScreen(
 
             if (!staged) Spacer(Modifier.height(Space.sectionGap))
 
-            Field(
+            DictatableField(
                 label = strings["docs.title"],
                 value = draft.title,
                 onValueChange = { draft = draft.copy(title = it) },
@@ -548,7 +548,7 @@ fun AddDocumentScreen(
             // comment: the digital copy is rarely the one a clerk will
             // accept. It leads its stage rather than sitting behind the
             // disclosure with the folder and the notes.
-            Field(
+            DictatableField(
                 label = strings["docs.original"],
                 value = draft.originalLocation,
                 onValueChange = { draft = draft.copy(originalLocation = it) },
@@ -588,7 +588,7 @@ fun AddDocumentScreen(
             // **Tapping the chip that is already chosen clears it**, which
             // is how a document comes back out of a folder without the
             // person having to select the text and delete it.
-            Field(
+            DictatableField(
                 label = strings["docs.folder"],
                 value = draft.category,
                 onValueChange = { draft = draft.copy(category = it) },

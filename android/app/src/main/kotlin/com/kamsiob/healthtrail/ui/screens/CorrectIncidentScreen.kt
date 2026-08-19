@@ -147,7 +147,7 @@ fun CorrectIncidentScreen(
                 )
             Spacer(Modifier.height(Space.l))
 
-            Field(
+            DictatableField(
                 label = strings["incident.correct.what"],
                 value = title,
                 onValueChange = { title = it },

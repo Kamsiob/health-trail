@@ -20,6 +20,7 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.ChoiceChip
@@ -258,7 +259,7 @@ fun ProjectSetupScreen(
             // and shell state have been sitting here with nothing setting them
             // ever since, which is #314.
             Spacer(Modifier.height(Space.m))
-            Field(
+            DictatableField(
                 label = strings["projects.waiting_field"],
                 value = waitingOn,
                 onValueChange = { waitingOn = it },

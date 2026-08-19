@@ -523,7 +523,7 @@ fun CaptureFormScreen(
                 }
 
                 if (kind.slots[stage] == Slot.WHO) {
-                Field(
+                DictatableField(
                     label = strings[key(kind, "who")],
                     value = who,
                     onValueChange = { onStateChange(state.copy(who = it)) },

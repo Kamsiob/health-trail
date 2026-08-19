@@ -40,6 +40,10 @@ CHECKS = [
         "no control announces an action it does not perform",
     ),
     (
+        "check_dictation.py",
+        "every field somebody writes their own words into offers dictation",
+    ),
+    (
         "check_uncalled_callbacks.py",
         "no composable takes a callback and then never calls it",
     ),

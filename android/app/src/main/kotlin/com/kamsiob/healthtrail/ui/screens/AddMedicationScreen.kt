@@ -147,7 +147,7 @@ fun AddMedicationScreen(
             )
             Spacer(Modifier.height(Space.l))
 
-            Field(
+            DictatableField(
                 label = strings["meds.name"],
                 value = draft.name,
                 onValueChange = { draft = draft.copy(name = it) },

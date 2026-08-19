@@ -25,6 +25,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.DictateAction
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -135,7 +136,7 @@ fun CorrectEntryScreen(
             // second one around it is two edges on one thing, which is the
             // clutter D183 took out of the forms. `docs/V4.md` 2.1, `m3v4-4`.
             Column(verticalArrangement = Arrangement.spacedBy(Space.withinGroup)) {
-                Field(
+                DictatableField(
                     label = strings[kindNameKey(entry.kind)],
                     value = title,
                     onValueChange = { title = it },

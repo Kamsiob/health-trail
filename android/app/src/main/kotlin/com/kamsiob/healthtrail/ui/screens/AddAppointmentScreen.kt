@@ -165,7 +165,7 @@ fun AddAppointmentScreen(
                 )
             Spacer(Modifier.height(Space.l))
 
-            Field(
+            DictatableField(
                 label = strings["appts.title"],
                 value = draft.title,
                 onValueChange = { draft = draft.copy(title = it) },
@@ -264,7 +264,7 @@ fun AddAppointmentScreen(
                 modifier = Modifier.testTag(AddApptTags.MORE),
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    Field(
+                    DictatableField(
                         label = strings["appts.where"],
                         value = draft.where,
                         onValueChange = { draft = draft.copy(where = it) },

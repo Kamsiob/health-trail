@@ -137,7 +137,7 @@ fun MedicationEventScreen(
 
             Spacer(Modifier.height(Space.sectionGap))
 
-            Field(
+            DictatableField(
                 label = strings["medevent.dose"],
                 value = dose,
                 onValueChange = { dose = it },

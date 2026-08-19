@@ -34,6 +34,7 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Avatar
@@ -291,7 +292,7 @@ fun AddPersonScreen(
             // second one around it is two edges on one thing, which is the
             // clutter D183 took out of the forms. `docs/V4.md` 2.1, `m3v4-4`.
             Column(verticalArrangement = Arrangement.spacedBy(Space.withinGroup)) {
-                Field(
+                DictatableField(
                     label = strings["careteam.add.name"],
                     value = name,
                     onValueChange = { name = it },
@@ -300,7 +301,7 @@ fun AddPersonScreen(
                     fieldTestTag = AddPersonTags.NAME,
                 )
 
-                Field(
+                DictatableField(
                     label = strings["careteam.add.role"],
                     value = role,
                     onValueChange = { role = it },
@@ -309,7 +310,7 @@ fun AddPersonScreen(
                     fieldTestTag = AddPersonTags.ROLE,
                 )
 
-                Field(
+                DictatableField(
                     label = strings["careteam.add.phone"],
                     value = phone,
                     onValueChange = { phone = it },
@@ -393,7 +394,7 @@ fun AddPersonScreen(
                 // Phase 0 with nothing writing either, so the fold could
                 // not be built: grouping by a column nothing writes gives
                 // one fold holding everybody. #353.
-                Field(
+                DictatableField(
                     label = strings["careteam.add.where"],
                     value = where,
                     onValueChange = { where = it },
@@ -402,7 +403,7 @@ fun AddPersonScreen(
                     fieldTestTag = AddPersonTags.WHERE,
                 )
 
-                Field(
+                DictatableField(
                     label = strings["careteam.add.email"],
                     value = email,
                     onValueChange = { email = it },

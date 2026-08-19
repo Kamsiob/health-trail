@@ -25,6 +25,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.data.TemplateCatalog
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.ScopedSearch
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
@@ -444,7 +445,7 @@ private fun OwnProject(onStart: (String) -> Unit) {
         )
         if (open) {
             Column(modifier = Modifier.padding(Space.cardPadding)) {
-                Field(
+                DictatableField(
                     label = strings["projects.name"],
                     value = name,
                     onValueChange = { name = it },

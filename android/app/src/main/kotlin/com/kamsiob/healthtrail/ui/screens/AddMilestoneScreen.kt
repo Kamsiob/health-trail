@@ -168,7 +168,7 @@ fun AddMilestoneScreen(
                 )
             Spacer(Modifier.height(Space.l))
 
-            Field(
+            DictatableField(
                 label = strings["milestones.label"],
                 value = draft.label,
                 onValueChange = { draft = draft.copy(label = it) },

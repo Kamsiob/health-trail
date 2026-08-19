@@ -17,6 +17,7 @@ import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
@@ -181,7 +182,7 @@ fun ChangeSituationScreen(
                 // "Where they are now" and a header saying the same three words
                 // directly above it is 5.13's heading that carries nothing.
                 // Every other form in the app labels its fields and stops.
-                Field(
+                DictatableField(
                     label = strings["situation.change.chapter"],
                     value = chapterName,
                     onValueChange = { chapterName = it },

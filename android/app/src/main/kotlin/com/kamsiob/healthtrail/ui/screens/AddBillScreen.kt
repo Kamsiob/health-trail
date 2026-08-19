@@ -131,7 +131,7 @@ fun AddBillScreen(
                 )
             Spacer(Modifier.height(Space.l))
 
-            Field(
+            DictatableField(
                 label = strings["money.what"],
                 value = draft.description,
                 onValueChange = { draft = draft.copy(description = it) },
@@ -140,7 +140,7 @@ fun AddBillScreen(
             )
             Spacer(Modifier.height(Space.m))
 
-            Field(
+            DictatableField(
                 label = strings["money.amount"],
                 value = draft.amount,
                 onValueChange = { draft = draft.copy(amount = it) },

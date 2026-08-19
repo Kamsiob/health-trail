@@ -436,7 +436,7 @@ private fun NameSomethingElse(
                 // unrelated things stacked on paper; they are one
                 // decision about one measure and now they look like it.
                 FieldBlock(label = strings["measurement.own.group"]) {
-                    Field(
+                    DictatableField(
                         label = strings["measurement.own.name.field"],
                         value = name,
                         onValueChange = { name = it },
@@ -491,7 +491,7 @@ private fun NameSomethingElse(
                     // got.
                     if (!isText) {
                         Spacer(Modifier.height(Space.m))
-                        Field(
+                        DictatableField(
                             label = strings["measurement.unit"],
                             value = unit,
                             onValueChange = { unit = it },
@@ -710,7 +710,7 @@ private fun RecordValue(
 
                 Spacer(Modifier.height(Space.l))
 
-                Field(
+                DictatableField(
                     label = strings[
                         if (isText) "measurement.value.text" else "measurement.value.number"
                     ],

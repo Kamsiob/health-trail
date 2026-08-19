@@ -25,6 +25,7 @@ import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.theme.hueFor
+import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
 import com.kamsiob.healthtrail.ui.v4.BlockTone
@@ -175,7 +176,7 @@ fun AddThreadScreen(
             // **The field's label is not the heading again**, which is the
             // defect #341 took out of four screens. The heading asks what
             // keeps coming up; the field says what to type.
-            Field(
+            DictatableField(
                 label = strings[labelKey],
                 value = name,
                 onValueChange = { name = it },
