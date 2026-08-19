@@ -15,6 +15,7 @@ import com.kamsiob.healthtrail.time.EventDateText
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
 import com.kamsiob.healthtrail.ui.theme.Space
+import com.kamsiob.healthtrail.ui.v4.MemosAbout
 import com.kamsiob.healthtrail.ui.theme.accentHue
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.v4.Action
@@ -82,6 +83,18 @@ fun MedicationScreen(
     onRecordChange: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * The memos written about this one. Rule 18, #434.
+     *
+     * **`ABOUT_HEADINGS` has always included `medication`**, so a memo about
+     * one saved correctly and was never shown back anywhere. Document,
+     * Incident, Bill, ProjectHome, Prep and Person all carry this block and
+     * this screen did not, which broke rule 18 in the one direction that makes
+     * the writing pointless.
+     */
+    memos: List<Repository.TrailEntry> = emptyList(),
+    onOpenMemo: (Repository.TrailEntry) -> Unit = {},
+    onWriteMemo: () -> Unit = {},
     backLabelKey: String = "section.back.medications",
 ) {
     val strings = LocalStrings.current
@@ -233,6 +246,21 @@ fun MedicationScreen(
                     }
                 }
             }
+        }
+
+        // **What was written about it**, rule 18 and #434. Above removing and
+        // below the history, which is the order every other screen carrying
+        // this block already uses.
+        item {
+            MemosAbout(
+                memos = memos,
+                onOpen = onOpenMemo,
+                onWrite = onWriteMemo,
+                modifier = Modifier.padding(
+                    top = Space.betweenGroups,
+                    bottom = Space.betweenGroups,
+                ),
+            )
         }
 
         // **Taking it out of the notebook, from the medication's own screen**,

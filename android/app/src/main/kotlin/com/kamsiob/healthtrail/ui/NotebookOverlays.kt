@@ -681,11 +681,19 @@ internal fun IncidentAndReviewOverlays(
             LaunchedEffect(medication.id, revision) {
                 medicationHistory = repository.medicationHistory(medication.id)
                 medicationQuestions = repository.openQuestionsAbout(medication.id)
+                // #434, rule 18: a memo about a medication saved correctly and
+                // was never shown back anywhere.
+                memosAbout = repository.notesAbout("medication", medication.id)
             }
             MedicationScreen(
                 medication = medication,
                 history = medicationHistory,
                 questions = medicationQuestions,
+                memos = memosAbout,
+                onOpenMemo = { openEntry = it.id },
+                onWriteMemo = {
+                    writingNote = NoteTarget("medication", medication.id, medication.name)
+                },
                 // **The other half of the link, per rule 18.** A question opens
                 // its own entry, which is where it can be dated, read, and
                 // followed back to whatever else it belongs to.
