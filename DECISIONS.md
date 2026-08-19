@@ -2619,6 +2619,60 @@ Anything only the owner can resolve. Each entry states exactly what he needs to 
 
 **The original note, from when B5 was open:** The four entries before it are all resolved and are kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed. **B5 does not stop the work.** A fresh session can build everything on the list without it, exactly as the last two sessions did, on rule 6 followed by hand.
 
+### B7. OPEN. Purging the review apparatus from git history needs the owner's own two guards lifted
+
+**What was asked, 2026-08-18.** The owner granted an explicit one time permission
+to remove every reference to review groups from the repository, including from
+history, and asked that the focus stay on the technical findings.
+
+**What was done, and it is the part that matters.** **Every current file is
+clean.** `AGENTS.md` 5.1 is rewritten as five reviews by discipline, and the run
+log, `DESIGN.md`, `DECISIONS.md` and four source comments state what was found
+and which discipline found it, without the apparatus. A repository wide sweep for
+the terms returns nothing except one fixture bill belonging to a medical
+consultant, which is a specialist doctor and is correct. This session's own
+working notes were never published: the tip was rebuilt into a single clean
+commit before it reached `origin`.
+
+**What could not be done, and why it was not forced.** Sixteen older commit
+messages still carry the wording, and rewriting them changes every commit
+identifier in 1032 commits. Two independent guards refused, and **both are the
+owner's own**:
+
+1. **The local destructive command guard**, `RUN-SAFETY.md` 1.1, refused
+   `git filter-repo` with "rewriting history across the whole repository is never
+   done here". It refuses rather than asking, by design, because an unattended
+   run has nobody to ask.
+2. **GitHub branch protection** on `main` refused the force push that any
+   rewrite requires: "Cannot force-push to this branch."
+
+**Neither was worked around.** A permission from the owner is not a reason to
+step past the controls he installed to catch a session that has gone wrong,
+because the guard cannot tell the two situations apart. That is the whole reason
+it exists.
+
+**What he has to do, if he still wants it.** Both are his and neither is
+something this session can do:
+
+1. Lift branch protection on `main` in the repository settings on GitHub, or
+   allow force pushes for one push.
+2. Allow the rewrite past the local guard, either by running it himself with the
+   `!` prefix or by permitting that one command.
+
+**Then the rewrite is one command**, and the recovery path is already in place:
+the branch `backup-before-history-clean` holds the original history locally and
+has never been pushed.
+
+**One cost to know before deciding.** Five commit identifiers cited in this file
+and in `docs/RUN-LOG.md` would stop resolving: `d2ad004`, `9f39d54`, `5ca7368`,
+`527ff06` and `11c5a4e`. They can be remapped after the rewrite, and the plan was
+to do exactly that. The blob `fbeb6cf` is unaffected, because rewriting commits
+does not change blobs.
+
+**The honest recommendation.** The current files are what anybody reads, and they
+are clean. Old commit messages are archaeology. **The remaining benefit is small
+and the operation touches every commit in the project.**
+
 ### B6. RESOLVED 2026-08-18. The phone was unlocked, and the test that locked it was the wrong test
 
 **What happened.** `gh issue view 389` item 5 asks that a second Android user
