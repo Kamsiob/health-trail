@@ -427,6 +427,12 @@ internal class ShellState {
     var unseenConflicts by mutableStateOf(0)
     var markConflictsSeen by mutableStateOf(false)
 
+    /** Whether the bin is open, and what is in it. #405. */
+    var binOpen by mutableStateOf(false)
+    var discarded by mutableStateOf<List<Repository.Discarded>>(emptyList())
+    /** One thing on its way back, cleared when the write is done. */
+    var restoring by mutableStateOf<Repository.Discarded?>(null)
+
     /** Incidents, which `MASTER_SPEC.md` 4.7 makes threads rather than events. */
     var incidents by mutableStateOf<List<Repository.Incident>>(emptyList())
     var incidentsOpen by mutableStateOf(false)

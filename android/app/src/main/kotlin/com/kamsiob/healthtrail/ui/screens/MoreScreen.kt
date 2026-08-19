@@ -36,6 +36,8 @@ object MoreTags {
     const val EXPORT = "more_export"
     const val RESTORE = "more_restore"
     const val CONFLICTS = "more_conflicts"
+    /** What you took out, and the way to put it back. #405. */
+    const val BIN = "more_bin"
     const val SITUATION = "more_situation"
     const val SUBJECT = "more_subject"
 }
@@ -84,6 +86,8 @@ fun MoreScreen(
      * reads as "not yet", and this one is genuinely "not applicable".
      */
     conflicts: Int = 0,
+    /** Opens what was taken out. #405. */
+    onBin: () -> Unit = {},
 ) {
     AppearanceScreen(
         choice = choice,
@@ -112,6 +116,7 @@ fun MoreScreen(
                 onPeople = onPeople,
                 onConflicts = onConflicts,
                 conflicts = conflicts,
+                onBin = onBin,
             )
         },
         footer = { ComingHere() },
@@ -138,6 +143,8 @@ private fun MoreDestinations(
     onPeople: () -> Unit,
     onConflicts: () -> Unit,
     conflicts: Int,
+    /** Opens what was taken out. #405. */
+    onBin: () -> Unit = {},
 ) {
     val strings = LocalStrings.current
 
@@ -212,6 +219,22 @@ private fun MoreDestinations(
                     MoreTags.RESTORE,
                     Symbols.documents,
                     hueFor(Repository.Section.DOCUMENTS),
+                ),
+                // **The bin is always here, unlike the conflict door.** The
+                // two look alike and the reasoning is opposite: a resolution
+                // notice appears only when a merge decided something, because a
+                // permanent "nothing to look at" teaches somebody to ignore a
+                // row that will one day matter. **A bin is different: its value
+                // is knowing it exists before you need it.** Somebody who has
+                // just removed the wrong thing has to be able to find their way
+                // back without having read a manual, and a row that appears only
+                // after the mistake is a row they have never seen.
+                Destination(
+                    strings["bin.open"],
+                    onBin,
+                    MoreTags.BIN,
+                    Symbols.bin,
+                    hueFor(Repository.Section.TRAIL),
                 ),
             ) + if (conflicts > 0) {
                 // **Beside restore, because that is where it came from.** Rule

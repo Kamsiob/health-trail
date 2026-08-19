@@ -60,6 +60,7 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import com.kamsiob.healthtrail.ui.screens.PaperViewerTags
 import com.kamsiob.healthtrail.ui.screens.PaperViewerScreen
 import com.kamsiob.healthtrail.ui.screens.MeasureScreen
+import com.kamsiob.healthtrail.ui.screens.BinScreen
 import com.kamsiob.healthtrail.ui.screens.NoteScreen
 import com.kamsiob.healthtrail.ui.screens.NotesScreen
 import com.kamsiob.healthtrail.ui.screens.ProgressScreen
@@ -1578,6 +1579,42 @@ class ScreenReaderTest {
             NotesScreen(notes = emptyList(), onOpen = {}, onAdd = {}, onBack = {})
         }
         assertEverythingIsLabeled("notes-empty")
+    }
+
+    /** What was taken out, with something in it and with nothing. #405. */
+    @Test
+    fun theBinLabelsEverything() {
+        compose.show {
+            BinScreen(
+                discarded = listOf(
+                    Repository.Discarded(
+                        section = Repository.Section.MEDICATIONS,
+                        id = "m1",
+                        label = "Vitamin D",
+                        deletedAt = 1_785_000_000_000L,
+                    ),
+                    // **Something with no name of its own**, which is a real
+                    // state: an entry can be a body and no title.
+                    Repository.Discarded(
+                        section = Repository.Section.TRAIL,
+                        id = "e1",
+                        label = "",
+                        deletedAt = 1_784_000_000_000L,
+                    ),
+                ),
+                onRestore = {},
+                onBack = {},
+            )
+        }
+        assertEverythingIsLabeled("bin")
+    }
+
+    @Test
+    fun theEmptyBinLabelsEverything() {
+        compose.show {
+            BinScreen(discarded = emptyList(), onRestore = {}, onBack = {})
+        }
+        assertEverythingIsLabeled("bin-empty")
     }
 
     /**

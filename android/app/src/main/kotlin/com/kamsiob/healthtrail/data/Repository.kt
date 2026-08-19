@@ -1195,6 +1195,89 @@ class Repository private constructor(
         )
     }
 
+    /** One thing taken out, as the person would recognize it. #405. */
+    data class Discarded(
+        val section: Section,
+        val id: String,
+        /** What it was, in their words rather than a table name or a row id. */
+        val label: String,
+        /** When it was taken out. */
+        val deletedAt: Long,
+    )
+
+    /**
+     * Everything taken out of the notebook and not yet put back. #405.
+     *
+     * **This is a reader over rows the app already keeps.** Rule 3 and 3.1:
+     * deletion is always a tombstone, and every screen reads a `live_*` view
+     * that filters `deleted_at IS NULL`. So nothing had to be stored for this
+     * to be possible; the record was already there and nothing could read it.
+     *
+     * **Named in the person's own words**, through the same heading columns the
+     * conflict screen already uses, because rule 20 says a table name and a row
+     * id never reach the screen.
+     *
+     * **Most recently taken out first**, which is the order somebody looking
+     * for something they just lost is thinking in.
+     */
+    suspend fun discarded(subjectId: String): List<Discarded> = withContext(Dispatchers.IO) {
+        val database = db().database
+        val out = mutableListOf<Discarded>()
+        for (section in Section.entries) {
+            val column = ABOUT_HEADINGS[section.table] ?: continue
+            // **Only this person's**, because a notebook holds more than one and
+            // one person's bin must never show another's. Every table has
+            // carried `subject_id` since Phase 0.
+            // unordered-query: asking whether a column exists, which is one
+            // fact rather than a list. There is nothing to order and nothing
+            // reaches a render or an export from here.
+            val hasSubject = database.rawQuery(
+                "SELECT 1 FROM pragma_table_info(?) WHERE name = 'subject_id'",
+                arrayOf(section.table),
+            ).use { it.moveToFirst() }
+            if (!hasSubject) continue
+            database.rawQuery(
+                // allow-base-table: the whole point is the rows the live views
+                // hide, so this cannot read a live view.
+                "SELECT id, \"$column\", deleted_at FROM \"${section.table}\" " +
+                    "WHERE subject_id = ? AND deleted_at IS NOT NULL " +
+                    "ORDER BY deleted_at DESC, id",
+                arrayOf(subjectId),
+            ).use { cursor ->
+                while (cursor.moveToNext()) {
+                    out += Discarded(
+                        section = section,
+                        id = cursor.getString(0),
+                        label = cursor.getString(1).orEmpty(),
+                        deletedAt = cursor.getLong(2),
+                    )
+                }
+            }
+        }
+        out.sortedByDescending { it.deletedAt }
+    }
+
+    /**
+     * Puts one back exactly where it was. #405.
+     *
+     * **Clearing one column is the whole of it**, and that is the point of
+     * tombstones: the row kept its own `occurred_*` dates, so a thing taken out
+     * in March goes back in March rather than at the top of the trail. Nothing
+     * had to be remembered separately.
+     *
+     * **`updated_at` and `rev` move, because this is a write.** Another phone
+     * has to learn that the row came back, and 8.3's merge decides by
+     * `updated_at`: a restore that left the stamp alone would be undone by the
+     * next merge with a device that still thinks it is deleted.
+     */
+    suspend fun restore(section: Section, rowId: String) = withContext(Dispatchers.IO) {
+        db().database.write(
+            "UPDATE ${section.table} SET deleted_at = NULL, updated_at = ?, rev = rev + 1 " +
+                "WHERE id = ? AND deleted_at IS NOT NULL",
+            arrayOf<Any?>(System.currentTimeMillis(), rowId),
+        )
+    }
+
     /**
      * Whether a row is still physically present, tombstone and all.
      *

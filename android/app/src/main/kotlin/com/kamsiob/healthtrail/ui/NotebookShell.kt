@@ -129,6 +129,7 @@ import com.kamsiob.healthtrail.ui.screens.StageSheet
 import com.kamsiob.healthtrail.ui.screens.LogCallSheet
 import com.kamsiob.healthtrail.ui.screens.ProjectDateSheet
 import com.kamsiob.healthtrail.ui.screens.StandingSheet
+import com.kamsiob.healthtrail.ui.screens.BinScreen
 import com.kamsiob.healthtrail.ui.screens.NoteScreen
 import com.kamsiob.healthtrail.ui.screens.NotesScreen
 import com.kamsiob.healthtrail.ui.screens.ProjectsScreen
@@ -526,6 +527,7 @@ fun NotebookShell(
         BackHandler(enabled = openDocument != null) { openDocument = null }
         BackHandler(enabled = openBill != null) { openBill = null }
         BackHandler(enabled = conflictsOpen) { conflictsOpen = false; markConflictsSeen = true }
+        BackHandler(enabled = binOpen) { binOpen = false }
         BackHandler(enabled = openMedication != null) { openMedication = null }
         BackHandler(enabled = recordingChangeTo != null) { recordingChangeTo = null }
         BackHandler(enabled = recordingViolationFor != null) { recordingViolationFor = null }
@@ -991,6 +993,7 @@ fun NotebookShell(
                             },
                             onConflicts = { conflictsOpen = true },
                             conflicts = unseenConflicts,
+                            onBin = { binOpen = true },
                         )
                     }
 
@@ -1439,6 +1442,33 @@ fun NotebookShell(
                     repo.markConflictsSeen()
                     unseenConflicts = repo.unseenConflicts()
                     markConflictsSeen = false
+                }
+            }
+
+            // **What was taken out, and the way back.** #405. Rule 3 makes
+            // this a reader: nothing is ever deleted, so the bin is a view of
+            // the rows the live views hide.
+            if (binOpen) {
+                LaunchedEffect(binOpen, revision) {
+                    val repo = Repository.open(context)
+                    discarded = repo.activeSubject()?.id
+                        ?.let { repo.discarded(it) }.orEmpty()
+                }
+                BinScreen(
+                    discarded = discarded,
+                    onRestore = { restoring = it },
+                    onBack = { binOpen = false },
+                )
+            }
+
+            restoring?.let { thing ->
+                LaunchedEffect(thing) {
+                    Repository.open(context).restore(thing.section, thing.id)
+                    restoring = null
+                    // **Reread rather than patched**, so the bin and whatever
+                    // the thing went back to both show the truth without either
+                    // being told.
+                    revision += 1
                 }
             }
 
