@@ -986,11 +986,22 @@ object ExportContainer {
         try {
             ZipInputStream(file.inputStream().buffered()).use { zip ->
                 var entry: ZipEntry? = zip.nextEntry
+                var seen = 0
+                var expanded = 0L
                 while (entry != null) {
+                    // **Both layers are capped now.** #416. This copy ran
+                    // unbounded, before anything was authenticated, so a small
+                    // deflate bomb filled the phone's storage from a file
+                    // somebody had only opened to look at.
+                    if (++seen > MAX_ENTRIES) {
+                        throw java.io.IOException("this file holds more entries than this app will read")
+                    }
                     when (entry.name) {
                         OUTER_MANIFEST -> outerJson = JSONObject(zip.readText())
                         PAYLOAD -> {
-                            sealed.outputStream().buffered().use { zip.copyTo(it) }
+                            sealed.outputStream().buffered().use {
+                                expanded = copyCapped(zip, it, expanded)
+                            }
                             sawPayload = true
                         }
                         // Version 2's shape, kept only so its refusal below can
@@ -1126,9 +1137,52 @@ object ExportContainer {
         try {
             ZipInputStream(inner.inputStream().buffered()).use { zip ->
                 var entry: ZipEntry? = zip.nextEntry
+                var seen = 0
+                var expanded = 0L
                 while (entry != null) {
                     if (!entry.isDirectory) {
+                        if (++seen > MAX_ENTRIES) {
+                            throw java.io.IOException(
+                                "this file holds more entries than this app will read",
+                            )
+                        }
+                        // **The database goes to disk a buffer at a time.** #416.
+                        // Every entry used to be pulled fully into heap with
+                        // readBytes(), so one entry declaring several gigabytes
+                        // was an out of memory kill in the middle of a restore.
+                        // The database is the one entry that is genuinely large
+                        // in an ordinary notebook, so it is the one that must
+                        // never be held whole.
+                        if (entry.name == DATABASE) {
+                            val digest = java.security.MessageDigest.getInstance("SHA-256")
+                            database.outputStream().buffered().use { out ->
+                                val buffer = ByteArray(64 * 1024)
+                                while (true) {
+                                    val read = zip.read(buffer)
+                                    if (read <= 0) break
+                                    expanded += read
+                                    if (expanded > MAX_TOTAL_BYTES) {
+                                        throw java.io.IOException(
+                                            "this file expands to more than this app will read",
+                                        )
+                                    }
+                                    digest.update(buffer, 0, read)
+                                    out.write(buffer, 0, read)
+                                }
+                            }
+                            actual[entry.name] = digest.digest()
+                                .joinToString("") { "%02x".format(it) }
+                            zip.closeEntry()
+                            entry = zip.nextEntry
+                            continue
+                        }
                         val bytes = zip.readBytes()
+                        expanded += bytes.size
+                        if (expanded > MAX_TOTAL_BYTES) {
+                            throw java.io.IOException(
+                                "this file expands to more than this app will read",
+                            )
+                        }
                         when {
                             entry.name == INNER_MANIFEST ->
                                 innerJson = JSONObject(bytes.decodeToString())
@@ -1367,6 +1421,59 @@ object ExportContainer {
      * rest.
      */
     private const val MAX_FRAME_BYTES = 64 shl 20
+
+    /**
+     * The largest total a zip layer is allowed to expand to. #416.
+     *
+     * **A zip declares its own sizes and a reader that believes them can be
+     * made to fill the disk from a file the person only previewed.** Neither
+     * layer capped anything: the outer zip streamed `payload.enc` to cache with
+     * an unbounded `copyTo` before anything was authenticated, and the inner
+     * one pulled each entry fully into heap.
+     *
+     * Eight gigabytes is far above any real notebook, including the five year
+     * fixture with its attachments, and far below what fills a phone. The point
+     * is a ceiling that exists, not a tight one.
+     */
+    private const val MAX_TOTAL_BYTES = 8L shl 30
+
+    /**
+     * The most entries either zip layer may hold. #416.
+     *
+     * A notebook is a manifest, a checksum file, a database, a readable copy
+     * and one entry per attachment. A hundred thousand is orders of magnitude
+     * above any of that and stops a file whose entry count alone is the attack.
+     */
+    private const val MAX_ENTRIES = 100_000
+
+    /**
+     * Copies at most [MAX_TOTAL_BYTES], counting against a running total. #416.
+     *
+     * **Returns the new total so the caller can carry it across entries**, which
+     * is what makes the cap cover the archive rather than each entry in it.
+     * A per entry limit is not a limit: a thousand entries just under it add up
+     * to the same disk.
+     */
+    private fun copyCapped(
+        from: java.io.InputStream,
+        to: java.io.OutputStream,
+        alreadyWritten: Long,
+    ): Long {
+        val buffer = ByteArray(64 * 1024)
+        var total = alreadyWritten
+        while (true) {
+            val read = from.read(buffer)
+            if (read <= 0) break
+            total += read
+            if (total > MAX_TOTAL_BYTES) {
+                throw java.io.IOException(
+                    "this file expands to more than this app will read, so nothing was opened",
+                )
+            }
+            to.write(buffer, 0, read)
+        }
+        return total
+    }
 
     /** Reads `CHECKSUMS.txt` back into a map of path to hash. */
     private fun parseChecksums(text: String): Map<String, String> =
