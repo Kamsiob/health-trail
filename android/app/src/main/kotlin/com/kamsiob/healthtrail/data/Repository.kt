@@ -147,6 +147,47 @@ class Repository private constructor(
      * to it. Switching dispatchers inside a transaction is how a write ends up
      * on a different thread than the transaction it believes it is part of.
      */
+    /**
+     * The same insert, with nothing suspending in it. #425.
+     *
+     * **A `suspend` call between `beginTransaction` and `endTransaction` is a
+     * place a write can change threads**, and an Android transaction is bound
+     * to the thread that opened it. [insertRow] is only `suspend` because it
+     * reaches for `db()`, and inside a transaction the database is by
+     * definition already open, so handing the handle in removes the reason
+     * rather than working around it.
+     *
+     * This was safe today for a reason that is not a guarantee:
+     * `withContext(Dispatchers.IO)` called from an IO thread does not actually
+     * dispatch. Nothing would have failed if that changed. The write would just
+     * have landed outside the transaction it believed it was in, and the
+     * atomicity would have quietly stopped being true.
+     */
+    private fun insertRow(
+        database: net.zetetic.database.sqlcipher.SQLiteDatabase,
+        deviceId: String,
+        table: String,
+        values: Map<String, Any?>,
+    ): String {
+        val id = Ids.new()
+        val now = System.currentTimeMillis()
+        val all = LinkedHashMap<String, Any?>()
+        all["id"] = id
+        all["created_at"] = now
+        all["updated_at"] = now
+        all["origin_device"] = deviceId
+        all["rev"] = 1
+        all.putAll(values)
+
+        val columns = all.keys.joinToString(", ")
+        val placeholders = all.keys.joinToString(", ") { "?" }
+        database.write(
+            "INSERT INTO $table ($columns) VALUES ($placeholders)",
+            all.values.toTypedArray(),
+        )
+        return id
+    }
+
     private suspend fun insertRow(table: String, values: Map<String, Any?>): String {
         val id = Ids.new()
         val now = System.currentTimeMillis()
@@ -235,15 +276,35 @@ class Repository private constructor(
      */
     suspend fun makeSubjectActive(subjectId: String) = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
-        db().database.write(
-            "UPDATE subject SET is_active = 0, updated_at = ?, rev = rev + 1 " +
-                "WHERE is_active = 1 AND deleted_at IS NULL",
-            arrayOf<Any?>(now),
-        )
-        db().database.write(
-            "UPDATE subject SET is_active = 1, updated_at = ?, rev = rev + 1 WHERE id = ?",
-            arrayOf<Any?>(now, subjectId),
-        )
+        // **Now actually one transaction.** #423. The comment above said the
+        // clear and the set were one and they were two bare writes, which is
+        // the shape TRAPS section 8 opens with: read the code under the
+        // comment, not the comment.
+        //
+        // **The window this closes is the worst one in the app.** Every subject
+        // scoped screen reads the active subject. Dying between the clear and
+        // the set leaves zero active rows, so the notebook opens empty and the
+        // person believes their record is gone. Dying the other way round
+        // leaves two, and `activeSubject()` resolves that silently with
+        // `ORDER BY created_at LIMIT 1`, so the visible symptom is somebody
+        // else's notebook rather than an error. `schema.sql` has no unique
+        // index on `is_active`, so nothing underneath catches either.
+        val database = db().database
+        database.beginTransaction()
+        try {
+            database.write(
+                "UPDATE subject SET is_active = 0, updated_at = ?, rev = rev + 1 " +
+                    "WHERE is_active = 1 AND deleted_at IS NULL",
+                arrayOf<Any?>(now),
+            )
+            database.write(
+                "UPDATE subject SET is_active = 1, updated_at = ?, rev = rev + 1 WHERE id = ?",
+                arrayOf<Any?>(now, subjectId),
+            )
+            database.setTransactionSuccessful()
+        } finally {
+            database.endTransaction()
+        }
     }
 
     /**
@@ -3875,19 +3936,33 @@ class Repository private constructor(
             val today = Edtf.day(LocalDate.now())
             val ending = dateColumns("ended", today)
             val assignments = ending.keys.joinToString(", ") { "$it = ?" }
-            db().database.write(
-                "UPDATE chapter SET $assignments, updated_at = ?, rev = rev + 1 " +
-                    "WHERE subject_id = ? AND deleted_at IS NULL " +
-                    "AND (ended_edtf IS NULL OR ended_edtf = '')",
-                (
-                    ending.values + listOf(System.currentTimeMillis(), subjectId)
-                    ).toTypedArray(),
-            )
-            insertRow(
-                "chapter",
-                mapOf("subject_id" to subjectId, "name" to name) +
-                    dateColumns("started", today),
-            )
+            // **One transaction, and it was two unwrapped writes.** #423.
+            // Failing between them leaves no open chapter, so new entries file
+            // nowhere and the spine has a gap that no screen can repair.
+            val handle = db()
+            val database = handle.database
+            database.beginTransaction()
+            try {
+                database.write(
+                    "UPDATE chapter SET $assignments, updated_at = ?, rev = rev + 1 " +
+                        "WHERE subject_id = ? AND deleted_at IS NULL " +
+                        "AND (ended_edtf IS NULL OR ended_edtf = '')",
+                    (
+                        ending.values + listOf(System.currentTimeMillis(), subjectId)
+                        ).toTypedArray(),
+                )
+                val id = insertRow(
+                    database,
+                    handle.deviceId,
+                    "chapter",
+                    mapOf("subject_id" to subjectId, "name" to name) +
+                        dateColumns("started", today),
+                )
+                database.setTransactionSuccessful()
+                id
+            } finally {
+                database.endTransaction()
+            }
         }
 
     /** Every place, most recent first. */
@@ -5968,56 +6043,70 @@ class Repository private constructor(
         doseText: String?,
         note: String?,
         chapterId: String?,
-    ): String {
-        val id = insert(
-            "medication_event",
-            mapOf(
-                "medication_id" to medicationId,
-                "kind" to kind,
-                "dose_text" to doseText?.ifBlank { null },
-                "note" to note?.ifBlank { null },
-                "chapter_id" to chapterId,
-            ) + dateColumns("occurred", occurred),
-        )
+    ): String = withContext(Dispatchers.IO) {
+        // **One transaction, and its comment claimed one before it had one.**
+        // #423. This was an insert plus up to two UPDATE medication, each in
+        // its own withContext, so a stop event could be logged while the
+        // medication was never marked stopped. The record then says the drug
+        // was stopped and the medication list says it is still being taken,
+        // and both come from the same tap.
+        val handle = db()
+        val database = handle.database
+        database.beginTransaction()
+        try {
+            val id = insertRow(
+                database,
+                handle.deviceId,
+                "medication_event",
+                mapOf(
+                    "medication_id" to medicationId,
+                    "kind" to kind,
+                    "dose_text" to doseText?.ifBlank { null },
+                    "note" to note?.ifBlank { null },
+                    "chapter_id" to chapterId,
+                ) + dateColumns("occurred", occurred),
+            )
 
-        when (kind) {
-            "stopped" -> withContext(Dispatchers.IO) {
-                val columns = dateColumns("stopped", occurred)
-                val assignments = columns.keys.joinToString(", ") { "$it = ?" }
-                db().database.write(
-                    "UPDATE medication SET $assignments, updated_at = ?, rev = rev + 1 " +
-                        "WHERE id = ?",
-                    (columns.values + listOf(System.currentTimeMillis(), medicationId))
-                        .toTypedArray(),
-                )
+            when (kind) {
+                "stopped" -> {
+                    val columns = dateColumns("stopped", occurred)
+                    val assignments = columns.keys.joinToString(", ") { "$it = ?" }
+                    database.write(
+                        "UPDATE medication SET $assignments, updated_at = ?, rev = rev + 1 " +
+                            "WHERE id = ?",
+                        (columns.values + listOf(System.currentTimeMillis(), medicationId))
+                            .toTypedArray(),
+                    )
+                }
+
+                "started", "resumed" -> {
+                    val columns = dateColumns("stopped", Edtf.unknown()).keys
+                        .joinToString(", ") { "$it = NULL" }
+                    database.write(
+                        "UPDATE medication SET $columns, updated_at = ?, rev = rev + 1 " +
+                            "WHERE id = ?",
+                        arrayOf<Any?>(System.currentTimeMillis(), medicationId),
+                    )
+                }
+
+                else -> Unit
             }
 
-            "started", "resumed" -> withContext(Dispatchers.IO) {
-                val columns = dateColumns("stopped", Edtf.unknown()).keys
-                    .joinToString(", ") { "$it = NULL" }
-                db().database.write(
-                    "UPDATE medication SET $columns, updated_at = ?, rev = rev + 1 " +
-                        "WHERE id = ?",
-                    arrayOf<Any?>(System.currentTimeMillis(), medicationId),
-                )
-            }
-
-            else -> Unit
-        }
-
-        // **The dose follows the change, whatever the kind.** A dose written on
-        // a hold or a resume is still the dose from that day forward.
-        doseText?.takeIf { it.isNotBlank() }?.let { dose ->
-            withContext(Dispatchers.IO) {
-                db().database.write(
+            // **The dose follows the change, whatever the kind.** A dose written
+            // on a hold or a resume is still the dose from that day forward.
+            doseText?.takeIf { it.isNotBlank() }?.let { dose ->
+                database.write(
                     "UPDATE medication SET dose_text = ?, updated_at = ?, rev = rev + 1 " +
                         "WHERE id = ?",
                     arrayOf<Any?>(dose, System.currentTimeMillis(), medicationId),
                 )
             }
-        }
 
-        return id
+            database.setTransactionSuccessful()
+            id
+        } finally {
+            database.endTransaction()
+        }
     }
 
     /**
