@@ -115,6 +115,20 @@ class MergeApplyTest {
         assertTrue("and the person is told a second version existed", report.conflicts >= 1)
         assertTrue(countOf("SELECT count(*) FROM conflict_log") > conflictsBefore)
 
+        // **And the app can find them**, which is the assertion #402 exists for.
+        // The rows were being written and the door on More never appeared, so
+        // the record was right and the way to read it was not. A test that only
+        // counts the table cannot tell those apart; this one reads the same way
+        // the shell does.
+        assertTrue(
+            "the merge wrote resolutions the app cannot count",
+            runBlocking { repository.unseenConflicts() } > 0,
+        )
+        assertTrue(
+            "the merge wrote resolutions the app cannot read",
+            runBlocking { repository.conflicts() }.isNotEmpty(),
+        )
+
         val pinned = HealthTrailDatabase.open(context).database.rawQuery(
             // allow-base-table: asserting on the row itself, tombstone or not.
             "SELECT pinned_at FROM entry WHERE id = ?", arrayOf(entry),
