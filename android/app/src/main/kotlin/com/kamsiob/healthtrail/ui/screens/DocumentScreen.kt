@@ -169,7 +169,11 @@ fun DocumentScreen(
 
     Page(
         // The name is the person's own words for their paper.
-        title = Bidi.isolate(document.title),
+        // **A paper with no name is a finished state.** #419, rule 13. The
+        // title is stored exactly as the person left it, blank included, and
+        // the fallback is rendered rather than written, so it follows the
+        // language the way every other untitled thing in the app does.
+        title = Bidi.isolate(document.title.ifBlank { strings["documents.untitled"] }),
         onBack = onBack,
         backLabel = strings[backLabelKey],
         subtitle = received,

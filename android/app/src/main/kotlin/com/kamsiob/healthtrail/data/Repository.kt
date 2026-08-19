@@ -4437,11 +4437,23 @@ class Repository private constructor(
          */
         appointmentId: String? = null,
     ) = withContext(Dispatchers.IO) {
+        // **answer_text is only written when it was given.** #420.
+        //
+        // This used to write `answer_text = ?` unconditionally, and the only
+        // caller in the app passes no answer. `NotebookShell` sets `savingAnswer`
+        // and `markingAsked` in the same handler, two independent
+        // `LaunchedEffect` blocks then run, and if this one landed second it
+        // wrote NULL over the answer that had just been typed and saved. The
+        // person types an answer to a question, it saves, and it is gone.
+        // Silent.
+        //
+        // **Leaving the column alone rather than reordering the two writes**,
+        // because ordering two effects makes the race less likely and this
+        // makes it impossible. Marking a question asked genuinely has nothing
+        // to say about its answer, so the honest shape is not to write it.
         val columns = dateColumns("asked", asked) +
-            mapOf(
-                "answer_text" to answerText?.ifBlank { null },
-                "asked_at_appointment_id" to appointmentId,
-            )
+            mapOf("asked_at_appointment_id" to appointmentId) +
+            (answerText?.ifBlank { null }?.let { mapOf("answer_text" to it) } ?: emptyMap())
         val assignments = columns.keys.joinToString(", ") { "$it = ?" }
         db().database.write(
             "UPDATE question SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",

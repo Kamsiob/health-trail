@@ -313,4 +313,40 @@ class PrepTest {
             prepFor(id).questions.map { it.text },
         )
     }
+
+    /**
+     * Marking a question asked does not erase the answer just typed. #420.
+     *
+     * **The defect was a race with no error.** `NotebookShell` sets
+     * `savingAnswer` and `markingAsked` in the same handler, two independent
+     * `LaunchedEffect` blocks run, and `markQuestionAsked` wrote `answer_text`
+     * unconditionally from a parameter its only caller never passes. Landing
+     * second, it wrote NULL over the answer. The person types an answer, it
+     * saves, and it is gone, silently.
+     *
+     * This asserts the order that used to lose it: answer first, mark second.
+     */
+    @Test
+    fun markingAQuestionAskedKeepsAnAnswerAlreadySaved() = runBlocking {
+        val subjectId = repository.activeSubject()!!.id
+        val (_, questionId) = repository.createQuestionWithEntry(
+            subjectId = subjectId,
+            text = "Who signs off on the discharge",
+            roleLabel = null,
+            occurred = day("2026-02-11"),
+            threadId = null,
+            isUnfiled = false,
+        )
+
+        repository.setQuestionAnswer(questionId, "The ward manager, Tuesdays only")
+        repository.markQuestionAsked(questionId, asked = day("2026-02-12"))
+
+        val question = repository.questions(subjectId).first { it.id == questionId }
+        assertEquals(
+            "marking a question asked erased the answer that was just saved",
+            "The ward manager, Tuesdays only",
+            question.answerText,
+        )
+        assertTrue("and it is still marked asked", !question.askedEdtf.isNullOrBlank())
+    }
 }

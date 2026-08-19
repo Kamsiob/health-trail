@@ -2389,11 +2389,32 @@ fun NotebookShell(
             val documentDraft = savingDocument
             if (documentDraft != null) {
                 LaunchedEffect(documentDraft) {
+                  // **A throw here used to leave the form looking idle.** #419.
+                  // There was no try/catch, so a failure inside createDocument
+                  // orphaned the stored bytes, skipped `savingDocument = null`,
+                  // and left the screen sitting there with a Save that appeared
+                  // to do nothing at all. Whatever went wrong, the person is
+                  // told and the form stays open holding what they typed.
+                  //
+                  // **Exception rather than Throwable**, per TRAPS 8: catching
+                  // Throwable folds an OutOfMemoryError into the same sentence
+                  // as a full disk and reports whichever cause the caller
+                  // assumed.
+                  try {
                     val subject = repository.activeSubject()
                     // bidi-ok: a draft on its way to the database. Isolate marks here would be stored as part of what the person typed.
                     val title = documentDraft.title.trim()
                     val correctingDocument = editingDocument
-                    if (correctingDocument != null && title.isNotBlank()) {
+                    // **A blank title never blocks the write.** #419, rule 13.
+                    // Save carried no `enabled` guard and this handler required
+                    // a title, so a blank one fell through to a bare
+                    // `addingDocument = false`: the person photographed an
+                    // insurance card, tapped Save, the screen closed, and
+                    // nothing was written. No error, no explanation, and the
+                    // stored bytes orphaned. Partial is a finished state, so an
+                    // untitled paper is saved untitled and the list renders the
+                    // fallback.
+                    if (correctingDocument != null) {
                         // **Correcting the words never touches the photograph.**
                         // Replacing an image is a different action with different
                         // consequences, since the file may be shared with another
@@ -2411,7 +2432,7 @@ fun NotebookShell(
                         capturing = null
                         editingDocument = null
                         documentError = null
-                    } else if (subject != null && title.isNotBlank()) {
+                    } else if (subject != null) {
                         // **The bytes go to disk before the rows exist**, so a
                         // document row can never point at a file that was never
                         // written. Attachments is content addressed, so the same
@@ -2449,8 +2470,16 @@ fun NotebookShell(
                             documentError = null
                         }
                     } else {
+                        // No active subject at all, which is not a state a
+                        // person can reach from this screen. It closes rather
+                        // than pretending to have written something.
                         addingDocument = false
                     }
+                  } catch (problem: Exception) {
+                    android.util.Log.w("HealthTrail", "saving a document failed", problem)
+                    documentError = strings["common.error.generic"]
+                    addingDocument = true
+                  }
                     savingDocument = null
                     revision += 1
                 }

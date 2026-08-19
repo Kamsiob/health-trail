@@ -337,7 +337,7 @@ private fun DocumentRow(
     val strings = LocalStrings.current
     Column {
         ListRow(
-            title = Bidi.isolate(document.title),
+            title = Bidi.isolate(document.title.ifBlank { strings["documents.untitled"] }),
             support = document.originalLocation?.takeIf { it.isNotBlank() }?.let { Bidi.isolate(it) },
             leading = {
                 Thumbnail(
@@ -398,7 +398,7 @@ private fun DocumentCell(
         // the surrounding direction rather than within its own box. Seen in
         // Arabic, where the last character of a caption sat on the cell's edge.
         Text(
-            text = Bidi.isolate(document.title),
+            text = Bidi.isolate(document.title.ifBlank { strings["documents.untitled"] }),
             style = HealthTrail.type.bodyM,
             color = colors.ink,
         )
