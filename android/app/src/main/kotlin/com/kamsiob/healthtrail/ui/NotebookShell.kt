@@ -2438,13 +2438,22 @@ fun NotebookShell(
                         // written. Attachments is content addressed, so the same
                         // photograph chosen twice is one file rather than two.
                         val picked = documentDraft.picked
-                        val file = if (picked == null) null else storePicked(context, picked)
+                        val outcome = if (picked == null) null else storePicked(context, picked)
+                        val file = (outcome as? Picked.Stored)?.file
 
-                        if (picked != null && file == null) {
-                            // Refused or unreadable. Nothing is written and the
-                            // screen says so, because the worst outcome here is
-                            // somebody believing a document went in when it did not.
-                            documentError = strings["docs.too_large"]
+                        if (outcome != null && outcome !is Picked.Stored) {
+                            // **Each failure says what actually happened.** #422.
+                            // Every one of these used to report as "larger than
+                            // 25 MB", and on a full phone the remedy that implies,
+                            // pick a smaller photo, fails identically every time.
+                            // Nothing is written either way, because the worst
+                            // outcome here is somebody believing a document went
+                            // in when it did not.
+                            documentError = when (outcome) {
+                                is Picked.NoRoom -> strings["docs.no_room"]
+                                is Picked.Unreadable -> strings["docs.unreadable"]
+                                else -> strings["docs.too_large"]
+                            }
                         } else {
                             repository.createDocument(
                                 subjectId = subject.id,
@@ -3362,22 +3371,96 @@ private data class StoredFile(val sha256: String, val byteSize: Long)
  * nothing in that case. The size is checked before a single byte is copied,
  * so an oversized file never briefly occupies the phone.
  */
+/**
+ * What happened when a picked file was stored. #422.
+ *
+ * **Four outcomes rather than null**, because `null` was being reported to the
+ * person as "larger than 25 MB" whatever had actually gone wrong, and the
+ * remedy that message implies, pick a smaller photo, fails identically every
+ * time on a full phone.
+ */
+private sealed interface Picked {
+    data class Stored(val file: StoredFile) : Picked
+    /** Over the limit, either declared or measured while copying. */
+    data object TooLarge : Picked
+    /** No room on the phone. */
+    data object NoRoom : Picked
+    /** Gone, or the grant was revoked, or the provider failed. */
+    data object Unreadable : Picked
+}
+
+/** Stops a copy at [limit] bytes, for a provider that will not declare a length. */
+private class LimitedStream(
+    private val source: java.io.InputStream,
+    private val limit: Long,
+) : java.io.InputStream() {
+    private var seen = 0L
+    override fun read(): Int = source.read().also { if (it >= 0) count(1) }
+    override fun read(buffer: ByteArray, offset: Int, length: Int): Int =
+        source.read(buffer, offset, length).also { if (it > 0) count(it.toLong()) }
+    private fun count(more: Long) {
+        seen += more
+        if (seen > limit) throw TooLargeWhileCopying()
+    }
+    override fun close() = source.close()
+}
+
+private class TooLargeWhileCopying : java.io.IOException("over the attachment limit")
+
 private suspend fun storePicked(
     context: android.content.Context,
     uri: android.net.Uri,
-): StoredFile? = runCatching {
-    val size = context.contentResolver
-        .openAssetFileDescriptor(uri, "r")
-        ?.use { it.length }
-        ?: -1L
-    if (size > MAX_ATTACHMENT_BYTES) return null
+): Picked {
+    // **Unknown length is guarded separately from large.** #422. This was
+    // `if (size > MAX_ATTACHMENT_BYTES) return null`, and a provider that
+    // declines to declare a length gives -1. `-1 > 26214400` is false, so an
+    // undeclared file was copied uncapped and the row then recorded
+    // `byteSize = 0`. TRAPS section 8: guard unknown separately from large.
+    val declared = try {
+        context.contentResolver.openAssetFileDescriptor(uri, "r")?.use { it.length } ?: -1L
+    } catch (_: java.io.FileNotFoundException) {
+        return Picked.Unreadable
+    } catch (_: SecurityException) {
+        return Picked.Unreadable
+    } catch (_: IllegalStateException) {
+        return Picked.Unreadable
+    }
+    if (declared > MAX_ATTACHMENT_BYTES) return Picked.TooLarge
 
     val attachments = Attachments.open(context)
-    val hash = context.contentResolver.openInputStream(uri)
-        ?.use { attachments.put(it) }
-        ?: return null
-    StoredFile(hash, size.coerceAtLeast(0))
-}.getOrNull()
+    return try {
+        val hash = context.contentResolver.openInputStream(uri)?.use { input ->
+            // Capped during the copy, so a file that never declared its size
+            // cannot fill the phone on the way in. The half written `.part` it
+            // leaves behind is what `Attachments.sweepIncomplete` is for.
+            attachments.put(LimitedStream(input, MAX_ATTACHMENT_BYTES))
+        } ?: return Picked.Unreadable
+
+        // **Measured from the bytes on disk rather than from what was
+        // declared.** An undeclared file used to be recorded as `byteSize = 0`,
+        // which is a number that travels into the archive manifest.
+        val stored = attachments.fileFor(hash).length()
+        Picked.Stored(StoredFile(hash, stored))
+    } catch (_: TooLargeWhileCopying) {
+        attachments.sweepIncomplete()
+        Picked.TooLarge
+    } catch (problem: java.io.IOException) {
+        attachments.sweepIncomplete()
+        // **A full disk is its own sentence.** It is the one failure here whose
+        // remedy is nothing like the others, and it was being reported as a file
+        // that is too big.
+        val message = problem.message.orEmpty()
+        if (message.contains("ENOSPC", ignoreCase = true) ||
+            message.contains("No space left", ignoreCase = true)
+        ) {
+            Picked.NoRoom
+        } else {
+            Picked.Unreadable
+        }
+    } catch (_: SecurityException) {
+        Picked.Unreadable
+    }
+}
 
 /**
  * Something the person asked to remove.
