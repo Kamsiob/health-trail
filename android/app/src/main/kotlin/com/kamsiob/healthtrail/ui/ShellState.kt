@@ -181,6 +181,16 @@ internal class ShellState {
 
     /** What the open entry is attached to, or null. Rule 18, #397. */
     var entryAbout by mutableStateOf<Repository.About?>(null)
+
+    /**
+     * The memos about the open project. Rule 18, #397.
+     *
+     * **Its own state rather than `memosAbout`**, because a project's screen
+     * and a detail screen opened from it can both be standing at once, and one
+     * list shared between them would show the wrong thing on whichever loaded
+     * second.
+     */
+    var projectMemos by mutableStateOf<List<Repository.TrailEntry>>(emptyList())
     var correctingMeasure by mutableStateOf<Repository.Measure?>(null)
     var savingMeasureCorrection by mutableStateOf<Triple<String, String, String?>?>(null)
 

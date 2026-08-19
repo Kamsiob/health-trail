@@ -43,6 +43,7 @@ import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.time.Distance
 import com.kamsiob.healthtrail.time.Edtf
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.v4.MemosAbout
 import com.kamsiob.healthtrail.ui.v4.DateRow
 import com.kamsiob.healthtrail.ui.v4.LatestWordCard
 import com.kamsiob.healthtrail.ui.v4.SpineRow
@@ -129,6 +130,11 @@ fun ProjectHomeScreen(
     latestWord: Repository.TrailEntry?,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The memos written about this. Rule 18, #397. */
+    memos: List<Repository.TrailEntry> = emptyList(),
+    onOpenMemo: (Repository.TrailEntry) -> Unit = {},
+    /** Writes one already knowing what it is about. */
+    onWriteMemo: () -> Unit = {},
     /** The countdown, already composed by the caller: "18 days", "passed 6 days ago". */
     countdown: String? = null,
     /** What kind of date it is, as the person labeled it. Raw, not isolated. */
@@ -630,6 +636,17 @@ fun ProjectHomeScreen(
                     )
                 }
             }
+        }
+
+        // **Rule 18's other half**, #397: a memo written about this appears
+        // here, and this appears on the memo.
+        item {
+            MemosAbout(
+                memos = memos,
+                onOpen = onOpenMemo,
+                onWrite = onWriteMemo,
+                modifier = Modifier.padding(top = Space.betweenGroups, bottom = Space.betweenGroups),
+            )
         }
 
         // -- 5. The file: four tiles, because they are a fixed set of doors. --

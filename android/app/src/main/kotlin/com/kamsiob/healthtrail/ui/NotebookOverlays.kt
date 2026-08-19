@@ -117,10 +117,18 @@ internal fun MilestoneOverlays(
             LaunchedEffect(appointmentId, revision) {
                 val subjectId = repository.activeSubject()?.id
                 prep = subjectId?.let { repository.prep(it, appointmentId) }
+                memosAbout = repository.notesAbout("appointment", appointmentId)
                 if (prep == null) openPrepFor = null
             }
             prep?.takeIf { it.appointment.id == appointmentId }?.let { sheet ->
                 PrepScreen(
+                    memos = memosAbout,
+                    onOpenMemo = { openEntry = it.id },
+                    onWriteMemo = {
+                        writingNote = NoteTarget(
+                            "appointment", sheet.appointment.id, sheet.appointment.title,
+                        )
+                    },
                     prep = sheet,
                     // **The sheet stays open underneath.** Somebody reading a
                     // change and coming back had been dropped on the
@@ -1839,6 +1847,11 @@ internal fun ProjectOverlays(
             }
 
             ProjectHomeScreen(
+                memos = projectMemos,
+                onOpenMemo = { openEntry = it.id },
+                onWriteMemo = {
+                    writingNote = NoteTarget("project", currentProject.id, currentProject.name)
+                },
                 // **Reopening puts it back to active and clears the close
                 // date.** 20.5 screen 17: these processes come back, and a file
                 // that could only be closed once would make somebody start a

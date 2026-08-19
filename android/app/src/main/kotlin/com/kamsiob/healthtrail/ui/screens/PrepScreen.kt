@@ -22,6 +22,7 @@ import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.i18n.Bidi
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.time.EventDateText
+import com.kamsiob.healthtrail.ui.v4.MemosAbout
 import com.kamsiob.healthtrail.ui.v4.CalendarHandoff
 import com.kamsiob.healthtrail.ui.v4.RouteDash
 import com.kamsiob.healthtrail.ui.v4.SpineRow
@@ -115,6 +116,11 @@ fun PrepScreen(
     onRemove: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The memos written about this. Rule 18, #397. */
+    memos: List<Repository.TrailEntry> = emptyList(),
+    onOpenMemo: (Repository.TrailEntry) -> Unit = {},
+    /** Writes one already knowing what it is about. */
+    onWriteMemo: () -> Unit = {},
     /**
      * Writing down something else to ask, from the sheet itself.
      *
@@ -441,6 +447,17 @@ fun PrepScreen(
                     }
                 }
             }
+        }
+
+        // **Rule 18's other half**, #397: a memo written about this appears
+        // here, and this appears on the memo.
+        item {
+            MemosAbout(
+                memos = memos,
+                onOpen = onOpenMemo,
+                onWrite = onWriteMemo,
+                modifier = Modifier.padding(top = Space.betweenGroups, bottom = Space.betweenGroups),
+            )
         }
 
         item {

@@ -391,6 +391,8 @@ fun NotebookShell(
                     openProject?.let { repository.projectPaperCards(it.id) }.orEmpty()
                 // Whoever this process has actually involved, 20.5 screen 14.
                 projectPeople = openProject?.let { repository.projectPeople(it.id) }.orEmpty()
+                projectMemos = openProject
+                    ?.let { repository.notesAbout("project", it.id) }.orEmpty()
                 projectDateKinds =
                     openProject?.let { repository.projectDateKinds(it.id) }.orEmpty()
                 // The same list with the ids the editor needs. Read alongside
