@@ -503,6 +503,30 @@ object Backup {
             // The one built here is keyed by this phone's Keystore, so a
             // notebook that arrives from another device is protected here the
             // same way it was there.
+            // **The photographs go in before the rows that point at them.**
+            // #411. This used to run after the database was swapped in, so an
+            // interruption left rows pointing at bytes that never arrived, and
+            // the app renders a missing file as "No photograph of this one yet",
+            // which tells somebody they never took a picture they did take.
+            //
+            // **MergeApply already had this the right way round** and says why:
+            // an attachment is content addressed, so writing one twice writes
+            // the same bytes to the same name and putting them in early cannot
+            // corrupt anything. What it can leave behind, if the restore then
+            // fails, is a file nothing points at, which is invisible and
+            // harmless. The reverse order leaves a row pointing at bytes that
+            // are not there, which is not.
+            val attachments = Attachments.open(context)
+            for (file in opened.attachments) {
+                file.inputStream().use { attachments.put(it) }
+            }
+
+            // **Half written staging files from a previous crash.** #409.
+            // `sweepIncomplete` existed, was correct, and had no caller
+            // anywhere in main, so every interrupted attachment write stayed on
+            // the disk forever.
+            attachments.sweepIncomplete()
+
             val rebuilt = File(live.path + HealthTrailDatabase.ARRIVING_SUFFIX)
             try {
                 encryptedCopy(context, opened.database, rebuilt)
@@ -557,10 +581,6 @@ object Backup {
                 rebuilt.delete()
             }
 
-            val attachments = Attachments.open(context)
-            for (file in opened.attachments) {
-                file.inputStream().use { attachments.put(it) }
-            }
 
             // **This phone takes its own identity back.** #320.
             //

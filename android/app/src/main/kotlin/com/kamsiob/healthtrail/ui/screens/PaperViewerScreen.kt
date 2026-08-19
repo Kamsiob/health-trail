@@ -181,10 +181,12 @@ fun PaperViewerScreen(
         }
 
         if (failed) {
-            // The one honest failure: the record names a file the store does
-            // not hold, after a restore from a partial archive. Never blank.
+            // **The record names a file the store does not hold**, which is a
+            // different fact from never having had one, and #411 is that they
+            // read as the same. "No photograph of this one yet" tells somebody
+            // they never took a picture they did take. Never blank either.
             Text(
-                text = strings["document.nophoto"],
+                text = strings["document.photo.missing"],
                 style = HealthTrail.type.bodyM,
                 color = Color.White,
                 modifier = Modifier.align(Alignment.Center),

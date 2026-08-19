@@ -577,6 +577,7 @@
   "document.filed_as": "Filed as",
   "document.folder": "The folder it is in",
   "document.nophoto": "No photograph of this one yet. What is written down about it is here, and a picture can be added whenever there is one.",
+  "document.photo.missing": "The photograph for this one is not on this phone. Everything written about it is still here. If this notebook came back from a saved file, the picture may not have been in it.",
   "document.received": "Received {date}",
   "document.save": "Save or share this paper",
   "document.save.chooser": "Save or share",

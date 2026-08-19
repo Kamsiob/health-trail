@@ -577,6 +577,7 @@
   "document.filed_as": "Archivado como",
   "document.folder": "La carpeta en la que está",
   "document.nophoto": "Todavía no hay una fotografía. Lo que usted anotó está aquí, y se puede añadir una imagen cuando la haya.",
+  "document.photo.missing": "La fotografía de este no está en este teléfono. Todo lo que se escribió sobre él sigue aquí. Si este cuaderno se restauró desde un archivo guardado, puede que la imagen no estuviera en él.",
   "document.received": "Recibido el {date}",
   "document.save": "Guardar o compartir este papel",
   "document.save.chooser": "Guardar o compartir",

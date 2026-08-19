@@ -136,7 +136,16 @@ fun DocumentScreen(
         PaperCard(
             sha256 = sha,
             attachments = attachments,
-            absent = strings["document.nophoto"],
+            // **Two different absences, two different sentences.** #411. A
+            // document with no photograph never had one; a document that names
+            // a file the store cannot find had one and it is gone. Telling
+            // somebody the second is the first is telling them they imagined
+            // taking the picture.
+            absent = if (sha != null) {
+                strings["document.photo.missing"]
+            } else {
+                strings["document.nophoto"]
+            },
             imageLabel = strings["document.image.open"],
             onOpen = openPaper,
             action = openPaper?.let {
