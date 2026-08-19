@@ -585,6 +585,35 @@ class Repository private constructor(
                 readingId,
             ),
         )
+
+        // **And the entry that carries it into the trail, search and the
+        // readable copy.** #428, and it is the same shape as #429's incident
+        // mirror: correcting a reading updated the measurement and left the
+        // entry saying the old number, so a shared month printed a value the
+        // person had already fixed.
+        db().database.rawQuery(
+            "SELECT measure_id, entry_id FROM live_measurement WHERE id = ?",
+            arrayOf(readingId),
+        ).use { cursor ->
+            if (cursor.moveToNext() && !cursor.isNull(1)) {
+                val heading = measurementHeading(
+                    cursor.getString(0),
+                    number,
+                    text,
+                    unit,
+                )
+                db().database.write(
+                    "UPDATE entry SET title = ?, body = ?, updated_at = ?, rev = rev + 1 " +
+                        "WHERE id = ?",
+                    arrayOf<Any?>(
+                        heading,
+                        note?.trim()?.takeIf { it.isNotEmpty() },
+                        System.currentTimeMillis(),
+                        cursor.getString(1),
+                    ),
+                )
+            }
+        }
     }
 
     /**
@@ -1181,6 +1210,34 @@ class Repository private constructor(
      * reading captured as part of something else stays attached to it rather
      * than growing a second entry.
      */
+    /**
+     * What a reading's entry is called: the measure, the value, the unit. #428.
+     *
+     * **A whole number loses its decimal point.** SQLite hands back a REAL, so
+     * 72 arrives as 72.0 and "Weight 72.0 kg" is a number nobody wrote. A value
+     * with a fraction keeps it exactly as it came.
+     *
+     * **`value_text` is used when there is no number**, because a measure can
+     * use either column and a categorical reading is the whole value rather
+     * than a label on one.
+     */
+    private suspend fun measurementHeading(
+        measureId: String,
+        number: Double?,
+        text: String?,
+        unit: String?,
+    ): String? {
+        val name = measureName(measureId)
+        val value = when {
+            number != null -> {
+                val whole = number.toLong()
+                if (number == whole.toDouble()) whole.toString() else number.toString()
+            }
+            else -> text?.ifBlank { null }
+        } ?: return name
+        return listOfNotNull(name, value, unit?.ifBlank { null }).joinToString(" ")
+    }
+
     suspend fun recordMeasurement(
         measureId: String,
         number: Double? = null,
@@ -1209,7 +1266,21 @@ class Repository private constructor(
                     mapOf(
                         "subject_id" to subject,
                         "kind" to "measurement",
-                        "title" to measureName(measureId),
+                        // **The number goes in the entry, and it never did.**
+                        // #428. The title was the measure's name alone and the
+                        // value lived only in `measurement.value_number`, while
+                        // `Readable.monthReview` renders an entry's title and
+                        // body. So a shared month printed "Weight" with no
+                        // number, for every reading: the one artifact people
+                        // hand to a clinician carried none of the data it
+                        // appeared to carry. The trail and search read the same
+                        // columns, so all three were blank in the same way.
+                        //
+                        // **Rule 2 holds exactly here.** This states the number
+                        // that was recorded, next to what it is a reading of.
+                        // It says nothing about a change, a direction, a range,
+                        // or whether the number is good.
+                        "title" to measurementHeading(measureId, number, text, unit),
                         "body" to note?.ifBlank { null },
                         "chapter_id" to chapterId,
                     ) + dateColumns("occurred", occurred),
