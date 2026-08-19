@@ -124,8 +124,8 @@ substance of #451 and is **B8** in `DECISIONS.md` after three failed attempts.
 **Counts as of the end of the run:** 3 open in milestone 9, 11 in 10, 9 in 11,
 9 in 12.
 
-**The delivered build is `0cfdd14e`.** APK 13,134,110 bytes, AAB 14,076,052
-bytes, hashes and the walk on #395. **The Pixel 8 holds it**, which is B9.
+**The delivered build is `8efcae94`.** APK 13,134,110 bytes, AAB 14,075,963
+bytes, hashes and the walk on #395, and the last comment there is the live one. **The Pixel 8 holds it**, which is B9.
 
 | Milestone | What it is | Why it is where it is |
 |---|---|---|
