@@ -21,6 +21,22 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        // **The recents screen shows the last frame of whatever was open.**
+        // #418. On a shared phone that is an emergency card, a diagnosis, or a
+        // medication list, sitting in the task switcher for anybody who picks
+        // the phone up. Nothing set this before: FLAG_SECURE and
+        // setRecentsScreenshotEnabled returned zero hits across the app.
+        //
+        // **Deliberately not blanket FLAG_SECURE.** That would also stop the
+        // person photographing or screenshotting their own record, which is
+        // theirs to do, and rule 23 says take the easiest path for the person
+        // where it is safe and private. This turns off the thumbnail the system
+        // takes without being asked, and leaves the person's own screenshot
+        // alone.
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            setRecentsScreenshotEnabled(false)
+        }
         setContent {
             val context = LocalContext.current
             val setting = remember(context) { ThemeSetting(context) }

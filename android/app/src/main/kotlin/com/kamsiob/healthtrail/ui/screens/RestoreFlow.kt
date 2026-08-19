@@ -129,6 +129,13 @@ fun RestoreFlow(
                     }
                 },
             )
+            // **A failed open leaves the same plaintext behind.** #417. The
+            // successful path keeps it, because Ready means the person is about
+            // to choose replace or merge and the apply reads what is staged.
+            if (state is RestoreState.Problem) {
+                staging.deleteRecursively()
+                source.delete()
+            }
             openNow = false
         }
     }
@@ -184,6 +191,26 @@ fun RestoreFlow(
                     RestoreState.Problem(it.message ?: strings["common.error.generic"])
                 },
             )
+
+            // **The staged copy is the whole record in the clear.** #417.
+            //
+            // `ExportContainer.open` removes `payload.enc` and `payload.zip`
+            // and leaves `staging/trail.sqlite` and every extracted attachment,
+            // and the payload is a plain unencrypted SQLite file by design,
+            // contract 8.1. So after any restore, including one that failed,
+            // the entire care record sat readable in `cacheDir`, which defeats
+            // the encryption at rest guarantee against anyone who can read app
+            // storage. `restore-source.htx` is the archive itself and was never
+            // removed either.
+            //
+            // **Here rather than inside `open`**, because `Opened` hands the
+            // database and the attachments to the caller and deleting them
+            // there would delete what the caller is about to read.
+            // `Backup.decryptedCopy` already cleans up on the export side, so
+            // the pattern was in the building.
+            staging.deleteRecursively()
+            source.delete()
+
             applyNow = false
         }
     }

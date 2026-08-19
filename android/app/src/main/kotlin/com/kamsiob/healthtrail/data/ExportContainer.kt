@@ -847,6 +847,19 @@ object ExportContainer {
         emptyMap()
     }
 
+    /**
+     * Whether [target] really lands inside [root]. #414.
+     *
+     * **Canonical paths on both sides, and a separator on the root.** Without
+     * the separator, `/data/app/stagingevil` starts with `/data/app/staging`
+     * and passes a check that was meant to refuse it. Symlinks are resolved by
+     * `canonicalPath`, which is the reason for using it over `absolutePath`.
+     */
+    private fun isInside(target: File, root: File): Boolean {
+        val within = root.canonicalFile.path + File.separator
+        return target.canonicalPath.startsWith(within)
+    }
+
     private fun base64(bytes: ByteArray): String =
         android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
 
@@ -1123,7 +1136,36 @@ object ExportContainer {
                                 checksums = parseChecksums(bytes.decodeToString())
                             entry.name == DATABASE -> database.writeBytes(bytes)
                             entry.name.startsWith(ATTACHMENTS) -> {
+                                // **Where this entry would land is checked
+                                // before a byte of it is written.** #414.
+                                //
+                                // The name comes out of a file somebody was
+                                // handed, and it was joined to the staging
+                                // directory and written immediately. The
+                                // checksum and hash checks that would reject it
+                                // run afterward, so a name like
+                                // `attachments/../../shared_prefs/health_trail_key.xml`
+                                // was already on the disk by the time anything
+                                // objected, and overwriting the wrapped key
+                                // makes the notebook permanently unopenable.
+                                //
+                                // **`requireSafeName` does not close this and
+                                // must not be reached for.** It tests ASCII,
+                                // length, the characters some filesystems
+                                // refuse, and reserved device names. The string
+                                // `../../shared_prefs/health_trail_key.xml`
+                                // passes every one of those, and it is only
+                                // called on the write path anyway.
+                                //
+                                // A containment check is the canonical path
+                                // starting inside the canonical root, and
+                                // nothing else is.
                                 val out = File(staging, entry.name.removePrefix(ATTACHMENTS))
+                                if (!isInside(out, staging)) {
+                                    throw java.io.IOException(
+                                        "an entry in this archive names a place outside it",
+                                    )
+                                }
                                 out.parentFile?.mkdirs()
                                 out.writeBytes(bytes)
                                 attachments += out
