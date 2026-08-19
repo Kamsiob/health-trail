@@ -1290,6 +1290,7 @@ object ExportContainer {
                 attachments.map { it.name }.toSet(),
                 expected,
                 manifest.missingAttachments.map { it.sha256 }.toSet(),
+                manifest.appVersion,
             )?.let { return@withContext failure<Opened>(it) }
         }
 
@@ -1407,6 +1408,8 @@ object ExportContainer {
         present: Set<String>,
         expected: Schema,
         declaredMissing: Set<String>,
+        /** What build wrote this archive, for #454's skew message. */
+        archiveAppVersion: String? = null,
     ): Problem? {
         val db = try {
             SQLiteDatabase.openDatabase(database.path, null, SQLiteDatabase.OPEN_READONLY)
@@ -1418,7 +1421,8 @@ object ExportContainer {
         }
 
         return db.use { open ->
-            unknownShape(open, expected) ?: missingAttachment(open, present, declaredMissing)
+            unknownShape(open, expected, archiveAppVersion)
+                ?: missingAttachment(open, present, declaredMissing)
         }
     }
 
@@ -1430,7 +1434,34 @@ object ExportContainer {
      * Kotlin. That duplication is what D16 exists to prevent, and it would go
      * stale the first time a table was added.
      */
-    private fun unknownShape(open: SQLiteDatabase, expected: Schema): Problem? {
+    private fun unknownShape(
+        open: SQLiteDatabase,
+        expected: Schema,
+        archiveAppVersion: String? = null,
+    ): Problem? {
+        // **Version skew is an ordinary situation and it is not tampering.**
+        // #454. Every message below said the file "has been altered since it
+        // was made", which accuses somebody of holding a corrupted file when
+        // what actually happened is that their other phone runs a newer build.
+        // The check runs against the receiving phone's live schema, so a newer
+        // archive trips it by construction.
+        //
+        // The archive says which build wrote it, so the honest split is
+        // available for free: same version and an unknown shape really is a
+        // file that changed underneath somebody. A different version is skew,
+        // and the message names both.
+        val ours = com.kamsiob.healthtrail.BuildConfig.VERSION_NAME
+        val skewed = archiveAppVersion != null && archiveAppVersion != ours
+        fun explain(what: String, kind: String): String = if (skewed) {
+            "This file was saved by Health Trail $archiveAppVersion and this phone " +
+                "is running $ours. It holds $kind this version does not have, called " +
+                "\"$what\". Nothing was changed. Updating this phone should let it open."
+        } else {
+            "This export holds $kind this version of Health Trail does not have, " +
+                "called \"$what\". It says it is a format this app understands, so it " +
+                "has been altered since it was made. Nothing was changed."
+        }
+
         // **Views are validated, and they were not.** #415.
         //
         // This enumerated `type = 'table'` only. `sqlcipher_export` copies views
@@ -1460,13 +1491,7 @@ object ExportContainer {
                 val view = views.getString(0)
                 val backing = view.removePrefix("live_")
                 if (!view.startsWith("live_") || backing !in expected) {
-                    return Problem.UnknownSchema(
-                        view,
-                        "This export holds a kind of record this version of Health Trail " +
-                            "does not have, called \"$view\". It says it is a format this " +
-                            "app understands, so it has been altered since it was made. " +
-                            "Nothing was changed.",
-                    )
+                    return Problem.UnknownSchema(view, explain(view, "a kind of record"))
                 }
             }
         }
@@ -1479,13 +1504,7 @@ object ExportContainer {
                 val table = tables.getString(0)
                 if (table in PLATFORM_TABLES) continue
                 val columns = expected[table]
-                    ?: return Problem.UnknownSchema(
-                        table,
-                        "This export holds a kind of record this version of Health Trail " +
-                            "does not have, called \"$table\". It says it is a format this " +
-                            "app understands, so it has been altered since it was made. " +
-                            "Nothing was changed.",
-                    )
+                    ?: return Problem.UnknownSchema(table, explain(table, "a kind of record"))
 
                 open.rawQuery("PRAGMA table_info(\"$table\")", null).use { info ->
                     val nameColumn = info.getColumnIndexOrThrow("name")
@@ -1494,10 +1513,7 @@ object ExportContainer {
                         if (column !in columns) {
                             return Problem.UnknownSchema(
                                 "$table.$column",
-                                "This export holds a detail this version of Health Trail " +
-                                    "does not have, called \"$column\" on \"$table\". It " +
-                                    "says it is a format this app understands, so it has " +
-                                    "been altered since it was made. Nothing was changed.",
+                                explain("$column\" on \"$table", "a detail"),
                             )
                         }
                     }

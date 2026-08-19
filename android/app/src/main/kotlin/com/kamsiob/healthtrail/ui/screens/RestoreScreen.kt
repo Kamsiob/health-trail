@@ -45,6 +45,7 @@ object RestoreTags {
     const val CONFIRM = "restore_confirm"
     const val PROBLEM = "restore_problem"
     const val STATUS = "restore_status"
+    const val MERGE_COUNTS = "restore_merge_counts"
 }
 
 /**
@@ -94,7 +95,30 @@ sealed interface RestoreState {
      * promises are different and telling somebody their notebook "is what was
      * in the file" after a merge would be false.
      */
-    data object Merged : RestoreState
+    /**
+     * What the merge actually did. #454.
+     *
+     * **It used to be thrown away.** `RestoreFlow` mapped the report to 0 and
+     * the screen said only "Done. Both notebooks are here now." After two weeks
+     * of a sibling's work, silence is the wrong answer, and contract 8.3
+     * requires unknown content to be named rather than dropped, which the layer
+     * below honored and this layer defeated.
+     *
+     * **Plain numbers rather than `MergeApply.Report`**, because that type is
+     * `internal` and this one is not. Carrying it here would mean widening the
+     * visibility of the merge engine to satisfy a screen, which is the wrong
+     * direction: the screen needs five integers, not the engine.
+     */
+    data class Merged(
+        val added: Int = 0,
+        val updated: Int = 0,
+        val unchanged: Int = 0,
+        val conflicts: Int = 0,
+        val attachments: Int = 0,
+        val skipped: Int = 0,
+        /** False when the counts are not known, so nothing is claimed. */
+        val counted: Boolean = false,
+    ) : RestoreState
 }
 
 /**
@@ -327,6 +351,55 @@ fun RestoreScreen(
                         color = colors.ink,
                         modifier = Modifier.testTag(RestoreTags.STATUS),
                     )
+
+                    // **What the merge did, in counts.** #454. Plain numbers,
+                    // no judgment and nothing concluded from them, rule 2.
+                    val report = (state as? RestoreState.Merged)?.takeIf { it.counted }
+                    if (report != null) {
+                        Spacer(Modifier.height(Space.s))
+                        Text(
+                            text = strings(
+                                "restore.merged.counts",
+                                "added" to report.added,
+                                "updated" to report.updated,
+                                "unchanged" to report.unchanged,
+                            ),
+                            style = HealthTrail.type.bodyM,
+                            color = colors.ink2,
+                            modifier = Modifier.testTag(RestoreTags.MERGE_COUNTS),
+                        )
+                        Text(
+                            text = strings(
+                                "restore.merged.attachments",
+                                "count" to report.attachments,
+                            ),
+                            style = HealthTrail.type.bodyM,
+                            color = colors.ink2,
+                        )
+                        // **Only when there were any.** A zero here is not news,
+                        // and rule 13 says an empty slot reads as "not yet"
+                        // rather than as a finding.
+                        if (report.conflicts > 0) {
+                            Text(
+                                text = strings(
+                                    "restore.merged.conflicts",
+                                    "count" to report.conflicts,
+                                ),
+                                style = HealthTrail.type.bodyM,
+                                color = colors.ink2,
+                            )
+                        }
+                        if (report.skipped > 0) {
+                            Text(
+                                text = strings(
+                                    "restore.merged.skipped",
+                                    "count" to report.skipped,
+                                ),
+                                style = HealthTrail.type.bodyM,
+                                color = colors.ink2,
+                            )
+                        }
+                    }
                 }
             }
 

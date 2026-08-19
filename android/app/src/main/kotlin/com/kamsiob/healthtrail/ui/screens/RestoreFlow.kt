@@ -162,16 +162,36 @@ fun RestoreFlow(
                     // resolved. 8.3 requires the choice to be the person's
                     // rather than the app's, so it is carried here rather than
                     // decided here.
-                    val applied = when (how) {
+                    // **The report is carried rather than mapped away.** #454.
+                    // This was `.map { 0 }`, which discarded inserted, updated,
+                    // conflicts, attachments and skipped, so the screen could
+                    // only say "Done. Both notebooks are here now."
+                    val applied: Result<Any> = when (how) {
                         RestoreHow.MERGE ->
                             MergeApply.merge(context, container, System.currentTimeMillis())
-                                .map { 0 }
                         else -> Backup.restore(context, container)
                     }
                     applied.fold(
-                        onSuccess = {
+                        onSuccess = { value ->
                             onApplied(how)
-                            if (how == RestoreHow.MERGE) RestoreState.Merged else RestoreState.Done
+                            if (how == RestoreHow.MERGE) {
+                                val report = value as? MergeApply.Report
+                                if (report == null) {
+                                    RestoreState.Merged()
+                                } else {
+                                    RestoreState.Merged(
+                                        added = report.inserted,
+                                        updated = report.updated,
+                                        unchanged = report.unchanged,
+                                        conflicts = report.conflicts,
+                                        attachments = report.attachments,
+                                        skipped = report.skipped.size,
+                                        counted = true,
+                                    )
+                                }
+                            } else {
+                                RestoreState.Done
+                            }
                         },
                         onFailure = { failure ->
                             RestoreState.Problem(
