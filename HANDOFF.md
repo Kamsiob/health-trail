@@ -55,6 +55,23 @@ projects and progress**:
 | ~~#397~~ | **Done, 2026-08-18.** D207: a memo is `entry.kind = 'note'`, attached through `link`, and rich text is three marks stored as text. `RichText`, `addNote`/`notesAbout`/`aboutFor`, the memo screen, **Memos as the fourth destination**, the memos page as a grid or list with keep-in-view and a bin, local and universal search, **rule 18 both ways on six kinds of thing**, and **the readable archive rendering the marks while the column stays byte for byte**. Gate proved with two people. |
 | ~~#400~~ | **Done, 2026-08-18, on the signed minified build.** Two people each with memos, projects and tracked things, built up on the release build itself; exported from it; read by the standalone decryptor with no phone; wiped, restored, both people back with no leakage; and a merge with a genuine conflict whose resolution is readable field by field. |
 
+**The owner, 2026-08-18: "I don't want anything hanging. before I move to the
+next step and before the APK, I want everything else cleared and/or complete."**
+**39 issues are open** and they are four different kinds of thing. Do not treat
+them as one queue.
+
+| Kind | Count | What to do |
+|---|---|---|
+| **Owner review, no code needed** | 17 | Rule 12 records: 304, 309-313, 317, 333-335, 337, 338, 350, 359, 401, 404, 406. **These wait on his eyes, not on work.** Several are stale because #399 and #398 rebuilt those exact screens; those can be closed as superseded with the reason, the rest cannot be closed by anybody but him. |
+| **Superseded by this phase** | ~10 | 268, 288, 345, 361, 368, 369, 370, 375, 376, 379. **Verify before closing**: #303 read as stale and was, and the proof took one walk on the phone. Each needs a device check or a grep, not an assumption. |
+| **Real work left** | ~10 | **319** NFC normalization, release-blocking. **9, 210, 211, 212** the archive's own acceptance boxes, several genuinely unticked. **44** the accessibility gate across every screen. **15** golden vectors. **403** the three tracked-thing shapes needing schema. **378, 382** two UI bugs. |
+| **Flakes and meta** | 6 | 308, 316, 322, 346, 391, 394, plus 321 and 395. |
+
+**#303 is the worked example.** It said nothing in the app could link an entry
+to a project, so the latest word was permanently absent. #397's memos write
+exactly that link, and writing one from a project's own screen now fills the
+card. Closed with the walk on the issue.
+
 **Milestone 8 is empty.** #396, #397, #398, #399, #400, #402 and #405 are all
 closed. **The only thing left in the owner's order is #395**, the build from the
 finished app, and he has asked for that to wait.
