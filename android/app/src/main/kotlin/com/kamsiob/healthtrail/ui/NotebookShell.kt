@@ -2414,6 +2414,25 @@ fun NotebookShell(
             // are new: ended_edtf and end_note existed in the schema, were read
             // in two places, and nothing anywhere wrote them, so the ended group
             // on the threads screen could never hold anything.
+            savingAttendance?.let { (appointmentId, attended) ->
+                LaunchedEffect(appointmentId, attended.canonical) {
+                    repository.recordAttendance(appointmentId, attended)
+                    savingAttendance = null
+                    revision += 1
+                }
+            }
+
+            savingOutcome?.let { (appointmentId, note) ->
+                LaunchedEffect(appointmentId, note) {
+                    // **Attendance is left alone.** Passing null for the date
+                    // would clear it, and writing what came of something is not
+                    // a statement that it did not happen.
+                    repository.recordAttendanceNote(appointmentId, note)
+                    savingOutcome = null
+                    revision += 1
+                }
+            }
+
             savingIncidentNote?.let { (incidentId, note) ->
                 LaunchedEffect(incidentId, note) {
                     // **Resolved stays as it is.** The note is about an incident

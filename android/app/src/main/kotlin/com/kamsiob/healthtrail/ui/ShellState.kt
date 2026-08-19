@@ -498,6 +498,19 @@ internal class ShellState {
 
     /** The note on its way to the write. #421. */
     var savingIncidentNote by mutableStateOf<Pair<String, String>?>(null)
+
+    /** The appointment being marked as having happened. #430. */
+    var attendingAppointment by mutableStateOf<Repository.Appointment?>(null)
+
+    /** The appointment whose outcome is being written. #430. */
+    var notingOutcome by mutableStateOf<Repository.Appointment?>(null)
+
+    /** The attendance date on its way to the write. #430. */
+    var savingAttendance by
+        mutableStateOf<Pair<String, com.kamsiob.healthtrail.time.Edtf.Date>?>(null)
+
+    /** The outcome on its way to the write. #430. */
+    var savingOutcome by mutableStateOf<Pair<String, String>?>(null)
     /** The entry waiting to be pinned to the top of the trail, or unpinned. */
     var pinningEntry by mutableStateOf<Pair<String, Boolean>?>(null)
     /** True while the emergency card is on its way to the share sheet. */

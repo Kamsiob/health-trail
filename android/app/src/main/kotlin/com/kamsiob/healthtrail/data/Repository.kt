@@ -3859,6 +3859,24 @@ class Repository private constructor(
         val personId: String? = null,
         /** Their name, carried so the screen says who without a second query. */
         val personName: String? = null,
+        /**
+         * When the person said this actually happened, or null. #430.
+         *
+         * **Three columns and an outcome note have been in the schema since
+         * Phase 0, are read by search, and were written by nothing.** So an
+         * appointment slid into the past unchanged and "she came Thursday and
+         * said this" had to be re-entered as a separate call or memo,
+         * disconnected from the appointment it belongs to. The line the next
+         * prep sheet most needs was the one that could not be written.
+         *
+         * **Null reads as not yet, never as did not happen.** `appointment` has
+         * attended dates and no negative state, so the two cannot be
+         * distinguished, and rule 13 says an unfilled slot reads as "not yet".
+         * A missed state needs schema and the issue says to raise it separately.
+         */
+        val attendedEdtf: String? = null,
+        /** What came of it, in the person's own words, or null. #430. */
+        val outcomeNote: String? = null,
     )
 
     /** Every appointment, soonest first. */
@@ -3866,7 +3884,8 @@ class Repository private constructor(
         withContext(Dispatchers.IO) {
             db().database.rawQuery(
                 "SELECT a.id, a.title, a.scheduled_edtf, a.scheduled_start, " +
-                    "a.location_note, a.notes, a.person_id, p.display_name " +
+                    "a.location_note, a.notes, a.person_id, p.display_name, " +
+                    "a.attended_edtf, a.outcome_note " +
                     "FROM live_appointment a " +
                     "LEFT JOIN live_person p ON p.id = a.person_id " +
                     "WHERE a.subject_id = ? " +
@@ -3886,12 +3905,77 @@ class Repository private constructor(
                                 notes = cursor.getString(5),
                                 personId = cursor.getString(6),
                                 personName = cursor.getString(7),
+                                attendedEdtf = cursor.getString(8),
+                                outcomeNote = cursor.getString(9),
                             ),
                         )
                     }
                 }
             }
         }
+
+    /**
+     * Says an appointment happened, and what came of it. #430.
+     *
+     * **The columns existed and nothing wrote them.** `attended_edtf`,
+     * `attended_start`, `attended_end` and `outcome_note` have been in the
+     * schema since Phase 0 and are read by search, so the words were findable
+     * and unwritable at the same time.
+     *
+     * **Either half alone is a complete answer**, rule 13. Saying it happened
+     * with nothing to add is ordinary, and so is writing down what came of it
+     * on something whose date the person never confirmed.
+     *
+     * **A null [attended] does not mean it was missed.** There is no negative
+     * state in the schema, so absent has to read as "not yet". The issue says
+     * a missed state is a separate question for the owner.
+     */
+    suspend fun recordAttendance(
+        appointmentId: String,
+        attended: Edtf.Date?,
+        outcomeNote: String? = null,
+    ) = withContext(Dispatchers.IO) {
+        val columns = linkedMapOf<String, Any?>()
+        columns.putAll(
+            attended?.let { dateColumns("attended", it) }
+                ?: mapOf(
+                    "attended_edtf" to null,
+                    "attended_zone" to null,
+                    "attended_start" to null,
+                    "attended_end" to null,
+                ),
+        )
+        // Only when given, so recording that it happened does not wipe what was
+        // written about it last week. The shape #420 and #421 both needed.
+        outcomeNote?.ifBlank { null }?.let { columns["outcome_note"] = it }
+        val assignments = columns.keys.joinToString(", ") { "$it = ?" }
+        db().database.write(
+            "UPDATE appointment SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            (columns.values + listOf(System.currentTimeMillis(), appointmentId)).toTypedArray(),
+        )
+    }
+
+    /**
+     * Writes what came of an appointment, leaving the attendance alone. #430.
+     *
+     * **Separate from [recordAttendance] because passing a null date there
+     * clears it**, and writing down what came of something is not a statement
+     * that it did not happen. The two halves are independent answers, rule 13.
+     */
+    suspend fun recordAttendanceNote(
+        appointmentId: String,
+        outcomeNote: String,
+    ) = withContext(Dispatchers.IO) {
+        db().database.write(
+            "UPDATE appointment SET outcome_note = ?, updated_at = ?, rev = rev + 1 " +
+                "WHERE id = ?",
+            arrayOf<Any?>(
+                outcomeNote.ifBlank { null },
+                System.currentTimeMillis(),
+                appointmentId,
+            ),
+        )
+    }
 
     /** Records an appointment. Only the title is required, and the date may be coarse. */
     suspend fun createAppointment(

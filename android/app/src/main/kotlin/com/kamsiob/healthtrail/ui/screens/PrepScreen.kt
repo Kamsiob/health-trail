@@ -43,6 +43,8 @@ object PrepTags {
     const val WITH = "prep_with"
     const val SHARE = "prep_share"
     const val CALENDAR = "prep_calendar"
+    const val ATTENDED = "prep_attended"
+    const val OUTCOME = "prep_outcome"
     const val WRITE_UP = "prep_write_up"
     const val CORRECT = "prep_correct"
     const val REMOVE = "prep_remove"
@@ -116,6 +118,21 @@ fun PrepScreen(
     onRemove: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * Says the appointment happened, and writes what came of it. #430.
+     *
+     * **`attended_edtf`, `attended_start`, `attended_end` and `outcome_note`
+     * have been in the schema since Phase 0, are read by search, and were
+     * written by nothing.** So an appointment slid into the past unchanged and
+     * "she came Thursday and said this" had to be re-entered as a separate
+     * call, disconnected from the appointment it belongs to. The line the next
+     * prep sheet most needs was the one that could not be written.
+     */
+    onAttended: () -> Unit = {},
+    onSayOutcome: () -> Unit = {},
+    /** When it happened and what came of it, for the block above the actions. */
+    attendedEdtf: String? = null,
+    outcomeNote: String? = null,
     /** The memos written about this. Rule 18, #397. */
     memos: List<Repository.TrailEntry> = emptyList(),
     onOpenMemo: (Repository.TrailEntry) -> Unit = {},
@@ -500,6 +517,43 @@ fun PrepScreen(
                 label = strings["prep.writeup"],
                 onClick = onWriteUp,
                 modifier = Modifier.testTag(PrepTags.WRITE_UP),
+            )
+
+            // **Saying it happened, and what came of it.** #430. Two controls
+            // rather than one, because either is a complete answer on its own:
+            // an appointment that happened with nothing to add is ordinary, and
+            // so is writing down what came of it on one whose day the person
+            // never confirmed. Rule 13.
+            //
+            // **Nothing here says it was missed.** The schema has attended
+            // dates and no negative state, so an appointment with no attended
+            // date reads as not yet, which is what rule 13 requires of an
+            // unfilled slot.
+            Spacer(Modifier.height(Space.cardGap))
+            Action(
+                // **An unknown date gets its own sentence rather than being
+                // composed into one.** Rule 17 makes unknown a value that
+                // saves, and it does, but "Happened {date}" with the unknown
+                // rendering substituted reads "Happened Date not known", which
+                // is not a sentence. Caught by walking it, rule 21.
+                label = attendedEdtf?.takeIf { it.isNotBlank() }?.let { edtf ->
+                    val rendered = EventDateText.render(strings, edtf)
+                    if (rendered == strings["date.unknown"]) {
+                        strings["prep.attended.unknown"]
+                    } else {
+                        strings("prep.attended.on", "date" to rendered)
+                    }
+                } ?: strings["prep.attended"],
+                onClick = onAttended,
+                modifier = Modifier.testTag(PrepTags.ATTENDED),
+            )
+            Spacer(Modifier.height(Space.cardGap))
+            Action(
+                label = strings[
+                    if (outcomeNote.isNullOrBlank()) "prep.outcome.add" else "prep.outcome.change",
+                ],
+                onClick = onSayOutcome,
+                modifier = Modifier.testTag(PrepTags.OUTCOME),
             )
 
             // **Correcting sits above removing**, per rule 15 and the person's

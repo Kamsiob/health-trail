@@ -177,6 +177,11 @@ internal fun MilestoneOverlays(
                         openPrepFor = null
                     },
                     onBack = { openPrepFor = null },
+                    // #430: the two things an appointment could never record.
+                    onAttended = { attendingAppointment = sheet.appointment },
+                    onSayOutcome = { notingOutcome = sheet.appointment },
+                    attendedEdtf = sheet.appointment.attendedEdtf,
+                    outcomeNote = sheet.appointment.outcomeNote,
                 )
             }
         }
@@ -832,6 +837,39 @@ internal fun IncidentAndReviewOverlays(
         // **What was done about a settled incident.** #421. The same one field
         // screen a thread and a person are named with, because this is one
         // sentence and it deserves the same shape rather than a new one.
+        // **When the appointment actually happened.** #430, through the same
+        // picker every other date opens, rule 17.
+        attendingAppointment?.let { appointment ->
+            DatePickerSheet(
+                initial = appointment.attendedEdtf?.takeIf { it.isNotBlank() }
+                    ?.let { Edtf.parse(it) },
+                titleKey = "prep.attended",
+                onPick = { picked ->
+                    savingAttendance = appointment.id to picked
+                    attendingAppointment = null
+                },
+                onDismiss = { attendingAppointment = null },
+            )
+        }
+
+        // **What came of it.** #430. The one field screen, because this is one
+        // sentence and the next prep sheet is prepared from it.
+        notingOutcome?.let { appointment ->
+            AddThreadScreen(
+                onStart = { note ->
+                    savingOutcome = appointment.id to note
+                    notingOutcome = null
+                },
+                onCancel = { notingOutcome = null },
+                titleKey = "prep.outcome.label",
+                labelKey = "prep.outcome.label",
+                hintKey = null,
+                saveKey = "common.save",
+                leadKey = "prep.outcome.lead",
+                section = Repository.Section.APPOINTMENTS,
+            )
+        }
+
         notingIncident?.let { incident ->
             AddThreadScreen(
                 onStart = { note ->
