@@ -869,6 +869,11 @@ internal fun IncidentAndReviewOverlays(
                 onOpenEntry = { openEntry = it.id },
                 onRename = { renamingThread = thread },
                 onBack = { openThread = null },
+                // #433. Ending is dated today by default, the way every other
+                // "this happened now" in the app is, and stays editable from
+                // the thread afterward per rule 17.
+                onEnd = { endingThread = thread },
+                onReopen = { reopeningThread = thread },
                 // Anything added can be removed, 2026-08-16. The entries the
                 // thread gathered stay on the trail; the thread itself goes.
                 onRemove = {

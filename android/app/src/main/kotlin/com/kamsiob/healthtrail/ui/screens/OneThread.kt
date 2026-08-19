@@ -44,6 +44,8 @@ object OneThreadTags {
     const val NAME = "one_thread"
     fun entry(id: String) = "one_thread_entry_$id"
     const val REMOVE = "threads_remove"
+    /** Finishing the thread, or starting it again. #433. */
+    const val END = "threads_end"
 
     /** The tag the old scaffold produced, kept so a journey still finds this screen. */
     const val ROOT = "section_root_one_thread"
@@ -104,6 +106,17 @@ fun ThreadScreen(
      * 2026-08-16: a record started by mistake should not be forever.
      */
     onRemove: () -> Unit = {},
+    /**
+     * Says this thread has finished, on a date the person gives. #433.
+     *
+     * **`ended_edtf` and `end_note` existed in the schema, were read in two
+     * places, and had no writer anywhere**, so every thread a person opened
+     * stayed open forever: the running list only grew and the ended group was
+     * permanently empty.
+     */
+    onEnd: () -> Unit = {},
+    /** Starts an ended thread running again, the way incidents and projects do. */
+    onReopen: () -> Unit = {},
     backLabelKey: String = "section.back.threads",
 ) {
     val strings = LocalStrings.current
@@ -249,6 +262,25 @@ fun ThreadScreen(
             }
 
             items(earlier, key = { it.id }) { entry -> ThreadEntry(entry, onOpenEntry) }
+
+            item {
+                // **Finishing is not removing, and the two sit apart.** #433.
+                // An ended thread keeps every entry filed against it and keeps
+                // showing them; what changes is which of the two groups it sits
+                // in on the threads screen. Removing takes it out of the
+                // notebook. Putting them at one weight would invite the second
+                // when somebody meant the first.
+                val ended = thread.endedEdtf != null
+                OutlinedButton(
+                    onClick = if (ended) onReopen else onEnd,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = Space.m)
+                        .testTag(OneThreadTags.END),
+                ) {
+                    Text(text = strings[if (ended) "threads.reopen" else "threads.end"])
+                }
+            }
 
             item {
                 // **One control, full width, at the end.** It was a pill sized

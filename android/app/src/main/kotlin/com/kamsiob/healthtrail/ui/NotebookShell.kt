@@ -2397,6 +2397,28 @@ fun NotebookShell(
                 }
             }
 
+            // **Finishing a thread, and starting it again.** #433. Both writers
+            // are new: ended_edtf and end_note existed in the schema, were read
+            // in two places, and nothing anywhere wrote them, so the ended group
+            // on the threads screen could never hold anything.
+            endingThread?.let { thread ->
+                LaunchedEffect(thread.id) {
+                    repository.endThread(thread.id, Edtf.day(LocalDate.now()))
+                    endingThread = null
+                    openThread = null
+                    revision += 1
+                }
+            }
+
+            reopeningThread?.let { thread ->
+                LaunchedEffect(thread.id) {
+                    repository.reopenThread(thread.id)
+                    reopeningThread = null
+                    openThread = null
+                    revision += 1
+                }
+            }
+
             val personArchive = archivingPerson
             if (personArchive != null) {
                 LaunchedEffect(personArchive) {

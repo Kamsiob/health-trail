@@ -1604,7 +1604,19 @@ class Repository private constructor(
      * stored color, so the dark theme substitution happens in the theme and a
      * stored color can never fail contrast.
      */
-    data class CareThread(val id: String, val label: String, val colorIndex: Int)
+    data class CareThread(
+        val id: String,
+        val label: String,
+        val colorIndex: Int,
+        /**
+         * When the person said this thread ended, or null while it runs. #433.
+         *
+         * **Carried on the thread itself** so every screen that has a thread
+         * knows whether it is still running, rather than each one asking a
+         * second time or, as before, no screen being able to ask at all.
+         */
+        val endedEdtf: String? = null,
+    )
 
     /**
      * The threads this notebook carries, in the order the person sees them.
@@ -1615,7 +1627,7 @@ class Repository private constructor(
      */
     suspend fun threads(subjectId: String): List<CareThread> = withContext(Dispatchers.IO) {
         db().database.rawQuery(
-            "SELECT id, label, color_index FROM live_care_thread " +
+            "SELECT id, label, color_index, ended_edtf FROM live_care_thread " +
                 "WHERE subject_id = ? ORDER BY sort_index, created_at",
             arrayOf(subjectId),
         ).use { cursor ->
@@ -1626,6 +1638,7 @@ class Repository private constructor(
                             id = cursor.getString(0),
                             label = cursor.getString(1),
                             colorIndex = cursor.getInt(2),
+                            endedEdtf = if (cursor.isNull(3)) null else cursor.getString(3),
                         ),
                     )
                 }
@@ -1664,6 +1677,58 @@ class Repository private constructor(
         db().database.write(
             "UPDATE care_thread SET label = ?, updated_at = ?, rev = rev + 1 WHERE id = ?",
             arrayOf<Any?>(label.trim(), System.currentTimeMillis(), threadId),
+        )
+    }
+
+    /**
+     * Ends a care thread, on the day the person says it ended. #433.
+     *
+     * **`ended_edtf` and `end_note` have existed since the schema was written,
+     * are read in two places, and `CareThreadsScreen` already splits running
+     * threads from ended ones. Nothing ever wrote either column.** So every
+     * thread a person opened stayed open forever: the running list only grew,
+     * the ended group was permanently empty, and a situation that finished and
+     * later started again could not be expressed at all.
+     *
+     * **The note is optional and stays optional**, rule 13. "The appeal is
+     * over" is a complete answer and so is silence.
+     *
+     * **Nothing is deleted and nothing is hidden.** An ended thread keeps every
+     * entry filed against it and keeps showing them; what changes is which of
+     * the two groups it sits in.
+     */
+    suspend fun endThread(
+        threadId: String,
+        ended: Edtf.Date,
+        note: String? = null,
+    ) = withContext(Dispatchers.IO) {
+        val columns = dateColumns("ended", ended) +
+            (note?.ifBlank { null }?.let { mapOf("end_note" to it) } ?: emptyMap())
+        val assignments = columns.keys.joinToString(", ") { "$it = ?" }
+        db().database.write(
+            "UPDATE care_thread SET $assignments, updated_at = ?, rev = rev + 1 WHERE id = ?",
+            (columns.values + listOf(System.currentTimeMillis(), threadId)).toTypedArray(),
+        )
+    }
+
+    /**
+     * Starts an ended thread running again. #433.
+     *
+     * **The same shape incidents and projects already use**, and the reason is
+     * the same: a thing that was finished and turns out not to be is ordinary,
+     * and making somebody create a second thread for it would split one
+     * situation across two places forever.
+     *
+     * **The end note goes with it.** It described an ending that is no longer
+     * true, and leaving it would put a closing sentence on a running thread.
+     */
+    suspend fun reopenThread(threadId: String) = withContext(Dispatchers.IO) {
+        val cleared = dateColumns("ended", Edtf.unknown()).keys
+            .joinToString(", ") { "$it = NULL" }
+        db().database.write(
+            "UPDATE care_thread SET $cleared, end_note = NULL, " +
+                "updated_at = ?, rev = rev + 1 WHERE id = ?",
+            arrayOf<Any?>(System.currentTimeMillis(), threadId),
         )
     }
 
@@ -4250,6 +4315,12 @@ class Repository private constructor(
                                     id = cursor.getString(0),
                                     label = cursor.getString(1),
                                     colorIndex = cursor.getInt(2),
+                                    // **Carried on the thread too.** #433. The
+                                    // threads screen reads the end date off the
+                                    // row beside it, but the thread object is
+                                    // what opens, so without this the screen for
+                                    // an ended thread offered to end it again.
+                                    endedEdtf = cursor.getString(5),
                                 ),
                                 entryCount = cursor.getInt(3),
                                 lastActivity = if (cursor.isNull(4)) null else cursor.getLong(4),

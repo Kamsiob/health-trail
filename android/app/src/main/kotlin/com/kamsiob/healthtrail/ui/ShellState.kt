@@ -241,6 +241,10 @@ internal class ShellState {
 
     /** The care thread being renamed, and what to write. #371. */
     var renamingThread by mutableStateOf<Repository.CareThread?>(null)
+
+    /** The thread being finished, or started again. #433. */
+    var endingThread by mutableStateOf<Repository.CareThread?>(null)
+    var reopeningThread by mutableStateOf<Repository.CareThread?>(null)
     var savingThreadRename by mutableStateOf<Pair<String, String>?>(null)
 
     /** Correcting who the notebook is about, and what to write. #371. */
