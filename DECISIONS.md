@@ -4596,3 +4596,43 @@ refused and 12 ordinary ones and sentences about them let through.
 **So the count of working guards is one, not zero.** Guard 2, the pre-compaction
 state save, still has no evidence and `HANDOFF.md` is still kept current by hand.
 Guard 3, the retry cap, is still a command line tool nothing calls.
+
+## BLOCKED B8. The capture screen is not restored after process death, and the mirror that should restore it is dropped
+
+**2026-08-19, milestone 9, #451. Three attempts, rule 9, all reverted.**
+
+**What is measured and certain**, on the Pixel 8, at the capture write point:
+
+- The half written note **does** survive `adb shell am kill`. `captureDraft` is
+  `rememberSaveable` with `CaptureFormState.Saver` and it restores the text
+  exactly. Confirmed twice with distinct markers.
+- A saved entry survives a kill one second after Save and is findable by search.
+- `savedInstanceState` is **present** on the way back in, proved with a probe,
+  so the platform is handing the bundle back.
+- What is lost is `ShellState.capturing`, which is which capture screen was
+  open. The person lands on the notebook with their words in the bundle and no
+  way to know it.
+
+**What was tried and what happened.**
+
+1. A local `var capturing by rememberSaveable` in `NotebookShell`. Compiles, and
+   it is wrong: `NotebookOverlays.kt` writes `capturing` at seven sites through
+   the `ShellState` receiver, so the local would shadow in one file only and the
+   two would silently disagree. Reverted before testing.
+2. A mirror, `rememberSaveable` holding `CaptureKind?`, restored into
+   `ShellState` from a `remember` block and kept current by a `LaunchedEffect`.
+   Did not restore on the phone.
+3. The same mirror holding the enum's `name` as a `String`, on the theory that
+   the default saver was silently refusing the enum. Also did not restore, and a
+   probe printed `capturingSaved=null` at restore time.
+
+**The open question, and it is the thing to establish before a fourth attempt.**
+`captureDraft` restores and a `rememberSaveable` declared eight lines below it
+does not. Both are in the same composable. So the mirror is either never written
+before the save happens, or never registered. Find out which, with a log in the
+`LaunchedEffect` that writes it, before writing any more code.
+
+**Why it is BLOCKED rather than open work:** not because the owner must decide
+anything, but because rule 9's cap is reached and the next session should start
+from the measurement rather than from a fourth guess. The working tree is
+unmodified; nothing from these attempts is in the repository.
