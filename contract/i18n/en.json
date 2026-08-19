@@ -654,6 +654,7 @@
   "export.hint.hint": "Where the password is written down, not the password",
   "export.hint.label": "A reminder",
   "export.hint.warning": "Anyone who has the file can read this without the password, so never put the password in it.",
+  "export.lastsaved": "Last saved {date}",
   "export.lead": "One file with everything in it: every entry, every person, every photograph, and everything you have deleted, so a restore puts things back exactly as they are.",
   "export.mismatch": "Those two do not match.",
   "export.passphrase": "Password",

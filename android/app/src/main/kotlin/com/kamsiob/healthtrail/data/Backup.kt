@@ -175,7 +175,21 @@ object Backup {
         val staged = decryptedCopy(context, database, exportedAt)
 
         val store = Attachments.open(context)
-        val onDisk = store.all()
+
+        // **Every file is checked against its own name before it ships.** #412.
+        //
+        // `Attachments.verify` existed with zero callers in `main`. The export
+        // listed files with `listFiles()` and trusted the name, so a file that
+        // had rotted on disk was hashed as found into CHECKSUMS.txt and only
+        // discovered at import, on the new phone, with the old one gone. A file
+        // is named by the hash of its bytes here, so its name is a claim about
+        // its contents and checking it is the cheapest insurance there is.
+        //
+        // **A file that fails is reported rather than shipped**, through the
+        // same list the screen already renders for an attachment whose bytes
+        // were never there. Both are the same fact to the person: the archive
+        // does not carry this picture.
+        val onDisk = store.all().filter { store.verify(it) }
         val attachments = onDisk.map { store.fileFor(it) }
 
         // **The export looks before it writes.** `Attachments.all` lists files

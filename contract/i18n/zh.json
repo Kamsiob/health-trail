@@ -654,6 +654,7 @@
   "export.hint.hint": "密码记在哪里，而不是密码本身",
   "export.hint.label": "提醒",
   "export.hint.warning": "拿到文件的人不用密码就能看到这条提示，所以千万不要把密码写在这里。",
+  "export.lastsaved": "上次保存于 {date}",
   "export.lead": "一个包含全部内容的文件：每条记录、每个人、每张照片，以及您删除过的内容，这样恢复时能原样还原。",
   "export.mismatch": "两次输入不一致。",
   "export.passphrase": "密码",

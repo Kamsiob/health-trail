@@ -540,6 +540,13 @@ internal class ShellState {
      * it changes is what the finished screen has to say.
      */
     var exportMissing by mutableStateOf(0)
+
+    /**
+     * When an export last finished and was read back, or null. #413.
+     *
+     * A fact about the file. Rule 13 forbids the nag, not the date.
+     */
+    var lastExportAt by mutableStateOf<Long?>(null)
     // Held between choosing a passphrase and choosing where the file goes,
     // because the system picker is a round trip through another activity.
     var pendingPassphrase by mutableStateOf<String?>(null)

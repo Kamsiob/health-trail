@@ -832,6 +832,18 @@ object ExportContainer {
             fields,
         )
     } catch (error: RuntimeException) {
+        // **Empty rather than throwing, and the KDoc above says why**: losing
+        // the payload to protect the readable copy is the wrong trade at the
+        // moment somebody is exporting, because the payload is the half that
+        // gets their record back.
+        //
+        // **#412 wanted this to fail the export and it does not, because the
+        // check belongs one layer up.** `ExportContainerTest` writes payloads
+        // that are deliberately not databases at all, so a throw here fails
+        // eleven tests that are testing the envelope rather than the notebook.
+        // What was actually missing is that nobody ever read the page count
+        // this produces. `MANIFEST.json` carries it, and the export's readback
+        // now refuses a real archive whose readable half came out empty.
         emptyMap()
     }
 

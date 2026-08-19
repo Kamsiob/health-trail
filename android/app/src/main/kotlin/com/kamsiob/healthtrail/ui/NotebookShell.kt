@@ -1066,7 +1066,13 @@ fun NotebookShell(
                     },
                     onAgain = { exportState = ExportState.READY },
                     missingAttachments = exportMissing,
+                    lastExportAt = lastExportAt,
                 )
+                // Read when the screen opens rather than held for the life of
+                // the shell, so a copy saved on another screen is reflected.
+                LaunchedEffect(exportOpen) {
+                    lastExportAt = repository.settingTimestamp(Repository.KEY_LAST_EXPORT)
+                }
             }
 
             // Named for what it is rather than "destination", which is already the
@@ -1104,7 +1110,73 @@ fun NotebookShell(
                                 )
                                 context.contentResolver.openOutputStream(exportTarget)?.use { out ->
                                     staged.inputStream().use { it.copyTo(out) }
+                                    // **Pushed to the disk rather than left in a
+                                    // buffer.** #412: no sync() existed anywhere
+                                    // in main, so "Saved" could mean "handed to
+                                    // the operating system and not yet written".
+                                    out.flush()
+                                    (out as? java.io.FileOutputStream)?.fd?.sync()
                                 } ?: error("no output stream")
+
+                                // **The destination is read back before anybody
+                                // is told it saved.** #412.
+                                //
+                                // The archive was built in cache and stream
+                                // copied out, and nothing ever reopened the
+                                // thing that was written. Cancellation mid copy
+                                // leaves a truncated file, the FAILED branch
+                                // never runs, and the person is told Saved. They
+                                // find out on the new phone, with the old one
+                                // gone, which is the exact shape section 8 of
+                                // the data contract opens by calling worse than
+                                // an honest failure.
+                                //
+                                // Reopening it with the same passphrase and
+                                // running the importer's own checks is the one
+                                // thing that makes the word true, because it is
+                                // the same code a restore will run on the day it
+                                // matters.
+                                val readback = File(context.cacheDir, "export-readback.htx")
+                                val readbackStaging = File(context.cacheDir, "export-readback-staging")
+                                try {
+                                    context.contentResolver.openInputStream(exportTarget)?.use { back ->
+                                        readback.outputStream().buffered().use { back.copyTo(it) }
+                                    } ?: error("the file that was just saved could not be reopened")
+
+                                    val reopened = ExportContainer.open(
+                                        file = readback,
+                                        staging = readbackStaging,
+                                        passphrase = chosen.toCharArray(),
+                                    ).getOrElse { problem -> throw problem }
+
+                                    // **The readable half is checked by its own
+                                    // count.** #412. `readablePages` returns an
+                                    // empty map rather than throwing when the
+                                    // human copy will not render, and that is
+                                    // deliberate: losing the payload to protect
+                                    // the readable copy is the wrong trade at
+                                    // the moment somebody is exporting, because
+                                    // the payload is the half that restores.
+                                    //
+                                    // What was missing is that nobody ever read
+                                    // the number it produces. MANIFEST.json has
+                                    // carried the page count all along, and a
+                                    // zero there is a failed export rather than
+                                    // a quiet one. The readable copy is what
+                                    // opens on a computer that never had this
+                                    // app, which is the archive's whole promise.
+                                    check(reopened.manifest.readablePages > 0) {
+                                        "the archive was written without its readable copy"
+                                    }
+                                } finally {
+                                    // **The staged copy is a plain SQLite file**,
+                                    // which is to say the whole record in the
+                                    // clear, so it does not outlive the check.
+                                    // #417 is the same cleanup on the restore
+                                    // side.
+                                    readback.delete()
+                                    readbackStaging.deleteRecursively()
+                                }
                                 // **Returned rather than reported here**, so what the
                                 // export noticed reaches the screen the person is
                                 // looking at. An export that finished short and said
@@ -1117,6 +1189,15 @@ fun NotebookShell(
                         }
                     }
                     exportMissing = outcome.getOrNull()?.missingAttachments?.size ?: 0
+                    if (outcome.isSuccess) {
+                        // **Recorded only once the readback has passed.** #413
+                        // and #412: the date means an archive that opens, not
+                        // an attempt that was made.
+                        repository.putSettingTimestamp(
+                            Repository.KEY_LAST_EXPORT, System.currentTimeMillis(),
+                        )
+                        lastExportAt = repository.settingTimestamp(Repository.KEY_LAST_EXPORT)
+                    }
                     exportState =
                         if (outcome.isSuccess) ExportState.DONE else ExportState.FAILED
                     writeTo = null

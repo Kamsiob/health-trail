@@ -32,6 +32,7 @@ object ExportTags {
     const val SAVE = "export_save"
     const val STATUS = "export_status"
     const val REVEAL = "export_reveal"
+    const val LAST_SAVED = "export_last_saved"
     const val AGAIN_ACTION = "export_again_action"
     const val MISSING = "export_missing"
 }
@@ -89,9 +90,29 @@ fun ExportScreen(
      * and the archive is the thing standing between them and the record.
      */
     missingAttachments: Int = 0,
+    /**
+     * When an export last finished and was read back, or null. #413.
+     *
+     * **A fact about the file, and rule 13 is why it is only that.** No score,
+     * no percentage, no meter, no prompt to do better, and no color that reads
+     * as a warning. Somebody who has not saved a copy in a year is told when
+     * they last did, not that they have been careless.
+     */
+    lastExportAt: Long? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
+    val lastSaved = lastExportAt?.let { millis ->
+        val day = java.time.Instant.ofEpochMilli(millis)
+            .atZone(java.time.ZoneId.systemDefault())
+            .toLocalDate()
+        strings(
+            "export.lastsaved",
+            "date" to com.kamsiob.healthtrail.time.EventDateText.render(
+                strings, com.kamsiob.healthtrail.time.Edtf.day(day).canonical,
+            ),
+        )
+    }
 
     var passphrase by remember { mutableStateOf("") }
     var again by remember { mutableStateOf("") }
@@ -143,6 +164,27 @@ fun ExportScreen(
         eyebrow = strings["nav.more"],
         subtitle = strings["export.lead"],
     ) {
+        // **When a copy was last saved, stated as a fact and nothing more.**
+        // #413. Rule 13 forbids the nag, not the date: no score, no
+        // percentage, no meter, no prompt to do better, and deliberately the
+        // scheme's quiet ink rather than anything that reads as a warning.
+        // Somebody who has not saved a copy in a year is told when they last
+        // did, not that they have been careless about it.
+        //
+        // **Absent rather than "never" when there is none.** A first export is
+        // not a lapse, and an empty slot reads as "not yet".
+        if (lastSaved != null && !done) {
+            item {
+                Text(
+                    text = lastSaved,
+                    style = HealthTrail.type.bodyM,
+                    color = colors.ink2,
+                    modifier = Modifier.testTag(ExportTags.LAST_SAVED),
+                )
+                Spacer(Modifier.height(Space.m))
+            }
+        }
+
         // **The result replaces the form rather than sitting under it.** Left
         // in place, the screen said "Saved" in body text below two live buttons
         // and a passphrase still on display, which buries the one thing that

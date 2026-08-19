@@ -8800,6 +8800,20 @@ class Repository private constructor(
         /** When the person last opened the app. What the digest reads from. */
         const val KEY_LAST_OPENED = "last_opened_at"
 
+        /**
+         * When an export last finished and was read back. #413.
+         *
+         * **A fact about the file, never a judgment on the person.** Rule 13
+         * forbids the nag, not the date: no score, no percentage, no progress
+         * meter, no prompt to do better, and no color that reads as a warning.
+         * "Last saved 14 March" is the whole of it. A person who has not
+         * exported in a year is not being told off; they are being told when.
+         *
+         * **Written only after the readback in #412 succeeds**, so the date
+         * means an archive that opens rather than an attempt that was made.
+         */
+        const val KEY_LAST_EXPORT = "last_export_at"
+
         @Volatile
         private var instance: Repository? = null
 

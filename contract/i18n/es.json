@@ -654,6 +654,7 @@
   "export.hint.hint": "Dónde está anotada la contraseña, no la contraseña",
   "export.hint.label": "Un recordatorio",
   "export.hint.warning": "Cualquiera que tenga el archivo puede leer esto sin la contraseña, así que nunca pongas la contraseña aquí.",
+  "export.lastsaved": "Guardado por última vez el {date}",
   "export.lead": "Un archivo con todo dentro: cada anotación, cada persona, cada foto, y todo lo que ha borrado, para que una restauración lo devuelva todo tal cual está.",
   "export.mismatch": "Esas dos no coinciden.",
   "export.passphrase": "Contraseña",
