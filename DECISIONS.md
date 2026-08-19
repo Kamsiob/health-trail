@@ -2930,7 +2930,7 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 **The ruling is that the ledger grows a unit rather than the rule changing.** `docs/REMOVAL-LEDGER.md` was file shaped and said so in its own prose, which was honest and was fine while everything superseded was a whole screen. A superseded writer inside an 8,000 line file the app uses every day cannot have a file of its own, and the alternative on offer was a paragraph of prose that no check can read. Same rule, smaller unit: never called, never extended, never fixed.
 
-**The count was wrong and that is the finding rather than a correction to a tally.** Six symbols are genuinely superseded. **Most of what looked dead is reached by a test and by nothing else**, which is a different thing entirely: seventeen are `...ForTest` helpers that exist for the tests by name, and four more are covered by a test while the screen that should call them is not built. **A function a test reaches is a promise the app has not kept, not code nobody needs**, and freezing those would have written off features rather than dead code. That is the root cause three panels found, wearing a costume that looks like cleanup.
+**The count was wrong and that is the finding rather than a correction to a tally.** Six symbols are genuinely superseded. **Most of what looked dead is reached by a test and by nothing else**, which is a different thing entirely: seventeen are `...ForTest` helpers that exist for the tests by name, and four more are covered by a test while the screen that should call them is not built. **A function a test reaches is a promise the app has not kept, not code nobody needs**, and freezing those would have written off features rather than dead code. That is the root cause three reviews found, wearing a costume that looks like cleanup.
 
 **Two are neither superseded nor covered and are deliberately not frozen**: `renameChapter` and `renameProject`. Both are the defect the care thread rename already fixed, a record somebody cannot correct, and both wait on B6 rather than on a decision. A row for either would tell the next reader the app decided somebody may not fix a name they typed wrong.
 
@@ -2986,7 +2986,7 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 **`DESIGN.md` 5 states the rule as a law**: "Mono never touches a date, a location, a role, or anything with a verb. A date is something a person reads, so it is Atkinson." **The scale ladder eleven lines below it listed the Mono style's uses as "eyebrows, counts, dates as data, amounts."** Both have been there since the type work.
 
-**Two design panels tripped over it on the same day.** Both read the same screenshot of a violation rendered with its date in Body S, both cited the ladder row, and both filed it as a defect with the fix "change it to Mono". Neither had done anything wrong: they read the authoritative document and it told them two things.
+**Two design reviews tripped over it on the same day.** Both read the same screenshot of a violation rendered with its date in Body S, both cited the ladder row, and both filed it as a defect with the fix "change it to Mono". Neither had done anything wrong: they read the authoritative document and it told them two things.
 
 **The law wins and the row is corrected**, for three reasons that agree. The law states its reasoning and the row states none. **#371 item 3 is already the work of moving 21 date sites off Mono**, so the row describes a state the project has decided to leave. And a rendered EDTF is prose however short: "Sometime in November 2024" is a sentence, and the same renderer produces it and "August 13, 2026".
 
@@ -3036,7 +3036,7 @@ So the decision is a `// bidi-ok:` comment on the line, and the check reads it. 
 
 **Why this rather than deriving the state.** Two surfaces read "is it stopped" and they disagreed, which is the whole failure: one asked the medication and one asked its history. **Deriving it everywhere would mean every future screen has to know to ask the second question**, and the screen that forgets is the emergency card. Rule 20 says the complexity lives in the code, and this is where it lives.
 
-**Where it applies next**, and #371 lists them: the appointment write-up should set `attended_*` and link its entry, and a violation should carry the incident or the bill it broke. Three panels found the same shape in all three places.
+**Where it applies next**, and #371 lists them: the appointment write-up should set `attended_*` and link its entry, and a violation should carry the incident or the bill it broke. Three reviews found the same shape in all three places.
 
 ---
 

@@ -910,7 +910,7 @@ class Repository private constructor(
      * record of the call and retyping it from memory, losing its threads, its
      * chapter, its incident link and the moment it was written.
      *
-     * **Four mock users found this independently**, and the owner's own words
+     * **Four independent walkthroughs found this**, and the owner's own words
      * were that things should be editable after the fact. `Repository`'s own
      * comment on an incident's follow-ups already claimed it: "Those are
      * entries, and they are corrected where entries are corrected."

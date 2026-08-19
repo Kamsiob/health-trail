@@ -293,7 +293,7 @@ Print and PDF paths substitute a 1dp hairline, because large soft shadows raster
 
 **Mono never touches a date, a location, a role, or anything with a verb.** A date is something a person reads, so it is the reading face. A count is data, so it is Mono. That line is the one most often crossed and it is what makes a screen read as a dashboard instead of a notebook.
 
-**The ladder below said "dates as data" in the Mono row until 2026-08-13, and it contradicted the paragraph above it.** Two design panels reading the same screen on the same day both cited that row to call a correctly rendered date a defect, which is what a document contradicting itself costs. The row is corrected and the paragraph is the rule. **A rendered EDTF is prose**, however short: "Sometime in November 2024" and "August 13, 2026" are both read rather than scanned. **What stays Mono is a distance marker**, "Day 14" or "3 weeks later", which is a count of elapsed time rather than a date. D149, and #371 item 3 is the work of moving the 21 sites that still cross the line.
+**The ladder below said "dates as data" in the Mono row until 2026-08-13, and it contradicted the paragraph above it.** Two design reviews reading the same screen on the same day both cited that row to call a correctly rendered date a defect, which is what a document contradicting itself costs. The row is corrected and the paragraph is the rule. **A rendered EDTF is prose**, however short: "Sometime in November 2024" and "August 13, 2026" are both read rather than scanned. **What stays Mono is a distance marker**, "Day 14" or "3 weeks later", which is a count of elapsed time rather than a date. D149, and #371 item 3 is the work of moving the 21 sites that still cross the line.
 
 ### 5.1 The scale ladder
 

@@ -60,7 +60,7 @@ data class EntryCorrection(val title: String, val body: String)
  * call and typing it again from memory, which loses its threads, its chapter,
  * its incident link and the moment it was written.
  *
- * **Four mock users found this independently on 2026-08-12**, walking the app
+ * **Four independent walkthroughs found this on 2026-08-12**, walking the app
  * as a person four days in, six months in, and looking for one fact. The one
  * four days in had dictated a note, watched the recognizer hear a drug name
  * wrong, and said she would keep a wrong note about her mother's care rather

@@ -233,7 +233,7 @@ fun ChapterScreen(
         // of, and the control to fix that name used to exist only once a fold
         // was open. Caught by a test whose chapter had no entries.
         //
-        // **This is the defect four audits and six mock users each found on
+        // **This is the defect four audits and six walkthroughs each found on
         // their own**: a chapter is the app's unit of "where", it titles this
         // screen, heads a run in the month review and is printed on documents
         // the app hands to other people, and setup asks for it in one line at

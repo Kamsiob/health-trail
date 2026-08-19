@@ -29,7 +29,7 @@ import org.junit.runner.RunWith
 /**
  * Correcting a name, on the two records that could not be corrected.
  *
- * **This is the defect four separate audits and six mock users each found on
+ * **This is the defect four separate audits and six walkthroughs each found on
  * their own**: a record somebody typed and cannot fix. It was fixed everywhere
  * it could be fixed without a new full screen surface, and `renameChapter` and
  * `renameProject` sat in the repository with no caller because `NotebookShell`

@@ -88,51 +88,50 @@ This is the highest value of the four. It is the only mechanism in the project t
 
 **researcher.** Version and documentation verification, which the standards already require before integrating anything. Returns the current release, the recommended integration path, and the license, as short facts.
 
-## 5.1 The five design panels, and they run on every design change
+## 5.1 Review agents, and they run on every design change
 
-**Owner direction, 2026-08-12**: a standing team of subagent groups, each a
-different discipline, running as internal consultants while the work happens.
-They are groups rather than one reviewer on purpose. **Five panels, and each is
-told to answer as its own discipline and nothing else**, because a single "look
-at this" agent returns one blended opinion and five specialists disagree with
-each other, which is where the real findings are.
+**Five read only reviews, run in parallel in the background while the work
+continues in the main session. Each is told to answer as one discipline and
+nothing else**, because a single "look at this" agent returns one blended
+opinion, and separate disciplines disagree with each other, which is where the
+real findings are.
 
-**The interface panel.** Layout, alignment, overlap, spacing rhythm, visual
-hierarchy. It asks what a person would see on a phone, not what the code does.
-Its findings are the ones that show up in a screenshot.
+**Interface.** Layout, alignment, overlap, spacing rhythm, visual hierarchy.
+What is on the phone, not what the code does. Its findings show up in a
+screenshot.
 
-**The experience panel.** Can somebody tell what a thing is, what it will do,
-and how to undo it. Taps to the answer, dead ends, one-way links, anything that
-cannot be corrected after the fact. Accessibility belongs here: the 48dp floor,
-the reader, contrast, font scale 2.0, right to left.
+**Experience.** Whether a thing says what it is, what it will do, and how to
+undo it. Taps to the answer, dead ends, one way links, anything that cannot be
+corrected after the fact. Accessibility belongs here: the 48dp floor, the
+reader, contrast, font scale 2.0.
 
-**The focus group.** Mock users, each with a life and a notebook of a real size:
-four days in, six months in, five years in, back after three weeks away, and
-somebody who opened the app to answer exactly one question. They report in the
-first person and they are the only panel allowed to be unfair. `TESTING-PERSONAS.md`
-is their brief and they may add to it.
+**Scale.** The app against a notebook of a real size, not a fixture with twelve
+rows: four days in, six months in, five years in, and the screen opened to
+answer one question. `TESTING-PERSONAS.md` is the fixture protocol and the time
+horizons.
 
-**The designer.** One professional, judging the thing as a made object against
-the five laws, the palette, the type ladder and the component inventory. This is
-the panel that says a screen is correct and still ugly, and it is the one whose
-job is closest to the owner's own eye.
+**Design.** The thing judged as a made object against the five laws, the
+palette, the type ladder and the component inventory. This is the review that
+says a screen is correct and still ugly.
 
-**The product manager.** What is missing, what is half built, what the schema
-supports that the interface never reaches, what two features say the same thing,
-and what should be cut. It reads the schema and the repository against the
-screens, and it is how nine writers with no caller at all were found on the
-projects surface.
+**Product.** What is missing, what is half built, what the schema supports that
+the interface never reaches, what two features say the same thing, and what
+should be cut. It reads the schema and the repository against the screens, and
+it is how nine writers with no caller were found on the projects surface.
 
-**How they are run.** All five in parallel, in the background, while the work
-continues in the main session. Each one gets: the project's own rules quoted
-rather than referenced, a cap of at most N findings worst first, a requirement of
-file and line, and an instruction to read the code comments before calling
-something a defect, because this codebase documents its deliberate departures and
-a panel that has not read them reports the same eight decisions back every time.
+**How they are run.** Each one gets: the project's own rules quoted rather than
+referenced, a cap of at most N findings worst first, a requirement of file and
+line, and an instruction to read the code comments before calling something a
+defect, because this codebase documents its deliberate departures and a review
+that has not read them reports the same eight decisions back every time.
 
-**Where three panels name the same defect independently, it is not a matter of
-taste.** That is the signal worth acting on before anything else, and on
-2026-08-12 it produced the batch on #367 in one pass.
+**Where three name the same defect independently, it is not a matter of taste.**
+That is the signal worth acting on before anything else.
+
+**Verify a report before acting on it.** Reviews overreach. Two claims in one
+batch were wrong in ways that would have produced the wrong fix: a path check
+that was said to reject `..` and does not, and a data leak between people that
+turned out to be shared reference data. **Read the code the report cites.**
 
 **They never write anything**, per section 3 and hard rule 8. The main session
 acts on the reports and opens the issues.
