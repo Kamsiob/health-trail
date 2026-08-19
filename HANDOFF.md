@@ -223,6 +223,13 @@ project's road (`ui/v4/RoadStrip.kt`), a measure's line (`ui/v4/Trace.kt`), and
 - **A `LazyColumn` does not compose off-screen rows.** Tests that walked a scrolling `Column` break: scroll by the list's own item key, `performScrollToKey`.
 - **A floating action button is on the scaffold, not in the list.** Do not scroll a list to reach it.
 - **`tools/seed.sh` walks the restore screen by text** and taps the password field by `=Password`. Its last line says "Restored." or every capture after it is of an empty notebook.
+- **`walk.sh see` reports what is laid out, not what is on the screen, and More
+  scrolls.** A row below the fold is absent from the dump, and reading that as
+  "the row is missing" cost most of a session: **#402 was filed as a bug and was
+  not one.** The conflict door and the bin door both sit at the foot of More's
+  "keeping a copy" group, and both looked absent until the screen was scrolled.
+  **Scroll before concluding a row does not exist**, or dump after
+  `input swipe`.
 - **`tools/sweep.sh`'s closing list globs the prefix, so it lists files an
   older run with the same name left behind.** `after-setup-light.png` was
   printed by a sweep that never visited setup and was four hours old. Check
