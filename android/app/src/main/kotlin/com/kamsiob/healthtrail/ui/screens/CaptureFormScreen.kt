@@ -69,6 +69,8 @@ import com.kamsiob.healthtrail.ui.theme.Space
 object CaptureFormTags {
     const val ROOT = "capture_form_root"
     const val WHO = "capture_form_who"
+    /** Whose record this capture is about, shown only in a shared notebook. #453. */
+    const val SUBJECT = "capture_form_subject"
     fun person(id: String) = "capture_form_person_$id"
     fun medication(id: String) = "capture_form_medication_$id"
     fun project(id: String) = "capture_form_project_$id"
@@ -326,6 +328,21 @@ fun CaptureFormScreen(
      * compile.
      */
     onStateChange: (CaptureFormState) -> Unit,
+    /**
+     * Whose record this capture is about, or null to say nothing. #453.
+     *
+     * **Passed only when the notebook holds more than one person**, and the
+     * caller is where that count is known. A notebook about one person does not
+     * need telling whose it is, and saying so on every capture would be noise
+     * that teaches people to stop reading the line.
+     *
+     * **Why it matters when there are two.** The gold button sits on every
+     * destination and this form said nothing about the subject anywhere, so
+     * filing the father's incident onto the mother was invisible at the moment
+     * it happened and stayed invisible afterward. That is the failure the whole
+     * multi person feature exists to prevent.
+     */
+    subjectName: String? = null,
 ) {
     val strings = LocalStrings.current
     val colors = HealthTrail.colors
@@ -398,6 +415,17 @@ fun CaptureFormScreen(
                     text = strings[key(kind, "title")],
                     modifier = Modifier.semantics { heading() },
                 )
+                // **Whose record this is about to become part of.** #453.
+                subjectName?.takeIf { it.isNotBlank() }?.let { name ->
+                    Spacer(Modifier.height(Space.withinGroup))
+                    Body(
+                        text = strings(
+                            "capture.about.person",
+                            "name" to Bidi.isolate(name),
+                        ),
+                        modifier = Modifier.testTag(CaptureFormTags.SUBJECT),
+                    )
+                }
                     // The title and the terms are one thing: what this screen
                     // is. They sit at the within value.
                     Spacer(Modifier.height(Space.withinGroup))

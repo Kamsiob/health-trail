@@ -350,6 +350,7 @@
   "bin.untitled": "未命名的内容",
   "capture.about.medication": "这是关于什么的",
   "capture.about.medication.aside": "仅当与其中一项有关时。",
+  "capture.about.person": "关于 {name}",
   "capture.about.project": "属于哪件事",
   "capture.about.project.aside": "这样它会作为最新进展出现在那里。",
   "capture.back": "返回",

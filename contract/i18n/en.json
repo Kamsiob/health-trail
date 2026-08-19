@@ -350,6 +350,7 @@
   "bin.untitled": "Something with no name",
   "capture.about.medication": "What it is about",
   "capture.about.medication.aside": "Only if it is about one of these.",
+  "capture.about.person": "About {name}",
   "capture.about.project": "Part of which project",
   "capture.about.project.aside": "So it turns up there as the latest word.",
   "capture.back": "Back",

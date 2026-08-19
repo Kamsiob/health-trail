@@ -350,6 +350,7 @@
   "bin.untitled": "شيء بلا اسم",
   "capture.about.medication": "عمّ يدور هذا",
   "capture.about.medication.aside": "فقط إذا كان يتعلق بأحد هذه.",
+  "capture.about.person": "عن {name}",
   "capture.about.project": "جزء من أي ملف",
   "capture.about.project.aside": "فيظهر هناك بوصفه آخر ما استجد.",
   "capture.back": "رجوع",

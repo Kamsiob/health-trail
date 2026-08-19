@@ -277,6 +277,9 @@ fun NotebookShell(
                 unseenConflicts = repository.unseenConflicts()
                 val subject = repository.activeSubject()
                 activeSubjectName = subject?.displayName
+                // #453: the capture form names the subject only in a notebook
+                // that holds more than one, and this is where that is known.
+                subjectCount = repository.subjects().size
                 situationId = subject?.situationTemplateId
                 val emphasis = emphasisFor(context, subject?.situationTemplateId)
                 // **The roles this situation actually has**, so adding a contact
@@ -764,6 +767,14 @@ fun NotebookShell(
                                 // real one, had no way to search from the front
                                 // door for as long as the new surface has existed.
                                 onSearch = { searchOpen = true },
+                                // **The same argument, and the same surface.**
+                                // #453: the only subject switcher in the app
+                                // rendered on the fallback Today, which is
+                                // chosen when no layout exists, so the person
+                                // who actually has two people in the notebook
+                                // had no way to change who is on screen and the
+                                // brand new one did.
+                                onPeople = { subjectsOpen = true },
                                 // **One write, from Done.** The screen holds every
                                 // change while editing so a person can move three
                                 // cards and change their mind about all of them,
@@ -2984,6 +2995,12 @@ fun NotebookShell(
                     projects = projects,
                     state = captureDraft,
                     onStateChange = { captureDraft = it },
+                    // **Named only when there is somebody to confuse them
+                    // with.** #453. The count lives here, so the decision does
+                    // too: one person in the notebook needs no telling whose it
+                    // is, and saying so on every capture teaches people to stop
+                    // reading the line.
+                    subjectName = activeSubjectName?.takeIf { subjectCount > 1 },
                     onSave = { draft ->
                         capturing = null
                         // **Cleared only once the entry is on its way to the

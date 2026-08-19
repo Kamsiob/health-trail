@@ -350,6 +350,7 @@
   "bin.untitled": "Algo sin nombre",
   "capture.about.medication": "Sobre qué es",
   "capture.about.medication.aside": "Solo si se trata de uno de estos.",
+  "capture.about.person": "Sobre {name}",
   "capture.about.project": "Parte de qué gestión",
   "capture.about.project.aside": "Así aparece allí como lo último que se sabe.",
   "capture.back": "Atrás",

@@ -76,6 +76,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -111,6 +112,7 @@ import com.kamsiob.healthtrail.ui.theme.TabHue
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.theme.hueForMeasure
 import com.kamsiob.healthtrail.ui.v4.Avatar
+import com.kamsiob.healthtrail.ui.v4.hueForPerson
 import com.kamsiob.healthtrail.ui.v4.AvatarOverflow
 import com.kamsiob.healthtrail.ui.v4.Trace
 import java.time.LocalDate
@@ -185,6 +187,8 @@ object TodayFieldTags {
     const val DONE = "today-done"
     const val ADD = "today-add"
     const val SEARCH = "today-field-search"
+    /** The person's own mark, which is also the door to switching people. #453. */
+    const val PEOPLE = "today-field-people"
     fun card(id: String) = "today-card-$id"
 
     /**
@@ -282,6 +286,16 @@ fun TodayFieldScreen(
     modifier: Modifier = Modifier,
     /** Opens search, which is a whole screen with its own field. */
     onSearch: () -> Unit = {},
+    /**
+     * Opens who this notebook is about, which is also how the person switches.
+     *
+     * **This screen had no such door and the fallback Today did.** #453. The
+     * switcher rendered only on `TodayScreen`, which is chosen when no layout
+     * exists, so the person who actually has two people in the notebook had no
+     * way to change which one is on screen and the brand new one did. Exactly
+     * backwards.
+     */
+    onPeople: () -> Unit = {},
     /**
      * The soonest appointment still ahead, for the permanent hero.
      *
@@ -566,6 +580,25 @@ fun TodayFieldScreen(
                         // the pencil takes the corner, the lamp sits beside it,
                         // search on the inside. A control that moves between
                         // screens has to be found again every time.
+                        // **Whose notebook this is, and the way to change it.**
+                        // #453, and it is the same mark the fallback Today has
+                        // carried all along. Innermost, so the order D173 fixed
+                        // is undisturbed: the pencil keeps the corner, the lamp
+                        // sits beside it, search stays inside them.
+                        subjectName?.takeIf { it.isNotBlank() }?.let { name ->
+                            Avatar(
+                                name = name,
+                                hue = hueForPerson(name, HealthTrail.colors.tabHues),
+                                modifier = Modifier
+                                    .clickable(
+                                        role = Role.Button,
+                                        onClickLabel = strings["people.open"],
+                                        onClick = onPeople,
+                                    )
+                                    .testTag(TodayFieldTags.PEOPLE)
+                                    .semantics { contentDescription = strings["people.open"] },
+                            )
+                        }
                         IconButton(
                             onClick = onSearch,
                             modifier = Modifier.testTag(HeaderActionTags.SEARCH),

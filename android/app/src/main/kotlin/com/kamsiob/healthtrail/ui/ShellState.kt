@@ -273,6 +273,17 @@ internal class ShellState {
 
     /** Whose day Today's masthead names. D170. */
     var activeSubjectName by mutableStateOf<String?>(null)
+
+    /**
+     * How many people this notebook holds. #453.
+     *
+     * **Loaded on every pass rather than only when the people door opens**,
+     * because the capture form needs it and `heldSubjects` is empty until
+     * somebody visits that screen. One is the normal answer and it means the
+     * capture form says nothing about whose record it is, which is right: a
+     * notebook about one person does not need telling.
+     */
+    var subjectCount by mutableStateOf(1)
     /** The subject row, read when the correction opens rather than held all the time. */
     var subjectRow by mutableStateOf<Repository.Subject?>(null)
     var savingSubject by mutableStateOf<SubjectCorrection?>(null)
