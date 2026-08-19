@@ -55,7 +55,7 @@ projects and progress**:
 | **#397** | **Nearly done.** D207 and contract 8.8: a memo is `entry.kind = 'note'`, attached through `link`, rich text is three marks stored as text. **Built**: `RichText` + 11 tests; `addNote` / `notesAbout` / `aboutFor`; the memo screen with the marks as the field's own toolbar, no microphone, a filled save beside a quiet cancel; **Memos as the fourth destination** with Google's sticky-note symbol and D202's ink tile; the memos screen as a grid or a list with keep-in-view and a bin; local and universal search; **rule 18 both ways on a person, a document, a bill and an incident**, through one `MemosAbout`; pin and delete inside a memo, which an entry already had; and **the readable archive rendering the three marks while the column stays byte for byte**, proved through the standalone decryptor. **Left**: an appointment and a project as attachment targets, the eight states swept, and the archive gate with two people. |
 | **#400** | **The archive carries everything, with two people in one notebook.** The gate on #397 and #398 rather than a task after them: notes, every tracked thing, a mother and a father each fully used, export, wipe, restore, and a merge with a conflict, on the signed minified build. D24 calls the export the only way back. |
 
-**The order now: #397, then #396, then #395 a second time.** #400 is the gate
+**The order now: #397, then #395 a second time.** #400 is the gate
 rather than an item of its own, and #402 is the one thing standing in its way.
 
 **What the owner added to #397 on 2026-08-18**, after looking at the first pass,
@@ -81,8 +81,12 @@ deleting. **The note takes its own route rather than becoming a seventh capture
 kind**, which also keeps the six positions people reach for by muscle memory
 exactly where they are.
 
-**#396** is the dictation rule, split out of #388 finding 4: 34 `Field` call
-sites, a rule that is checkable, three of them inside a frozen file.
+~~**#396**~~ **Done, 2026-08-18.** The rule is written where `DictatableField`
+is defined, the component enforces it rather than each caller, and
+`check_dictation.py` is the 31st check. 32 fields across 19 screens gained a
+microphone. **The memo screen is an exemption the issue did not anticipate**:
+the owner asked for no microphone there and confirmed it is the memo section
+alone.
 
 **Two conditions the owner set on all of milestone 8**, and both are on each
 issue:
