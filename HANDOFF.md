@@ -52,7 +52,7 @@ projects and progress**:
 |---|---|
 | ~~#399~~ | **Done, 2026-08-18.** D205 and D206, and the owner corrected it three times while it was being built: the mark did not align with the words, the rows had no container and no arrival, and three controls all looked like "update". The doors out of a project went from five rows and two loose pills to four tiles and a corner. `ProjectDetailScreen` needed no removal: it has had no live caller since 2026-08-05 and its ledger row was already written. |
 | ~~#398~~ | **Done, 2026-08-18.** `MeasureScreen` per tracked thing, Progress is a lead plus rows, the flat mixed list is gone. **Three of the five shapes in `docs/TRACKED-THINGS.md` 7 need schema the contract does not have and are on #403**, blood pressure being the sharpest: the form has one field called "The number". |
-| **#397** | **Nearly done.** D207 and contract 8.8: a memo is `entry.kind = 'note'`, attached through `link`, rich text is three marks stored as text. **Built**: `RichText` + 11 tests; `addNote` / `notesAbout` / `aboutFor`; the memo screen with the marks as the field's own toolbar, no microphone, a filled save beside a quiet cancel; **Memos as the fourth destination** with Google's sticky-note symbol and D202's ink tile; the memos screen as a grid or a list with keep-in-view and a bin; local and universal search; **rule 18 both ways on a person, a document, a bill and an incident**, through one `MemosAbout`; pin and delete inside a memo, which an entry already had; and **the readable archive rendering the three marks while the column stays byte for byte**, proved through the standalone decryptor. **Left**: an appointment and a project as attachment targets, the eight states swept, and the archive gate with two people. |
+| ~~#397~~ | **Done, 2026-08-18.** D207: a memo is `entry.kind = 'note'`, attached through `link`, and rich text is three marks stored as text. `RichText`, `addNote`/`notesAbout`/`aboutFor`, the memo screen, **Memos as the fourth destination**, the memos page as a grid or list with keep-in-view and a bin, local and universal search, **rule 18 both ways on six kinds of thing**, and **the readable archive rendering the marks while the column stays byte for byte**. Gate proved with two people. |
 | **#400** | **The archive carries everything, with two people in one notebook.** The gate on #397 and #398 rather than a task after them: notes, every tracked thing, a mother and a father each fully used, export, wipe, restore, and a merge with a conflict, on the signed minified build. D24 calls the export the only way back. |
 
 **The order now: #397, then #395 a second time.** #400 is the gate
@@ -320,6 +320,11 @@ neither. D205, D206.
 **And #404**: one tracked thing's own screen, and Progress as a lead plus rows.
 The grid draws screen 24 and carries neither how it is reached nor what happens
 to the rest of the page. #398.
+
+**And #406**: the memo screen, the memos page, `MemosAbout` on six kinds of
+thing, Memos as the fourth destination, and what you took out. **The grid draws
+none of them**, because neither notes nor a bin existed before 2026-08-18.
+#397, #405, D207.
 
 **Reachable only from a test, not from any seed** (each on its own issue): paperwork an incident produced; the care team card's sparse rung and the trail spine's gap markers; the digest's corrected and removed counts; #273's two template hands; **the month review's `Hero` block**, which draws only when a month holds a milestone, and no month in the `year2` fixture does. Checked June, April and March on 2026-08-18 rather than assumed.
 
