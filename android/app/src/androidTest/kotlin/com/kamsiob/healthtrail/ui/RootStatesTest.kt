@@ -120,4 +120,58 @@ class RootStatesTest {
             .performClick()
         assertTrue("the one action on this screen did nothing", asked)
     }
+
+    /**
+     * The screen that exists so the record does not get uninstalled. #410.
+     *
+     * **The sentence about not uninstalling is the whole point of it.** Every
+     * failure other than a lost key used to escape the open uncaught and crash
+     * on every launch, with the record intact on the disk and unreachable, and
+     * the remedy a person reaches for is the one that destroys it.
+     */
+    @Test
+    fun theStuckScreenSaysTheRecordIsStillThereAndAsksNotToUninstall() {
+        show { StuckScreen(problem = "SQLiteException: disk I/O error") }
+
+        compose.onNodeWithTag(AppRootTags.STUCK).assertIsDisplayed()
+        compose.onNodeWithText(strings["stuck.title"]).assertIsDisplayed()
+        compose.onNodeWithText(strings["stuck.body"]).assertIsDisplayed()
+        compose.onNodeWithText(strings["stuck.keep"]).assertIsDisplayed()
+    }
+
+    /**
+     * It names the raw problem and the version. #410.
+     *
+     * Neither is for the person holding the phone. They are for whoever they
+     * show it to, and "a database written by a newer build" is only diagnosable
+     * against a version number.
+     */
+    @Test
+    fun theStuckScreenNamesTheProblemAndTheVersion() {
+        show { StuckScreen(problem = "Migrations.FromTheFuture: schema 4") }
+
+        compose.onNodeWithText(
+            strings("stuck.problem", "problem" to "Migrations.FromTheFuture: schema 4"),
+        ).assertIsDisplayed()
+        compose.onNodeWithText(
+            strings("about.version", "version" to com.kamsiob.healthtrail.BuildConfig.VERSION_NAME),
+        ).assertIsDisplayed()
+    }
+
+    /**
+     * Its one action retries rather than replacing an intact notebook.
+     *
+     * Restore replaces the record, and this is the state where the record is
+     * fine. A disk that was full a moment ago is not full now.
+     */
+    @Test
+    fun theStuckScreensOneActionRetries() {
+        var asked = false
+        show { StuckScreen(problem = "x", onRetry = { asked = true }) }
+
+        compose.onNodeWithTag(AppRootTags.STUCK_RETRY)
+            .assertIsDisplayed()
+            .performClick()
+        assertTrue("the one action on this screen did nothing", asked)
+    }
 }

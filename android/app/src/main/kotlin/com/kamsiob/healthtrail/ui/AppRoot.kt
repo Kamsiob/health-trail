@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import com.kamsiob.healthtrail.BuildConfig
 import com.kamsiob.healthtrail.data.DatabaseKey
 import com.kamsiob.healthtrail.data.DatabaseKeyLost
 import com.kamsiob.healthtrail.data.DatabaseUnreadable
@@ -47,6 +48,8 @@ object AppRootTags {
     const val LOADING = "app_loading"
     const val UNRECOVERABLE = "app_unrecoverable"
     const val UNRECOVERABLE_RESTORE = "app_unrecoverable_restore"
+    const val STUCK = "app_stuck"
+    const val STUCK_RETRY = "app_stuck_retry"
 }
 
 /**
@@ -104,6 +107,22 @@ fun AppRoot(
             // says which, because "the key that unlocked it is gone" is a false
             // account of a damaged file and the person acts on what it says.
             RootState.Damaged
+        } catch (problem: Throwable) {
+            // **Everything else used to escape and crash, on every launch,
+            // forever.** #410. Only DatabaseKeyLost was caught, so
+            // Migrations.Failed, Migrations.FromTheFuture, which is an archive
+            // from a newer build or a sideloaded older one, and a plain
+            // SQLiteException from a full or failing disk all came straight out
+            // of this LaunchedEffect uncaught.
+            //
+            // **The record is intact on disk and completely unreachable**, and
+            // the remedy a person reaches for is to uninstall and reinstall,
+            // which is the one action that destroys it. A migration failure
+            // must never end at "reinstall".
+            //
+            // The two named catches stay above this one because they are the
+            // cases the app can say something specific and true about.
+            RootState.Stuck(problem::class.java.simpleName + ": " + (problem.message ?: ""))
         }
     }
 
@@ -119,6 +138,14 @@ fun AppRoot(
     CompositionLocalProvider(LocalStrings provides strings) {
         when (val current = state) {
             RootState.Opening -> OpeningScreen()
+
+            is RootState.Stuck -> StuckScreen(
+                problem = current.problem,
+                onRetry = {
+                    state = RootState.Opening
+                    attempt += 1
+                },
+            )
 
             RootState.Damaged -> UnrecoverableScreen(
                 reason = UnreadableReason.DAMAGED,
@@ -318,6 +345,18 @@ internal sealed interface RootState {
     data object Damaged : RootState
 
     /**
+     * The notebook did not open and the app cannot say why. #410.
+     *
+     * **Not a dead end, which is the difference from [Unrecoverable].** The
+     * record is on the disk and readable; something between it and the screen
+     * failed. A migration that will not run, a disk with no room left, a
+     * database written by a newer build than this one. Every one of those used
+     * to crash at launch, on every launch, and the remedy a person reaches for
+     * is the one that destroys the record.
+     */
+    data class Stuck(val problem: String) : RootState
+
+    /**
      * The person chose to replace a notebook this phone cannot open. #343.
      *
      * **A state rather than a flag on the screen**, because what happens here
@@ -472,6 +511,82 @@ internal fun UnrecoverableScreen(
                 label = strings["unrecoverable.restore"],
                 onClick = onRestore,
                 modifier = Modifier.fillMaxWidth().testTag(AppRootTags.UNRECOVERABLE_RESTORE), emphasis = ActionEmphasis.Main,
+            )
+        }
+    }
+}
+
+
+/**
+ * The notebook did not open, and this screen exists so that the person does not
+ * uninstall the app. #410.
+ *
+ * **What it must do, in order.** Say plainly that the record is still there.
+ * Say what went wrong, in the app's own words plus the raw problem, because the
+ * one person who can act on the raw text is whoever they show the phone to. Name
+ * the version, because "a database from a newer build" is only diagnosable
+ * against a version number. Then ask them not to uninstall, which is the
+ * sentence the whole screen is for.
+ *
+ * **One action, and it is Try again rather than restore.** Restore replaces the
+ * notebook, and this is the state where the notebook is intact. A disk that was
+ * full a moment ago is not full now, and a retry costs nothing. Offering to
+ * replace an intact record as the remedy for a transient error would be the
+ * screen doing the damage it exists to prevent.
+ */
+@Composable
+internal fun StuckScreen(problem: String, onRetry: () -> Unit = {}) {
+    val strings = LocalStrings.current
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag(AppRootTags.STUCK),
+        color = HealthTrail.colors.paper,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding()
+                .padding(Space.screenHorizontal),
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(
+                text = strings["stuck.title"],
+                style = HealthTrail.type.displayM,
+                color = HealthTrail.colors.ink,
+            )
+            Spacer(Modifier.height(Space.s))
+            Text(
+                text = strings["stuck.body"],
+                style = HealthTrail.type.bodyL,
+                color = HealthTrail.colors.ink,
+            )
+            Spacer(Modifier.height(Space.m))
+            // **The one sentence this screen exists for.** Rule 13: it is not a
+            // scolding and not a warning color, it is a fact about what
+            // uninstalling does.
+            Text(
+                text = strings["stuck.keep"],
+                style = HealthTrail.type.bodyL,
+                color = HealthTrail.colors.ink,
+            )
+            Spacer(Modifier.height(Space.m))
+            Text(
+                text = strings("stuck.problem", "problem" to problem),
+                style = HealthTrail.type.bodyM,
+                color = HealthTrail.colors.ink2,
+            )
+            Text(
+                text = strings("about.version", "version" to BuildConfig.VERSION_NAME),
+                style = HealthTrail.type.bodyM,
+                color = HealthTrail.colors.ink2,
+            )
+            Spacer(Modifier.height(Space.l))
+            Action(
+                label = strings["stuck.retry"],
+                onClick = onRetry,
+                modifier = Modifier.fillMaxWidth().testTag(AppRootTags.STUCK_RETRY),
+                emphasis = ActionEmphasis.Main,
             )
         }
     }
