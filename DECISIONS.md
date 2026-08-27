@@ -417,7 +417,20 @@ Targeting 37 was considered and rejected for now. `targetSdk` opts the app into 
 
 **One thing that surprised the build.** AGP 9 carries its own Kotlin support and refuses the `org.jetbrains.kotlin.android` plugin outright, with an error saying so. The Kotlin version in the catalog is now only for the Compose compiler plugin, and the catalog says so where the version is declared.
 
-**Revisit if.** Play raises the requirement again, which it does annually, or a dependency forces `compileSdk` higher.
+**Re-verified 2026-08-27, four days before the deadline, because the owner asked and because a note written four weeks ago is not evidence.** Against `developer.android.com/google/play/requirements/target-sdk`, which states "Last updated 2026-08-14":
+
+- **API 36 is the requirement, from 31 August 2026, for new apps and for updates alike.** The lower API 35 figure that appears in summaries is a different rule: it is the visibility threshold for an app that is never updated, which stops being discoverable to new users on newer devices. The two are routinely conflated and they are not the same requirement.
+- **No successor deadline is published.** There is no announced API 37 requirement.
+- **Play does not check `compileSdk` at all.** It is a build concern, which is what this decision already said.
+- An extension to 1 November 2026 can be requested, with the mechanism "to be released later in 2026". This app does not need it.
+
+**So 1.1 ships compliant with four days to spare, and nothing had to change.**
+
+**The other Play requirement that bites this app, and it is native code rather than an SDK level.** `developer.android.com/guide/practices/page-sizes`, "Last updated 2026-08-23": every app targeting API 35 or higher must support **16 KB memory page sizes** on 64-bit devices, and from **1 February 2027** an update that does not will be refused. This app carries native code, so it is in scope: `libsqlcipher.so` and `libandroidx.graphics.path.so`, four ABIs each.
+
+**Measured rather than assumed.** Every one of the eight `.so` files in the shipped 1.0 bundle reports `LOAD` segment alignment `0x4000`, which is 16384 bytes. `tools/checks/check_play_requirements.py` holds the SDK half; the alignment half is measured on the bundle at release time, because it cannot be read from source.
+
+**Revisit if.** Play raises the requirement again, which it does annually, or a dependency forces `compileSdk` higher, or a new native dependency arrives, which puts the 16 KB alignment back in question.
 
 ### D16. No Room, and no ORM. Raw SQLite behind androidx.sqlite
 

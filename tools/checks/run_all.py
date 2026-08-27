@@ -74,6 +74,10 @@ CHECKS = [
     ),
     ("check_live_views.py", "no base table read outside a live view, so tombstones cannot leak"),
     ("check_fixtures.py", "the fixture generator is deterministic and hits its stated scale"),
+    (
+        "check_play_requirements.py",
+        "the build still meets what Google Play requires of an update",
+    ),
     ("check_hook_quoting.py", "hook commands are quoted, so a guard cannot be a silent no-op"),
     (
         "check_guard.py",
