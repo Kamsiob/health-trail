@@ -1541,6 +1541,8 @@
   "today.empty.step.2": "遇到打交道的人就随手记下来。",
   "today.empty.step.3": "趁记忆还清楚，记下下一通电话。",
   "today.empty.title": "还没有记下任何内容",
+  "today.field.empty.lead": "今天还没有任何卡片",
+  "today.field.empty": "卡片放在这里，每一张回答一个关于您记录内容的问题。想加哪些就加哪些，随时也可以拿掉。",
   "today.open.group": "仍未了结",
   "today.open.incidents": "{count, plural, =0 {没有未结的事件} other {# 件未结的事件}}",
   "today.open.questions": "{count, plural, =0 {没有待问的问题} other {# 个待问的问题}}",

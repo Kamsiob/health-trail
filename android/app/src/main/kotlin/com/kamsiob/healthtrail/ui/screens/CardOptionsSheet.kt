@@ -88,12 +88,21 @@ fun CardOptionsSheet(
     /** The size the draft currently has, one of small, wide or tall. */
     size: String,
     onResize: (String) -> Unit,
-    onPromote: () -> Unit,
+    /** Null for the card already leading, which cannot be promoted to where it is. */
+    onPromote: (() -> Unit)?,
     /** Null when this card is already at the top of the field. */
     onMoveUp: (() -> Unit)?,
     /** Null when it is already at the bottom. */
     onMoveDown: (() -> Unit)?,
-    onRemove: () -> Unit,
+    /**
+     * Takes this card off Today.
+     *
+     * **Null only when it is the last card there is**, #462. Every card is
+     * removable, the lead included: the slot is what is protected, not whichever
+     * card is standing in it, and a slot with nothing left to hold is the one
+     * case where there is nothing to hand it.
+     */
+    onRemove: (() -> Unit)?,
     /** Opens the source picker, or null for a card that points at nothing. */
     onPickSource: (() -> Unit)?,
     onDismiss: () -> Unit,
@@ -179,11 +188,13 @@ fun CardOptionsSheet(
                     modifier = Modifier.padding(bottom = Space.xs),
                 )
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s)) {
-                    Action(
-                        label = strings["today.options.lead"],
-                        onClick = onPromote,
-                        modifier = Modifier.testTag(CardOptionsTags.LEAD),
-                    )
+                    onPromote?.let {
+                        Action(
+                            label = strings["today.options.lead"],
+                            onClick = it,
+                            modifier = Modifier.testTag(CardOptionsTags.LEAD),
+                        )
+                    }
                     onMoveUp?.let {
                         Action(
                             label = strings["today.options.up"],
@@ -201,21 +212,23 @@ fun CardOptionsSheet(
                 }
             }
 
-            OptionGroup(labelKey = "today.options.keep") {
-                Action(
-                    label = strings["today.options.remove"],
-                    onClick = onRemove,
-                    modifier = Modifier.testTag(CardOptionsTags.REMOVE),
-                )
-                // **It says what removing costs, which is nothing.** Rule 13:
-                // an arrangement is the person's and taking a card off is not a
-                // loss of anything they wrote down.
-                Text(
-                    text = strings["today.options.remove.detail"],
-                    style = type.bodyS,
-                    color = colors.ink2,
-                    modifier = Modifier.padding(top = Space.xs),
-                )
+            onRemove?.let { remove ->
+                OptionGroup(labelKey = "today.options.keep") {
+                    Action(
+                        label = strings["today.options.remove"],
+                        onClick = remove,
+                        modifier = Modifier.testTag(CardOptionsTags.REMOVE),
+                    )
+                    // **It says what removing costs, which is nothing.** Rule
+                    // 13: an arrangement is the person's and taking a card off
+                    // is not a loss of anything they wrote down.
+                    Text(
+                        text = strings["today.options.remove.detail"],
+                        style = type.bodyS,
+                        color = colors.ink2,
+                        modifier = Modifier.padding(top = Space.xs),
+                    )
+                }
             }
 
             Spacer(Modifier.height(Space.l))

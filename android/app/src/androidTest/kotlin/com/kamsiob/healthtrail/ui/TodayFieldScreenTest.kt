@@ -983,6 +983,111 @@ class TodayFieldScreenTest {
         waitFor(listOf(false, true, false), "leaving was not reported")
     }
 
+    // -- the lead slot, #462 ------------------------------------------------
+    //
+    // **The owner: the Projects card cannot be removed from Today.** There is
+    // no Projects card kind and nothing anywhere excludes one. The exclusion
+    // was positional: whatever card stood in the visible lead slot lost its
+    // remove mark and its options sheet, and in his notebook that was a project
+    // card. Every card is removable; only the slot is protected.
+    //
+    // **And the slot was not even the lead.** All fourteen shipped starting
+    // hands and the default hand lead with `digest`, which D193 never draws, so
+    // the stored lead is a row nobody has seen and the card at the top of the
+    // screen sits at stored index one or two. Every control that meant "the
+    // first one" or "the one above" was counting the wrong list.
+
+    /**
+     * A layout shaped like every hand this app actually ships.
+     *
+     * `digest` holds `is_lead` and is never drawn; `next_up` is never drawn
+     * either, D192, because the hero above the field says the same thing. So
+     * the card the person sees at the top is the third row, and a control that
+     * moves by stored index steps over two rows nobody can see.
+     */
+    private fun handWithRowsThatAreNeverDrawn() = Repository.TodayLayout(
+        lead = card("c-digest", "digest", size = "wide", isLead = true),
+        field = listOf(
+            card("c-next", "next_up"),
+            card("c-meds", "medications"),
+            card("c-ask", "ask_next_time"),
+        ),
+    )
+
+    @Test
+    fun theCardInTheLeadSlotCarriesARemoveMarkLikeEveryOther() {
+        val layout = handWithRowsThatAreNeverDrawn()
+        show(layout)
+        compose.onNodeWithTag(TodayFieldTags.EDIT).performClick()
+
+        // The lead slot holds `c-meds`, because the two rows above it in the
+        // record are not drawn. Its mark is under its own id, the same tag
+        // every other card's mark uses.
+        compose.onNodeWithTag(TodayFieldTags.remove("c-meds"), useUnmergedTree = true)
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun takingTheLeadCardOffLeavesTheNextOneLeading() {
+        val layout = handWithRowsThatAreNeverDrawn()
+        show(layout)
+        compose.onNodeWithTag(TodayFieldTags.EDIT).performClick()
+
+        // `c-ask` is the only field card, because `c-meds` is drawn in the lead
+        // slot and the other two are not drawn at all.
+        compose.onNodeWithTag(TodayFieldTags.card("c-ask")).assertIsDisplayed()
+
+        compose.onNodeWithTag(TodayFieldTags.remove("c-meds"), useUnmergedTree = true)
+            .performClick()
+
+        // There is still a lead, and `c-ask` has moved into it, so it is no
+        // longer a field card.
+        compose.onNodeWithTag(TodayFieldTags.LEAD).assertIsDisplayed()
+        assertTrue(
+            "the next card did not move into the lead slot",
+            compose.onAllNodesWithTag(TodayFieldTags.card("c-ask"))
+                .fetchSemanticsNodes().isEmpty(),
+        )
+        compose.onNodeWithTag(TodayFieldTags.remove("c-ask"), useUnmergedTree = true)
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun theLeadOpensItsOwnOptionsWhileArrangingRatherThanNavigatingAway() {
+        var opened: Repository.TodayCard? = null
+        show(handWithRowsThatAreNeverDrawn(), onOpen = { opened = it })
+        compose.onNodeWithTag(TodayFieldTags.EDIT).performClick()
+
+        compose.onNodeWithTag(TodayFieldTags.LEAD).performClick()
+
+        compose.onNodeWithTag(CardOptionsTags.SHEET).assertIsDisplayed()
+        assertEquals("arranging, a tap must not leave the screen", null, opened)
+        // It can be taken off from here as well as from the corner.
+        compose.onNodeWithTag(CardOptionsTags.REMOVE).assertIsDisplayed()
+        // And it is not offered a promotion to where it already is.
+        assertTrue(
+            "the lead was offered Make this the lead",
+            compose.onAllNodesWithTag(CardOptionsTags.LEAD).fetchSemanticsNodes().isEmpty(),
+        )
+    }
+
+    @Test
+    fun theLastCardOffTodayLeavesADesignedScreenRatherThanAGap() {
+        // Rule 11: no blank area. Removing everything is allowed, so the field
+        // says what it is and offers the gallery back.
+        show(handWithRowsThatAreNeverDrawn())
+        compose.onNodeWithTag(TodayFieldTags.EDIT).performClick()
+
+        compose.onNodeWithTag(TodayFieldTags.remove("c-meds"), useUnmergedTree = true)
+            .performClick()
+        compose.onNodeWithTag(TodayFieldTags.remove("c-ask"), useUnmergedTree = true)
+            .performClick()
+
+        val strings = Strings.load(context)
+        compose.onNodeWithText(strings["today.field.empty.lead"]).assertIsDisplayed()
+        compose.onNodeWithTag(TodayFieldTags.ADD_EMPTY).assertIsDisplayed()
+    }
+
     @Test
     fun everyCardBeingArrangedSaysSoAndOpensItsOptions() {
         // Grid screen 05: while Today is being arranged a card carries a remove

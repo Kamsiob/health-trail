@@ -186,6 +186,15 @@ object TodayFieldTags {
     const val EDIT = "today-edit"
     const val DONE = "today-done"
     const val ADD = "today-add"
+
+    /**
+     * The way back into the gallery from a Today with nothing on it.
+     *
+     * Its own tag rather than [ADD], because `docs/TRAPS.md`'s first entry is
+     * two nodes under one tag: the plus in the bar is drawn while arranging and
+     * this block is drawn whether or not anybody is.
+     */
+    const val ADD_EMPTY = "today-add-empty"
     const val SEARCH = "today-field-search"
     /** The person's own mark, which is also the door to switching people. #453. */
     const val PEOPLE = "today-field-people"
@@ -368,6 +377,47 @@ fun TodayFieldScreen(
     // **The staged layout.** Held here while editing and written once, so a
     // person can move three cards and change their mind about all of them.
     var draft by remember(layout, editing) { mutableStateOf(layout.all) }
+
+    // **What is actually on the screen, and it is not the same list.** D192 and
+    // D193 keep the appointment row and the digest row in the layout and draw
+    // neither, so a stored index and a screen position are two different
+    // numbers. Every control that talks about "the one above" or "the first
+    // one" has to mean this list, and #462 is what happens when it means the
+    // other: nine of the fourteen shipped starting hands lead with `digest`, so
+    // the card the person sees at the top sits at stored index one or two,
+    // while the code protecting the lead protected index zero, a row nobody has
+    // ever seen. The card in the lead slot lost its remove mark and its options
+    // sheet for being something it was not.
+    val drawn = (if (editing) draft else layout.all)
+        .filterNot { it.type == NEXT_UP || it.type == DIGEST }
+
+    /** Takes one card off the draft, by id, wherever it is stored. */
+    fun removeFromDraft(id: String) {
+        val at = draft.indexOfFirst { it.id == id }
+        if (at >= 0) draft = draft.toMutableList().apply { removeAt(at) }
+    }
+
+    /**
+     * Moves a card one place in the order the person can see.
+     *
+     * **One place on screen, not one place in the list.** Moving by a stored
+     * index steps over a row that is not drawn, so the press did nothing
+     * visible: with the `home_family` hand the lead's own Down button swapped
+     * `medications` with the hidden `next_up` and the screen did not change.
+     * Rule 16: a control that does nothing on press reads as broken.
+     */
+    fun moveDrawn(id: String, later: Boolean) {
+        val order = drawn.map { it.id }
+        val here = order.indexOf(id)
+        if (here < 0) return
+        val neighbor = order.getOrNull(if (later) here + 1 else here - 1) ?: return
+        val list = draft.toMutableList()
+        val from = list.indexOfFirst { it.id == id }
+        val to = list.indexOfFirst { it.id == neighbor }
+        if (from < 0 || to < 0) return
+        list.add(to, list.removeAt(from))
+        draft = list
+    }
 
     // **Which card is choosing a source**, by id, or null. 21.6 screen 7.
     var picking by rememberSaveable { mutableStateOf<String?>(null) }
@@ -687,8 +737,7 @@ fun TodayFieldScreen(
             // **Every move works on the stored list by id, never by what is on
             // screen.** With cards drawn out, a display index and a draft index
             // are two different numbers.
-            val shown = (if (editing) draft else layout.all)
-                .filterNot { it.type == NEXT_UP || it.type == DIGEST }
+            val shown = drawn
             val lead = shown.firstOrNull()
             val field = shown.drop(1)
 
@@ -701,17 +750,43 @@ fun TodayFieldScreen(
                         onOpen = onOpen,
                         onDial = onDial,
                         editing = editing,
-                        // **Down is the lead's only control**, and it is how a
-                        // lead is demoted. There is no Remove, because there is
-                        // never zero.
+                        // **Down demotes it, and it moves by what is on the
+                        // screen** rather than by a stored index that can step
+                        // over a row nobody sees.
                         canMoveDown = field.isNotEmpty(),
-                        onMoveDown = {
-                            val at = draft.indexOfFirst { it.id == lead.id }
-                            if (at >= 0) {
-                                draft = draft.toMutableList().apply { add(at + 1, removeAt(at)) }
-                            }
+                        onMoveDown = { moveDrawn(lead.id, later = true) },
+                        // **The lead is removable like everything else.** #462,
+                        // the owner: every card must be removable, and only the
+                        // slot is protected. It was the card that was protected,
+                        // and it was protected by accident, for standing in a
+                        // place the code had confused with stored index zero.
+                        onRemove = if (draft.size > 1) {
+                            { removeFromDraft(lead.id) }
+                        } else {
+                            null
                         },
+                        // **And it opens its own options while arranging**, the
+                        // way every other card does. It was the one card whose
+                        // tap navigated away from an unsaved arrangement.
+                        onOptions = { options = lead.id },
                         onArrange = { editing = true },
+                    )
+                }
+            }
+
+            // **Today with nothing on it is a designed screen, not a gap.**
+            // Now that the last card can go, this is reachable, and rule 11
+            // forbids leaving the hero over a void. Rule 13: it reads as "not
+            // yet", and the way back is the same gallery the plus opens.
+            if (drawn.isEmpty()) {
+                item(span = { fullWidth }, key = "today-field-empty") {
+                    SectionEmpty(
+                        name = "today-field",
+                        lead = strings["today.field.empty.lead"],
+                        text = strings["today.field.empty"],
+                        actionLabel = strings["today.add"],
+                        onAction = { onAddCard(draft) },
+                        actionTag = TodayFieldTags.ADD_EMPTY,
                     )
                 }
             }
@@ -790,12 +865,7 @@ fun TodayFieldScreen(
                     today = today,
                     editing = editing,
                     onOptions = { options = card.id },
-                    onRemove = {
-                        val at = draft.indexOfFirst { it.id == card.id }
-                        if (at >= 0) {
-                            draft = draft.toMutableList().apply { removeAt(at) }
-                        }
-                    },
+                    onRemove = { removeFromDraft(card.id) },
                     onArrange = { editing = true },
                     ordinal = index,
                 )
@@ -809,7 +879,10 @@ fun TodayFieldScreen(
     options?.let { cardId ->
         val at = draft.indexOfFirst { it.id == cardId }
         val card = draft.getOrNull(at)
-        if (card == null || at < 1) {
+        // **Where it stands on the screen**, which is the only position any of
+        // these controls can honestly talk about. #462.
+        val here = drawn.indexOfFirst { it.id == cardId }
+        if (card == null || here < 0) {
             options = null
         } else {
             CardOptionsSheet(
@@ -818,28 +891,34 @@ fun TodayFieldScreen(
                 onResize = { size ->
                     draft = draft.toMutableList().also { it[at] = it[at].copy(size = size) }
                 },
-                onPromote = {
-                    draft = draft.toMutableList().apply { add(0, removeAt(at)) }
-                    options = null
-                },
-                onMoveUp = if (at > 1) {
+                // **Nothing is promoted to where it already is.** The control
+                // was offered on the lead and did nothing.
+                onPromote = if (here > 0) {
                     {
-                        draft = draft.toMutableList().apply { add(at - 1, removeAt(at)) }
+                        draft = draft.toMutableList().apply { add(0, removeAt(at)) }
                         options = null
                     }
                 } else {
                     null
                 },
-                onMoveDown = if (at < draft.lastIndex) {
+                onMoveUp = if (here > 1) {
                     {
-                        draft = draft.toMutableList().apply { add(at + 1, removeAt(at)) }
+                        moveDrawn(cardId, later = false)
+                        options = null
+                    }
+                } else {
+                    null
+                },
+                onMoveDown = if (here < drawn.lastIndex) {
+                    {
+                        moveDrawn(cardId, later = true)
                         options = null
                     }
                 } else {
                     null
                 },
                 onRemove = {
-                    draft = draft.toMutableList().apply { removeAt(at) }
+                    removeFromDraft(cardId)
                     options = null
                 },
                 // **The source picker, and only where a card takes one.** The
@@ -919,6 +998,18 @@ private fun LeadSlot(
     editing: Boolean,
     canMoveDown: Boolean,
     onMoveDown: () -> Unit,
+    /**
+     * Takes the card in the lead slot off Today, from the mark in its corner.
+     *
+     * **Null only when there would be nothing left to store**, which no shipped
+     * starting hand can reach: all fourteen of them and the default hand lead
+     * with `digest`, and a row that is never drawn is never removable. The
+     * parameter is nullable so that a hand written later cannot turn a slot
+     * that must always hold something into a layout with no rows at all.
+     */
+    onRemove: (() -> Unit)?,
+    /** Opens this card's own options sheet, which is what a tap does while arranging. */
+    onOptions: () -> Unit,
     onArrange: () -> Unit,
 ) {
     val strings = LocalStrings.current
@@ -945,12 +1036,34 @@ private fun LeadSlot(
                 countLine = countLineKey(card.type)?.let { strings[it] },
             ),
         ),
-        openLabel = strings("today.card.open", "name" to tab),
-        onOpen = { onOpen(card) },
+        // **In edit mode it is a door to its own options**, exactly as every
+        // other card is. #462: this was the one card whose tap during an
+        // arrangement navigated to a section, taking the person out of an
+        // unsaved edit, and it was also the one card with no options to open.
+        openLabel = if (editing) {
+            strings("today.options.open", "name" to tab)
+        } else {
+            strings("today.card.open", "name" to tab)
+        },
+        onOpen = { if (editing) onOptions() else onOpen(card) },
         size = CardSize.WIDE,
         lead = true,
         modifier = Modifier.testTag(TodayFieldTags.LEAD),
         speaksAsOneNode = !editing,
+        // **The remove mark the lead never had**, and the same one every other
+        // card wears, under the same tag, so a walk and a test find it the same
+        // way here as anywhere.
+        corner = if (editing && onRemove != null) {
+            {
+                RemoveMark(
+                    spoken = strings("today.edit.remove", "name" to tab),
+                    onClick = onRemove,
+                    modifier = Modifier.testTag(TodayFieldTags.remove(card.id)),
+                )
+            }
+        } else {
+            null
+        },
         // **The biggest thing on the screen answers the hold too.** A gesture
         // that works everywhere except on the first thing a thumb lands on
         // teaches somebody the gesture is unreliable.
