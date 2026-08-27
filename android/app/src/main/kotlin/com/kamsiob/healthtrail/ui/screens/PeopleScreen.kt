@@ -71,6 +71,11 @@ fun PeopleScreen(
 
     Page(
         section = Repository.Section.CARE_TEAM,
+        // **Its own tip, not the care team's.** #464: the section is right,
+        // because this screen is about people and wears their ink, and the tip
+        // that came with it opened "Who you call" on a screen about which
+        // notebook is showing.
+        tipKey = "profiles",
         eyebrow = strings["nav.more"],
         title = strings["people.title"],
         subtitle = strings["people.lead"],

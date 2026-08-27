@@ -29,6 +29,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,6 +47,9 @@ import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.Symbols
 import com.kamsiob.healthtrail.ui.theme.Space
 import com.kamsiob.healthtrail.ui.v4.listGroupShape
+import com.kamsiob.healthtrail.ui.v4.HeaderActions
+import com.kamsiob.healthtrail.ui.v4.TipsSheet
+import com.kamsiob.healthtrail.ui.v4.tipFor
 import com.kamsiob.healthtrail.ui.theme.hueFor
 
 /**
@@ -98,6 +105,20 @@ fun MedicationsScreen(
     val hue = hueFor(Repository.Section.MEDICATIONS)
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
+    // **The lamp, on the one section screen that is not on `Page`.** #464:
+    // `tips.medications.*` was written and reachable only from the add form,
+    // because this screen builds its own bar and that bar had no actions slot
+    // at all. #443 will make this one `PageBar` with everything else; until it
+    // does, the list is not the one screen in the notebook with no way to ask
+    // what it is for.
+    var showTips by remember { mutableStateOf(false) }
+    if (showTips) {
+        TipsSheet(
+            tip = tipFor(Repository.Section.MEDICATIONS),
+            onDismiss = { showTips = false },
+        )
+    }
+
     val current = medications.filterNot { it.isStopped }
     val stopped = medications.filter { it.isStopped }
 
@@ -121,6 +142,7 @@ fun MedicationsScreen(
                         )
                     }
                 },
+                actions = { HeaderActions(onTips = { showTips = true }) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = scheme.background,
                     scrolledContainerColor = scheme.surfaceContainer,

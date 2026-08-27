@@ -64,6 +64,10 @@ CHECKS = [
         "no sentence a person reads is glued together in Kotlin instead of the catalog",
     ),
     ("check_string_keys.py", "every catalog key the app asks for exists, so no screen crashes on opening"),
+    (
+        "check_tips.py",
+        "every lamp opens a written tip, and no tip is written that no lamp opens",
+    ),
     ("check_live_views.py", "no base table read outside a live view, so tombstones cannot leak"),
     ("check_fixtures.py", "the fixture generator is deterministic and hits its stated scale"),
     ("check_hook_quoting.py", "hook commands are quoted, so a guard cannot be a silent no-op"),

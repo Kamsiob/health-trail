@@ -53,6 +53,7 @@ import androidx.compose.ui.platform.LocalDensity
 import com.kamsiob.healthtrail.data.Repository
 import com.kamsiob.healthtrail.ui.v4.TipsSheet
 import com.kamsiob.healthtrail.ui.v4.tipFor
+import com.kamsiob.healthtrail.ui.v4.tipForDestination
 import com.kamsiob.healthtrail.ui.theme.hueFor
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import kotlinx.coroutines.delay
@@ -143,6 +144,19 @@ fun Page(
      */
     section: Repository.Section? = null,
     /**
+     * A tip of this page's own, for a page whose section is not what it is about.
+     *
+     * **Written because one page was lying.** #464: the people switcher wore
+     * `CARE_TEAM` for its color, which is right, and inherited the care team's
+     * tip with it, which is not: its lamp opened "Who you call. Everyone
+     * involved in the care, and how to reach them" on a screen about which
+     * notebook is showing. A page keeps its section's ink and states its own
+     * subject.
+     *
+     * Null on every page whose section is its subject, which is most of them.
+     */
+    tipKey: String? = null,
+    /**
      * Changes what is already written on this page. D173.
      *
      * **The corner, on every page that has one.** It was a quiet button in the
@@ -226,8 +240,11 @@ fun Page(
     content: LazyListScope.() -> Unit,
 ) {
     var showTips by remember { mutableStateOf(false) }
-    if (showTips && section != null) {
-        TipsSheet(tip = tipFor(section), onDismiss = { showTips = false })
+    // The page's own tip wins over its section's, and a page with neither has
+    // no lamp rather than a lamp that opens raw keys. #464.
+    val tip = tipKey?.let { tipForDestination(it) } ?: section?.let { tipFor(it) }
+    if (showTips && tip != null) {
+        TipsSheet(tip = tip, onDismiss = { showTips = false })
     }
 
     // **Material's own scaffold and its own large flexible app bar.** The bar
@@ -298,7 +315,7 @@ fun Page(
                         }
                     }
                     HeaderActions(
-                        onTips = if (section != null) {
+                        onTips = if (tip != null) {
                             { showTips = true }
                         } else {
                             null

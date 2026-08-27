@@ -165,6 +165,11 @@ fun CareTeamScreen(
     }.filterNot { it.id == lead?.id }
 
     Page(
+        // **The lamp this screen never had.** #464: the tip was written,
+        // reviewed and translated into four languages, and the `Page` call
+        // omitted `section`, which is the one argument that draws it. Four
+        // of the twelve notebook rows were in that state.
+        section = Repository.Section.CARE_TEAM,
         eyebrow = strings["notebook.section.care_team"],
         eyebrowColor = hue.ink,
         title = strings["careteam.heading"],

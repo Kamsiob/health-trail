@@ -82,6 +82,11 @@ fun MilestonesScreen(
     val hue = hueFor(Repository.Section.CHAPTERS)
 
     Page(
+        // **The lamp this screen never had.** #464: the tip was written,
+        // reviewed and translated into four languages, and the `Page` call
+        // omitted `section`, which is the one argument that draws it. Four
+        // of the twelve notebook rows were in that state.
+        section = Repository.Section.CHAPTERS,
         eyebrow = strings["notebook.section.chapters"],
         eyebrowColor = hue.ink,
         title = strings["milestones.heading"],
