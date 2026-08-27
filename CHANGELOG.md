@@ -6,6 +6,14 @@ This project uses [semantic versioning](https://semver.org). Release notes are d
 
 ## Unreleased
 
-Phase 0, the foundation. Nothing is installable yet, so there is nothing here a user would notice. The work in this phase is the parts that cannot be added later without discarding someone's records: stable ids that will not collide between devices, deletion that leaves a marker instead of a hole, a change log written with every entry, a schema published as a contract rather than buried in the code, and right to left layout designed in from the first screen rather than bolted on.
+Nothing yet.
 
-The first entry a user would recognize arrives with the notebook core.
+## 1.0.0
+
+The first release. A private care notebook for the family member who ends up holding the whole picture.
+
+Keep one record of everything: calls, visits, appointments, medications, documents, bills, and the long processes like applications and appeals. Rough dates are fine, every field is optional, and nothing is filed for you. The trail is ordered by when things happened rather than when you found time to type them.
+
+Everything stays on the phone. No account, no cloud, no analytics, no ads, no subscription. Your whole notebook exports as one encrypted file you hold yourself, and it restores on another phone.
+
+Version one is in American English. Spanish, Chinese and Arabic are written and wait on a native speaker who understands the American care system.

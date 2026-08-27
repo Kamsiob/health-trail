@@ -4,7 +4,7 @@ What is planned, what is being worked on now, and what this app will deliberatel
 
 **Kept current as phases complete.** The [project board](https://github.com/users/Kamsiob/projects/2) has the detail and the issue tracker has the reasoning. Where this file and the board disagree, the board is newer.
 
-**Last brought current:** 2026-08-01.
+**Last brought current:** 2026-08-27, at the 1.1 release.
 
 ---
 
@@ -18,32 +18,31 @@ It is for the person who becomes the information hub because providers rarely ta
 
 ## Now
 
-**Phase 0, the foundation, is substantially built.** The schema, the encrypted database, locally generated ids, the repository layer, the four locale catalogs, the content compliance checks, and the event date model are all in and verified.
+**Version 1.0 shipped to Google Play on 2026-08-19, and 1.1 is the current release.** The app is built: the twelve notebook sections, Today, the trail, projects, memos, capture with all six inputs, universal search, Deleted Items, and an encrypted export that restores on another phone.
 
-**Phase 1, the notebook core, is where the work is.** What runs on real hardware today: the disclaimer gate, essentials first setup, the situation picker, the notebook table of contents, capture with five of its six inputs, the Unfiled tray, and the date picker. An entry saved reaches the trail, the change log records it in the same transaction, and the counts refresh.
-
-**Phase 0 is deliberately larger than usual**, because every item in it is something that cannot be added later without discarding user data or reimplementing a platform: stable ids, tombstones instead of row deletion, the change log, a published schema both platforms read, event dates that can say "sometime in November", and right to left support designed in from the first screen rather than retrofitted.
+**The work since 1.0 has been underneath the screens rather than on them**, and it was found by reviewing the data layer rather than by using the app: a record that could be lost with no error on screen. Journal mode that was declared and never applied, a restore that replaced the live file with a stream copy, a database that reached a crash rather than a screen when it would not open, columns with a reader and no writer. Milestone 9 closed most of that and milestone 10 is where the remaining wiring lives.
 
 ### The nearest things still open
 
-- **The export container.** Attachments and the container itself are done. Encryption, import, and the field by field round trip are not. This is the only proof that data survives an update, so nothing ships without it.
-- **The template catalog in four languages.** The interface is translated and the 1500 strings of template content are not, so an Arabic reader currently gets an Arabic app wrapped around English content. **Version one ships English for exactly this reason**, D141: a confident wrong translation of what a federal rule requires is a person acting on false information about their rights.
-- **Today, with the digest engine**, and the trail itself.
+- **The wiring under the screens**, milestone 10. Columns with a reader and no writer, which read on screen as a section that is merely unfilled. Filing that happens only at capture, so nothing can be re-filed.
+- **What the notebook still needs**, milestone 11. The nine additions agreed in D208. Two need schema and the owner first.
+- **One chrome, one motion**, milestone 12. Seven header implementations become one, and then the motion and hierarchy defects that repeat across many screens.
+- **The template catalog in four languages.** The interface is translated and the 1500 strings of template content are not, so an Arabic reader would get an Arabic app wrapped around English content. **Version one ships American English for exactly this reason**, D180 superseding D141: a confident wrong translation of what a federal rule requires is a person acting on false information about their rights.
 
 ---
 
 ## Planned
 
-Each of these is one coherent area, and each ends with its testing gate passed and a regression sweep of everything before it.
+Each of these is one coherent area, and each ends with its testing gate passed and a regression sweep of everything before it. **Items 1 through 4 are built and shipped**, and are kept here because a roadmap that deletes what it delivered reads as though nothing was.
 
-1. **The notebook core.** The disclaimer gate, essentials first setup, situation templates, Today with its digest, capture with all six inputs and the Unfiled tray, the trail, care team, medications, the emergency card.
-2. **Time and structure.** Chapters with transfers and archiving, care threads with filtering and ending, appointments with prep sheets, ask next time, the year scrubber, month review, the milestone arc.
-3. **Incidents, instructions, and money.** Incident threads with export, standing instructions with their tags and violation tracking, bills with states and links, running cost sheets.
-4. **Projects and documents.** Projects with checklists, waiting on, contacts, and attachments. Documents with categories and a note on where the physical original lives. The full template library, editable and extendable.
-5. **Search and assembly.** Universal search, scoped search per section, assembled collections, any day reconstruction, the family update draft, and the PDF export engine.
+1. **The notebook core.** Shipped. The disclaimer gate, essentials first setup, situation templates, Today with its digest, capture with all six inputs and the Unfiled tray, the trail, care team, medications, the emergency card.
+2. **Time and structure.** Shipped. Chapters with transfers and archiving, care threads with filtering and ending, appointments with prep sheets, ask next time, the year scrubber, month review, the milestone arc.
+3. **Incidents, instructions, and money.** Shipped. Incident threads with export, standing instructions with their tags and violation tracking, bills with states and links, running cost sheets.
+4. **Projects and documents.** Shipped. Projects with checklists, waiting on, contacts, and attachments. Documents with categories and a note on where the physical original lives. The full template library, editable and extendable.
+5. **Search and assembly.** Universal search is shipped. Scoped search per section, assembled collections, any day reconstruction, the family update draft and the PDF export engine are not.
 6. **System integration.** Home screen widget, quick settings tile, share sheet target.
-7. **Portability.** Automated local backup to a folder you choose, restore, situation change, closing a trail, and the full data wipe.
-8. **Hardening and release.** Every persona walked, accessibility verified, **English with right to left verified against a forced layout direction**, per D141, performance at five year scale, and the release.
+7. **Portability.** Export, restore, merge, situation change and the full data wipe are shipped. Automated local backup to a folder you choose is not.
+8. **Hardening and release.** Shipped as 1.0 on 2026-08-19. Every persona walked, the accessibility floor verified with the assistive settings actually on, performance at five year scale, and the release itself. **Right to left is built in and is not verified and not a release gate**, D180 superseding the right to left half of D141.
 
 ---
 

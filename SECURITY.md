@@ -37,4 +37,4 @@ The app makes a small number of specific promises, and anything that breaks one 
 
 ## Supported versions
 
-The most recent release is the only supported version. Fixes ship forward rather than being backported.
+The most recent release on Google Play is the only supported version, and the GitHub release asset is the same build. Fixes ship forward rather than being backported.

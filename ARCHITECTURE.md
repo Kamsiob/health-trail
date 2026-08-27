@@ -2,9 +2,9 @@
 
 How Health Trail is put together, for someone who wants to understand or modify it.
 
-**Status marker.** This document describes the app as it currently is. Phase 0 is in progress, so much of what follows is designed and specified but not yet built. Every section says which. Nothing here is described as built until it is, because a document that overstates completion is worse than one admitting something is half finished.
+**Status marker.** This document describes the app as it currently is, and every section says whether the thing it describes is built. Nothing here is described as built until it is, because a document that overstates completion is worse than one admitting something is half finished. **Brought current on 2026-08-27, for the 1.1 release**, having spent months saying the app did not exist.
 
-**What exists right now:** the monorepo layout, the canonical schema with its change log triggers and tombstone filtering views, the export format specification, an Android application that builds and runs the schema on a device, the design tokens for both themes, and the compliance checks. **What does not:** the encrypted database, the repository layer, the deterministic engine, the export container, the web scaffold, the fixture generator, and every screen of the actual app.
+**What exists right now:** all of it except the web scaffold. The monorepo layout, the canonical schema with its change log triggers and tombstone filtering views, the encrypted database, the repository layer, the deterministic engine, the export container and its published format, the fixture generator, the compliance checks, and 89 screens shipped on Google Play. **What does not:** the web scaffold, which is issue #16 and holds a README saying so.
 
 ---
 
@@ -14,12 +14,12 @@ How Health Trail is put together, for someone who wants to understand or modify 
 contract/          platform neutral. The source of truth for anything shared.
   schema.sql       the canonical schema as DDL, with comments        [exists]
   EXPORT-FORMAT.md the export container specification                [exists]
-  i18n/            message catalogs, ICU MessageFormat               [pending]
-  test-vectors/    golden input and expected output per locale       [pending]
+  i18n/            message catalogs, ICU MessageFormat               [exists]
+  test-vectors/    golden input and expected output per locale       [exists]
 templates/         57 care templates as JSON                         [exists]
-android/           the Kotlin application                            [partial]
+android/           the Kotlin application                            [exists]
 web/               scaffold proving the contract, no features        [pending]
-tools/             fixture generator, compliance checks              [partial]
+tools/             fixture generator, compliance checks              [exists]
 ```
 
 Two rules hold this together, and both are enforced rather than trusted:
@@ -37,15 +37,15 @@ Almost every structural decision in this app traces to one of four constraints. 
 
 **A future sync must be possible without discarding data.** Three things are impossible to retrofit: sync onto auto-increment primary keys has no correct merge when two devices both create row 47, sync onto a schema that deletes rows resurrects deleted entries on the next connection forever, and a second platform against an undocumented schema is a reimplementation. So every row carries a locally generated id, deletion is a tombstone, and every write appends to a change log. All three are in the first migration.
 
-**Arabic ships in v1.** Right to left is not a localization pass at the end. Every screen is direction aware from the first screen, layout uses start and end rather than left and right, and the trail itself mirrors. The deterministic engine composes sentences from per-locale message templates rather than concatenating fragments, because concatenation breaks in every language except English.
+**Right to left is not a localization pass at the end.** Arabic does not ship in version one, D180, and this was designed in from the first screen anyway because it is the part that cannot be added later. Every screen is direction aware from the first screen, layout uses start and end rather than left and right, and the trail itself mirrors. The deterministic engine composes sentences from per-locale message templates rather than concatenating fragments, because concatenation breaks in every language except English.
 
 **The app must never conclude.** No medical advice, no interpretation, no ranges, no thresholds, no color coding by value. This is a constraint on the rendering layer and on the engine, not only on the copy, and it is checked by tests that assert against rendered components rather than against strings.
 
 ## 3. Data storage and protection
 
-**Status: the schema exists and runs. The encrypted database and the repository layer do not.**
+**Status: built.**
 
-`contract/schema.sql` is written, and the Android app executes it on the device. What is still missing is SQLCipher, the Keystore key, and the Kotlin repository layer, which are issues #14 and #8.
+`contract/schema.sql` is the schema, the Android app executes it on the device, and SQLCipher, the Keystore key and the Kotlin repository layer are all in place. Issues #14 and #8 are closed.
 
 One SQLite database is the entire data store, encrypted at rest with SQLCipher using a key generated in and held by the Android Keystore. The key never leaves the device and is never written to preferences, a file, or a log.
 
@@ -92,7 +92,7 @@ Content addressed. A photographed bill is stored as a file named by the hash of 
 
 ## 4. The three structural axes
 
-**Status: designed, not yet built.**
+**Status: built.**
 
 Every entry can carry all three, and this is in the schema from the first migration rather than bolted on:
 
@@ -104,7 +104,7 @@ Every screen in the app is a lens on the same entries through some combination o
 
 ## 5. The deterministic engine
 
-**Status: designed, not yet built.**
+**Status: built. There is no model and no inference anywhere in the app.**
 
 Every digest, month review, prep sheet, and pattern count is produced by querying real rows, doing all arithmetic in code, and composing sentences from per-locale message templates. There is no model, no inference, and no interpretation anywhere in the app.
 
@@ -134,7 +134,7 @@ Field level merging is deliberately not built. A future session should not add i
 
 ## 7. The export container
 
-**Status: designed, not yet built.**
+**Status: built, published byte for byte in `contract/EXPORT-FORMAT.md`, and proven by a field by field round trip on the signed build.**
 
 One versioned zip, self describing enough that a stranger could read it in ten years:
 
@@ -157,7 +157,7 @@ The test that matters is not whether import completes. It is field by field equa
 
 ## 8. Threading and lifecycle
 
-**Status: the single activity and the theme exist. The rest is designed.**
+**Status: built.**
 
 Single activity, Jetpack Compose, Material 3 with a fully custom theme, all built. Dynamic color is deliberately not used: the palette carries meaning, gold means the trail and red means the emergency card, and letting the wallpaper reassign those would break the one rule keeping the app from looking clinical.
 

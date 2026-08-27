@@ -3,17 +3,17 @@
 [![CI](https://github.com/Kamsiob/health-trail/actions/workflows/ci.yml/badge.svg)](https://github.com/Kamsiob/health-trail/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-2F6F8F)](LICENSE)
 [![Content license](https://img.shields.io/badge/templates-CC%20BY--SA%204.0-4E8A5C)](templates/LICENSE-CONTENT.md)
-[![Status](https://img.shields.io/badge/status-in%20build%2C%20not%20yet%20installable-D99D2B)](https://github.com/Kamsiob/health-trail/issues/321)
+[![Google Play](https://img.shields.io/badge/Google%20Play-1.1-4E8A5C)](https://play.google.com/store/apps/details?id=com.kamsiob.healthtrail)
 
 **A private care notebook for family caregivers. Everything stays on your phone.**
 
-> **Not installable yet.** This is being built in the open. There is no release, no APK, and no store listing.
+> **On Google Play**, and built in the open. Version 1.0 shipped on 2026-08-19; version 1.1 is the current release.
 >
-> **What is built:** the notebook and its twelve sections, capture, the trail, chapters and threads, appointments and prep, incidents, standing instructions, money, projects, documents, Today, universal search, and an encrypted export that restores on another phone. 75 screen files, and every one of them has been opened on a real device.
+> **What is built:** the notebook and its twelve sections, capture, the trail, chapters and threads, appointments and prep, incidents, standing instructions, money, projects, memos, documents, Today, universal search, Deleted Items, and an encrypted export that restores on another phone. 89 screen files, and every one of them has been opened on a real device.
 >
-> **What is not:** scoped search inside a section, the assembled view, the PDF engine, the home screen widget and the share sheet, and the release itself. The document choice inside the capture sheet says plainly that it is not built rather than failing quietly.
+> **What is not:** scoped search inside a section, the assembled view, the PDF engine, and the home screen widget and share sheet. The document choice inside the capture sheet says plainly that it is not built rather than failing quietly.
 >
-> **Version one ships in English.** Spanish, Chinese, and Arabic are built and waiting on a native speaker who understands the American care system, for the reason in [DECISIONS.md](DECISIONS.md) D141.
+> **Version one ships in American English, and nothing else is verified.** Spanish, Chinese and Arabic are written and complete in the catalogs and wait on a native speaker who understands the American care system. Right to left is built in and is **not verified and not a release gate**, per [DECISIONS.md](DECISIONS.md) D180.
 >
 > Issue [#321](https://github.com/Kamsiob/health-trail/issues/321) is the order of work, the [board](https://github.com/users/Kamsiob/projects/2) has the detail, and `HANDOFF.md` is the current state in full.
 
@@ -31,20 +31,20 @@ It is a record-keeping app. It is not a medical app, and it gives no medical adv
 
 ## What it looks like
 
-Real captures from the running app on a Pixel 10 Pro XL. **Nothing here is a mockup or a rendering of a design file**, and the capture script refuses to run unless this app is the focused window.
+Real captures from the running app on a real phone, on fixture data rather than anybody's records. **Nothing here is a mockup or a rendering of a design file**, and the capture script refuses to run unless this app is the focused window.
 
 | | | |
 |---|---|---|
 | <img src="docs/screenshots/today-hero-light.png" width="230" alt="Today, led by one line saying what changed since the last visit, with what is still open as quiet rows beneath it."> | <img src="docs/screenshots/notebook-grid-light.png" width="230" alt="The notebook: what needs you at the top, then twelve sections as a grid of tiles, each with its own drawing and count."> | <img src="docs/screenshots/capture-sheet-grid-light.png" width="230" alt="The capture sheet: six tiles in a two by three grid, a call, a visit, an incident, a measurement, a question, a document."> |
 | **Today**, on a notebook with nothing in it. It coaches rather than sitting blank, and the emergency card is always the first suggestion. | **The notebook.** Twelve sections that never move, so nothing is ever somewhere new. | **Capture.** One gold button on every screen, six ways in. |
 | <img src="docs/screenshots/capture-form-rebuilt-light.png" width="230" alt="The log a call form: what was said first, then when, then who, with everything else behind Add more."> | <img src="docs/screenshots/unfiled-tray-suggestion-first-light.png" width="230" alt="The unfiled tray, leading with the app's single best suggestion for where each entry belongs."> | <img src="docs/screenshots/notebook-grid-arabic-light.png" width="230" alt="The notebook in Arabic, the whole grid mirrored right to left with real Arabic glyphs."> |
+| **A call, logged.** Every field optional. "Roughly is fine" for the date, and the button says **Save what you have**. | **Nothing gets filed for you.** Anything saved without a home waits here, with a suggestion you confirm. | **Arabic, on the device.** Mirrored right to left, real glyphs. Built in from the first screen rather than added at the end, and not verified for release, per D180. |
 | <img src="docs/screenshots/trail-light.png" width="230" alt="The trail: four entries on a dashed gold route, each with a colored node, headed by month."> | <img src="docs/screenshots/emergency-card-dark.png" width="230" alt="The emergency card: who to call, what they take, allergies and blood type, and what the signed paperwork says."> | <img src="docs/screenshots/project-spine-light.png" width="230" alt="A project as a spine: a filled waypoint for a step that is done, a hollow one for a step not started yet."> |
 | **The trail.** Everything written down, on the app's own dashed route. Ordered by when things happened, not when they were typed. | **The emergency card**, designed to be handed to a paramedic. What the signed paperwork says is quoted, never interpreted. | **Projects.** Sixteen long processes with their ordered steps, all of them yours to change, so nobody learns a Medicaid application one missed requirement at a time. |
 | <img src="docs/screenshots/more-dark.png" width="230" alt="The Appearance setting in dark theme, offering follow the phone, light, and dark."> | <img src="docs/screenshots/fonts-chinese-light.png" width="230" alt="The notebook in Simplified Chinese, rendered in the system CJK typeface."> | <img src="docs/screenshots/standing-instructions-dark.png" width="230" alt="A standing instruction saying federal nursing home rules back it, with the scope of those rules stated."> |
-| **A call, logged.** Every field optional. "Roughly is fine" for the date, and the button says **Save what you have**. | **Nothing gets filed for you.** Anything saved without a home waits here, with a suggestion you confirm. | **Arabic, on the device.** Mirrored right to left, real glyphs. Right to left was built in from the first screen rather than added at the end. |
 | **Dark, on a phone set to light.** The theme is the app's own setting, not an inherited one. | **Chinese**, in the system CJK face. Nothing is bundled for it, because Android already ships a good one. | **What backs a request up.** Every standing instruction says whether a federal rule requires it or whether it is something nobody has to agree to. |
 
-**Two of those captures are Arabic and Chinese, and version one ships English.** They are here because right to left and script coverage are built into the app rather than planned for it, which is the part that is expensive to add later. The content for those languages is written and waiting on a native speaker, per D141.
+**Two of those captures are Arabic and Chinese, and version one ships American English.** They are here because right to left and script coverage are built into the app rather than planned for it, which is the part that is expensive to add later. The content for those languages is written and waiting on a native speaker, and right to left is not a release gate, per D180.
 
 **Three grid files are the binding visual reference**, and between them they are the authority on measurement: `reference/screen-grid.html` holds the 25 approved screens and governs generally, `reference/projects-grid.html` governs the Projects surface, and `reference/today-grid.html` governs Today. `DESIGN.md` holds the tokens, type scale, motion, and copy rules, and points at the grids for spacing, elevation, and composition rather than restating them.
 
@@ -67,10 +67,11 @@ Every color pair in both themes is measured against the WCAG AA floors by `check
 - **Nothing gets filed for you.** Anything saved without a home lands in an Unfiled tray, where the app reads the words you wrote, suggests a care thread, and waits for you to confirm. It never files on its own.
 - **A notebook with twelve sections that never move**, grouped and folded to the kind of care being given. A hospital stay brings appointments and the trail forward and folds money away; a different situation folds differently.
 - **Setup you can skip entirely.** Three questions, all optional. Skipping produces a working notebook. Answering "not sure yet" is a real answer that changes what the app asks you later.
-- **Right to left built in from the first screen rather than added at the end**, and verified by running the app on a device rather than by reading the code. **Four locale catalogs exist and one ships**: version one is English, and Spanish, Chinese, and Arabic wait for a native speaker, per D141.
+- **Right to left built in from the first screen rather than added at the end.** **Four locale catalogs exist, are complete, and one ships**: version one is American English, Spanish, Chinese and Arabic wait for a native speaker, and right to left is not verified and not a release gate, per D180.
 - **Light or dark, your choice.** Follow the phone, or pin the app to one regardless of what the phone is doing. It applies the moment you pick it.
 - **A summary of what changed since you were last here.** Today leads with it, in one line, and says so plainly when nothing has changed rather than leaving you to work that out from an empty screen.
-- **Universal search** across every section at once, from the top of Today.
+- **Universal search** across every section at once, from the top of Today and from More.
+- **Deleted Items.** Anything removed waits there and goes back where it was, on its own date, because deletion is a tombstone rather than a removed row. From 1.1 it can also be deleted permanently, behind a confirmation that says so.
 - **An export that opens somewhere other than the phone that wrote it**, encrypted with a passphrase you choose, with a restore that shows you what is in the file before anything changes.
 - **Documents as a gallery of your own paper**, three across and grouped by year, with where each original physically is written under it. The photograph is rarely the copy a clerk will accept.
 - **Projects you own rather than checklists you were handed.** The stages, the steps, the papers and the date chips can all be renamed, reordered or removed, a project can be started with no template at all, and how a project ends up set up can be saved as your own template. Editing one of the sixteen the app ships with makes your copy rather than changing the catalog, so an update can never overwrite what you wrote.
@@ -107,7 +108,9 @@ These are decisions rather than gaps. [ROADMAP.md](ROADMAP.md) carries the reaso
 
 ## Install
 
-There is no release yet. When there is, it will be on Google Play and as a GitHub release asset. Both carry the same signature, so you can install from either and switch between them without losing anything.
+**[Google Play](https://play.google.com/store/apps/details?id=com.kamsiob.healthtrail)**, or the APK attached to the [latest release](https://github.com/Kamsiob/health-trail/releases/latest) for a phone without Play services.
+
+Both files are the same build and carry the same signature, because the release asset is the universal APK downloaded back from the Play Console rather than a second locally signed one. So you can install from either, switch between them, and keep everything. Free, no account, no in-app purchase.
 
 ## Build from source
 
@@ -132,13 +135,16 @@ contract/     the schema, the export format, the message catalogs, and the golde
 templates/    57 care templates as JSON, published separately under CC BY-SA 4.0
               so they are useful to people who never install anything.
 android/      the Kotlin application.
-web/          a scaffold whose only job is to open the same schema, which is what
-              stops the two platforms drifting. It has no features.
+web/          reserved for a scaffold whose only job will be to open the same
+              schema, which is what will stop the two platforms drifting. It
+              holds a README saying so and no code yet.
 tools/        the fixture generator, the compliance checks, and the build scripts.
 reference/    the three grid files: 25 approved screens, plus the Projects and
               Today surfaces. Authoritative on measurement.
-docs/         the roadmap's supporting notes, the bundled font licenses, and the
-              device screenshots, which are real captures and never mockups.
+docs/         the run log and the traps that cost real time, the acceptance
+              record, the removal ledger, the store listing, and the device
+              screenshots, which are real captures on fixture data and never
+              mockups.
 ```
 
 [ROADMAP.md](ROADMAP.md) is what is planned, what is being worked on now, and what this app will deliberately never do.

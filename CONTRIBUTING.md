@@ -6,7 +6,7 @@ The most valuable thing anyone can contribute is not code. It is a description o
 
 ## Before you start
 
-Read the [roadmap](https://github.com/Kamsiob/health-trail/issues/21). It lists what is planned and, more usefully, what this app will deliberately never do. Cloud sync, accounts, shared editing, reminders, medical advice, and anything that interprets a measurement are all on the second list on purpose, with the reasoning next to each one.
+Read [ROADMAP.md](ROADMAP.md). It lists what is planned and, more usefully, what this app will deliberately never do. Cloud sync, accounts, shared editing, reminders, medical advice, and anything that interprets a measurement are all on the second list on purpose, with the reasoning next to each one.
 
 A change that adds one of those will not be accepted, however well it is written. That is not a judgment on the code. It is that the app makes specific promises to people who are already dealing with enough, and the promises are the product.
 
@@ -71,7 +71,7 @@ No change is finished until it survives the export, wipe, import round trip with
 - **Kotlin**, Jetpack Compose, single activity.
 - **The schema is never defined in Kotlin.** It lives in `contract/schema.sql`. Do not add a second copy, in any form, including Room entities or generated code from a separate schema file.
 - **Never query a user data table directly.** Go through the repository layer, which filters tombstones by construction. One forgotten `deleted_at IS NULL` is a data leak of something a user believed they deleted.
-- **Layout uses start and end, never left and right.** Arabic ships in v1 and every screen is direction aware.
+- **Layout uses start and end, never left and right.** Every screen is direction aware. Arabic does not ship in version one and right to left is not a release gate, D180, and neither of those is a reason to write a hardcoded left.
 - **Never assemble a user facing sentence by concatenating fragments.** Compose it from a message template in `contract/i18n/`. Concatenation breaks in every language except English.
 - **Design tokens, never literal values.** Colors, spacing, radii, and type come from the theme.
 

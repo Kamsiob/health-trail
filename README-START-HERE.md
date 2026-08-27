@@ -7,7 +7,7 @@ Health Trail by Kamsiob, a local-first care notebook for the family member who i
 ## Picking up the work
 
 1. `CLAUDE.md` (loads itself). 24 rules, one page.
-2. `HANDOFF.md`. Current state, about 1,300 words.
+2. `HANDOFF.md`. Current state, and the only document rewritten rather than appended to.
 3. `gh issue view 321`. What to do next.
 
 Nothing else to start.
@@ -66,19 +66,34 @@ HANDOFF.md                   the current state of the work and what to do next. 
                              this every session. Rewritten to current truth, never
                              appended to.
 
-DECISIONS.md                 every decision and why, D1 through D102, plus the BLOCKED
-                             section for anything only the owner can resolve.
+DECISIONS.md                 every decision and why, numbered from D1 and never
+                             renumbered, plus the BLOCKED section for anything
+                             only the owner can resolve. Search a D number; never
+                             read it through.
 
 docs/TRAPS.md                what will bite you, grouped by what you are about to do.
                              Read one section, chosen from its own table. Never all of it.
 docs/RUN-LOG.md              history. How things came to be and what proved them.
                              Never read this to orient yourself.
 
-reference/screen-grid.html   the visual reference. 27 approved screens plus the sitemap.
+reference/screen-grid.html   the visual reference. 25 approved screens plus the sitemap.
                              Open it in a browser. This is what the app looks like.
+
+reference/projects-grid.html the Projects surface, and
+reference/today-grid.html    Today. Both authoritative on measurement.
 
 reference/concept-review.pdf the same screens as a reading document, for sequence
                              and voice.
+
+docs/COLD-START.md           the prompt that starts a cleared session.
+docs/TRAPS.md                what will bite you, one section at a time.
+docs/RUN-LOG.md              how it got here. History. Never read to orient.
+docs/REMOVAL-LEDGER.md       what is frozen and what superseded it.
+docs/V4.md                   the design and the polish bar.
+docs/store/                  the Play listing: eight framed screenshots, the
+                             feature graphic, and the description.
+
+contract/EXPORT-FORMAT.md    the archive, published byte for byte.
 
 SESSION-HANDOFF-PROMPTS.txt  the before and after pair for handing a dying session to a
                              fresh one.
