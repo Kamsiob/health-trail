@@ -16,8 +16,11 @@ pattern below matched something real in this tree on 2026-08-27:
 - **An absolute path under somebody's home directory.** `/home/<name>` and
   `/var/home/<name>` publish an account name, and usually a folder structure
   with it. A `~` path publishes neither and says the same thing.
-- **A private invite link.** A `t.me/+<token>` is a bearer credential: whoever
-  holds it joins the group. One was in `README.md` and in the house template.
+- **A private invite link, and the owner's other places.** A `t.me/+<token>` is
+  a bearer credential: whoever holds it joins the group, and one was published in
+  `README.md` and in the house template. The rule covers every `t.me` link and
+  the YouTube channel with it, owner, 2026-08-27: this repository is about the
+  app, and a link to somewhere else the owner posts is not part of it.
 - **A cloud service account address.** Not a key, and still an admin principal
   named in public together with its project id.
 - **A private network address.** RFC1918 and CGNAT ranges, and tailnet names.
@@ -89,9 +92,10 @@ RULES = [
         None,
     ),
     (
-        "private invite link",
-        re.compile(r"t\.me/\+[A-Za-z0-9_-]+"),
-        "A bearer credential: whoever holds the link joins the group.",
+        "invite or personal channel link",
+        re.compile(r"(?:https?://)?(?:t\.me/\S+|youtu\.be/\S+|(?:www\.)?youtube\.com/(?:@|c/|channel/|user/)\S+)"),
+        "A `t.me/+` link is a bearer credential, and the rest are somewhere else "
+        "the owner posts. This repository is about the app.",
         None,
     ),
     (

@@ -344,10 +344,8 @@ No checklist does this on its own, because the real cause is not pausing. **Afte
 
 Every app includes an About screen containing the app mark, the app name, and a version line stating the version, the license (AGPL-3.0), and by Kamsiob. Below that, plain link rows all at equal visual weight, none emphasized over the others:
 
-YouTube: https://youtube.com/@kamsiob
 GitHub: https://github.com/kamsiob
 Website: https://kamsiob.com
-Telegram, the Kamsiob Lab group. The invite link is a bearer credential and is kept outside every repository.
 Feedback email: hello@kamsiob.com
 Privacy policy: the canonical hosted URL for this app, not a duplicate copy
 Licenses: a screen listing every bundled open source component and its license, plus any content licenses such as CC BY-SA for bundled reference material

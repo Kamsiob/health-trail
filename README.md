@@ -189,6 +189,4 @@ Built and carried by one person. If software made this way matters to you, there
 
 - Website: https://kamsiob.com
 - GitHub: https://github.com/kamsiob
-- YouTube: https://youtube.com/@kamsiob
-- Telegram, the Kamsiob Lab group. Ask for the invite at the address above; the link is a private one and is not published here.
 - Feedback: hello@kamsiob.com. One person builds this, everything gets read, and not everything gets a reply.
