@@ -4,15 +4,16 @@ Current state. Nothing else. Read with `gh issue view 321`; neither repeats the 
 
 Fragments, no filler. Rewritten to current truth, never appended to. History goes to `docs/RUN-LOG.md` (never read to orient) or a commit message.
 
-**Last rewritten:** 2026-08-19, during the overnight durability run. **The order of work changed on 2026-08-18: the interface is last.** Milestone 9 is substantially done and section 2a is what moved.
+**Last rewritten:** 2026-08-27, during the v1.1 run. **1.0 is live on Google Play**, versionCode 2, and the current run is milestone 13.
 
 ---
 
 ## 0. Cold start
 
 1. `gh issue view 321`, then this file. Nothing else.
-2. **The visual polish phase is done and the owner opened a new one.**
-   `gh issue view 321` says the order. Do not re-audit anything before it.
+2. **The phone is shared.** Another session on this machine is building a
+   different app and uses the same device. Section 9 is the rules of the road,
+   and they are not optional.
 3. Check the phone is unlocked before planning device work:
    `adb shell dumpsys window | grep isKeyguardShowing`. **Never switch Android
    user profiles**; it re-locks the phone and there is no way past a secure
@@ -23,167 +24,147 @@ Fragments, no filler. Rewritten to current truth, never appended to. History goe
 Worked examples, best first: `ui/v4/Arrival.kt`, `ui/v4/Press.kt`,
 `ui/v4/MonthGrid.kt`, `screens/MedicationList.kt`, `screens/Notebook.kt`.
 
-## 1. What is done, and do not redo any of it
+## 1. What shipped, and what is shipping
+
+**1.0 is on Google Play**, versionCode 2, versionName 1.0.0, production, status
+completed. The bundle's SHA-256 is
+`182c5823be3904f277f92bcd94b453e17c48baac32d7be78363005556dca8bed`, it is
+signed `CN=Health Trail, O=Kamsiob, C=US`, and the owner holds a copy at
+`~/Desktop/health-trail-1.0.0-versionCode2.aab`. The listing text, eight framed
+screenshots and the feature graphic are live and were set through the Android
+Publisher API with the service account held outside this repository.
+
+**Milestone 13 is v1.1**, opened 2026-08-27 out of the owner's own testing.
+Ten issues, #462 to #471.
 
 | | | |
 |---|---|---|
-| Step 3 | #387 | **Done.** No live file imports from `ui/components`. Eight files left, all frozen tail or `Symbols`/`DatePicker`, each with a `docs/REMOVAL-LEDGER.md` row. |
-| Step 4 | #392 | **Done and closed.** Every screen is on Material's own state layer through `Surface`, `Card`, `FilterChip` or `opensOnTap`. No screen animates a resting color by hand, animates a focus border, or passes `indication = null`. The arrangement tail it handed to #388 is what that phase spent its day on. |
-| Step 5 | #390 | **Done.** All three callbacks wired, `KNOWN` in `check_uncalled_callbacks.py` is empty. |
-| Step 6 | #393 | **Done and verified end to end.** Three people in one notebook, no leakage. Every table has carried `subject_id` since Phase 0, so nothing in the schema changed. |
-| Step 7 | #394 | **Measured twice.** 750 tests, 14 failed on 2026-08-18 after the polish phase, every one a class #394 already names: the 13 pre-existing plus #391. Nothing new. |
-| Step 8 | #389 | **Done.** All six items proved on the phone with three people. |
-| Step 9 | #388 | **Done.** The bar is separated, the selected destination is the app's own mark, every empty state is one designed block, and findings 2 through 8 are answered or resolved. D201, D202. |
-| Step 10 | #395 | **Delivered twice and still open on purpose.** The one the owner has is **13,113,726 bytes, SHA-256 `254f5fb145de8384aa0aa98afee62641163e4ba60ff321f9c7bfef5124d70cea`**, built after Memos joined the bar and walked on the minified build: five destinations and a memo written with a mark. The first delivery is on the issue. **It stays open until the build from the finished app**, because closing and reopening it would lose which APK he has. |
-| Step 11 | #399 | **Done and closed.** The projects list leads with the nearest date and lists the rest as contained rows; inside a project the answer and the date are one block, the file is four tiles, and housekeeping is in the corner. D205, D206. |
+| #462 | The Projects card cannot be removed from Today | **Code landed.** Device verification pending |
+| #463 | The capture bloom colors only the memo option | **Code landed.** Device verification pending |
+| #464 | The Memos lightbulb, and every other tip | **Code landed.** Device verification pending |
+| #465 | Deleted Items, and permanent delete | **Code landed.** Device verification and the instrumented suite pending, which is B9 |
+| #466 | Visual consistency sweep | **Static half done, device walk not started** |
+| #467 | Reorganize More | **Code landed.** Device verification pending |
+| #468 | Profiles | **Code landed.** Device verification pending |
+| #469 | Ship v1.1 | Not started. Gated on the rest |
+| #470 | GitHub cleanup, face and safety | **Done, both halves** |
+| #471 | Removing a reading wrote to a table that does not exist | **Code landed.** Test written, not run, which is B9 |
 
-**"Multiple users and profiles" in #389 means people inside one notebook**, which
-is #393. It does not mean a second Android user on the device. Owner, 2026-08-18.
-Reading it literally cost a locked phone and proved nothing.
+**Nothing above is closed.** An issue closes on device verification, rule 3 in
+section 7, and the phone has not been available.
 
-## 2. What is left, and the order changed on 2026-08-18
+## 2. What the v1.1 run changed, and what it found
 
-**The interface is built and milestone 8 is empty.** Projects, tracked things,
-memos, the bin and the dictation rule all landed and closed the same day.
+**Ten commits, every one on `origin/main`, every one with `tools/verify.sh`
+passing every executed step and 34 checks green.**
 
-**Then the record itself was reviewed**, and the app was found able to lose
-everything a person put in it with no error on screen. **The order is now risk
-order, not effort order.** `gh issue view 321` holds it. Four new milestones:
+**Three of the owner's four bugs were not what the report said, and the real
+cause was worse in each case.**
 
-### 2a. What the overnight run of 2026-08-19 changed
+| Reported | Actually |
+|---|---|
+| The Projects card cannot be removed | **There is no Projects card kind and nothing excluded one.** The exclusion is positional: whatever card stands in the visible lead slot loses its remove mark, its options sheet and its say in where it sits. **And that slot is not holding the lead**: all fourteen shipped starting hands begin with `digest`, which D193 never draws, so the stored lead is a row nobody has seen and the card on screen sits at stored index one or two |
+| The Memos lightbulb shows filler | **The four keys have never existed in any catalog.** Release renders `tips.notes.title` literally; debug throws. `check_string_keys.py` cannot see a key built from an enum name and says so in its own docstring |
+| The bloom colors only the memo | True, and the file already carried the sentence saying what it should do. Six of seven took a branch hardcoding `ink` on `sand`; the one option belonging to no section was the only one asking for a hue |
 
-**17 commits, every one on `origin/main`, every one with `tools/verify.sh`
-passing every executed step.** The single most important fact in the previous
-version of this file, that `HealthTrailDatabase.kt:101` passes `null` as the
-`DatabaseErrorHandler` and the library therefore deletes the notebook, **was
-half wrong and is closed either way.** See #407.
+**And the audits found the mirror defects.** Four notebook sections have a tip
+written and translated four times with `section` omitted from the `Page` call
+that draws the lamp. Medications had no lamp at all. The people switcher's lamp
+opened the care team's tip. Deleted Items iterated `Section`, so every deleted
+memo was listed twice, and six kinds of thing live in tables no `Section` names
+as its own and could not be shown or put back at all.
 
-**Milestone 9, 16 of 18 closed.** #407, #408, #409, #410, #411, #412, #413,
-#414, #415, #416, #417, #418, #419, #420, #454, #457. Open: #451 (B8), #455,
-#461.
-
-**Milestone 10, 6 of 18 closed:** #421, #422, #428, #432, #433, #452, #453.
-Partly done and commented rather than closed: #423 three of five transactions,
-#425 mechanism plus two of eight call sites, #429 two of three parts, #430 the
-writers without the prep sheet read, #434 the medication block without the
-measure hosts. Open and untouched: #424, #426, #427, #431, #458, #459.
-
-**#426 is scoped on the issue rather than started.** Both sides of the key are
-confirmed, and the fix needs a new control on the incident rather than a column
-change, because "Add what happened next" opens a call capture and there is no
-document flow there at all. #427 is the same shape and probably one pass.
-
-**Milestones 11 and 12 are not started**, except #460, the owner's tips panel
-report, whose one verifiable defect is fixed and whose design work is his call.
+**The one write in this app that is not a tombstone now exists**, and
+`contract/DATA-CONTRACT.md` 3 was amended by the owner for it rather than worked
+around. Two exceptions became three. The new one names all five things "removed
+entirely" has to mean, because four of them are invisible: the row, its
+dependents, a nullable reference cleared rather than followed, its change log
+rows, and its attachment bytes.
 
 | What is true now that was not | Where |
 |---|---|
-| **Write ahead logging is actually on.** Proved by `health-trail.db-wal` existing on the phone, where it never did. The contract declared it and it had never once applied | #408 |
-| **The database open names its own error handler**, so surviving corruption is a property of our code rather than of a native flag in a dependency | #407 |
-| **A file that will not open reaches a screen** instead of crashing at launch forever, and that screen asks the person not to uninstall | #410 |
-| **The restore swap is a rename**, and startup adopts the safety copy a half finished restore leaves | #409 |
-| **Attachments are written before the rows that point at them**, and a missing photograph has its own sentence | #411 |
-| **"Saved" means an archive that was reopened and read back** | #412 |
-| **Two silent losses are gone**: a prep answer overwritten by a racing write, and a photographed paper discarded for having no title | #420, #419 |
-| **A merge says what it did**, and an archive from a newer build is no longer called tampering | #454 |
-| **A second person gets the same beginning as the first**, situation picker included | #452 |
-| **The person with two people in the notebook can switch**, which only the fallback Today allowed before | #453 |
-| **A care thread can be finished and started again.** The columns existed, were read in two places, and had no writer | #433 |
+| **Every card on Today can be taken off, the lead included**, and Today has a designed empty state because removing the last one is now reachable | #462 |
+| **Every bloom option wears the hue it writes into**, through `entryHue`, which is the map the trail already reads | #463 |
+| **Every lamp opens a written tip and every written tip has a lamp**, held by `check_tips.py`, which enumerates the sections from the enum | #464 |
+| **Deleted Items lists everything a person can delete**, once each, and can delete one for good | #465 |
+| **More is five groups in frequency order**, recorded in `DESIGN.md` 24, and carries the support link the specification has placed at the bottom of Settings since it was written | #467 |
+| **Removing a reading works.** It wrote to a table called `reading`, which does not exist | #471 |
+| **Nothing in the tracked tree identifies a person, a machine or a secret**, held by `check_no_pii.py` | #470 |
+| **The build is proved to meet what Play requires**, held by `check_play_requirements.py` and `tools/store/check-bundle.sh` | D15 |
 
-**Three transactions that were only ever a comment are now transactions**:
-`makeSubjectActive`, `moveToChapter`, `recordMedicationEvent`. #423 stays open
-for `createPerson` and `applySituation`.
+**Four new checks. 34 now, and every one of them found something real:**
 
-**New tests**, all on the phone: `CorruptionTest`, `JournalModeTest`,
-`InterruptedRestoreTest`, `ActiveSubjectTest`, plus three on `RootStatesTest`
-and one on `PrepTest`. **`ActiveSubjectTest` is the one the run instructions
-asked for**, since nothing had ever exercised `addSubject` or
-`makeSubjectActive`.
+- `check_tips.py`, 18 lamps and 72 keys.
+- `check_no_pii.py`, 529 text files. Proved against a planted example of every
+  pattern it refuses.
+- `check_play_requirements.py`. Proved by lowering `targetSdk` and watching it
+  fail.
+- `tools/store/check-bundle.sh`, which measures what cannot be read from source:
+  16 KB page alignment, size, hash and signature on the artifact about to be
+  uploaded.
 
-**The milestone 9 gate was walked**, not just coded: type a call, `am kill`,
-relaunch. A saved entry survives and is findable. A half written note survives
-too. What does **not** come back is which screen was open, which is now the
-substance of #451 and is **B8** in `DECISIONS.md` after three failed attempts.
+**Do not re-derive these, they cost real time:**
 
-**Do not re-derive these three**, they cost real time:
-
-- **`DefaultDatabaseErrorHandler` returns before deleting when `hasCodec()` is
-  true**, and this build logs `hasCodec() = true`. #407's premise was wrong on
-  the deletion and right that nothing routed the failure anywhere.
-- **The SQLCipher pool is capped at exactly one connection until WAL is on**,
-  and the driver's configuration holds the passphrase array **by reference**.
-  Turning WAL on woke both. D209.
-- **`readablePages` returning an empty map is deliberate** and changing it to
-  throw fails 11 `ExportContainerTest` tests, because that class writes payloads
-  that are not databases. The check belongs on the manifest's page count. #412.
-
-**Still open in milestone 9:** #451 (B8), #455, #461.
+- **`check_hook_quoting.py`'s `resolve()` looks for `$CLAUDE_PROJECT_DIR`.** The
+  settings file named an absolute path instead, so the "script present and
+  executable" half of that check had never once run. Both hooks use the
+  placeholder now, and **the guard was then seen refusing a real `rm -rf`**,
+  which is the only thing RUN-SAFETY 1.1 accepts as proof that a hook fires.
+- **`Space.bloomDrawing` is gone**, because `HueMark` derives its glyph from the
+  disc rather than taking a second measurement that could disagree with it.
+- **Play requires API 36 of updates from 31 August 2026, and the API 35 figure
+  in summaries is a different rule**: it is the visibility threshold for an app
+  that is never updated. Conflating them is how somebody concludes they are
+  compliant when they are not.
+- **16 KB page alignment is the requirement that actually applies to this app**,
+  from 1 February 2027, because it ships two native libraries across four ABIs.
+  All eight `.so` files in the 1.0 bundle report `0x4000`. Measured, not assumed.
 
 ---
 
-**Counts as of the end of the run:** 3 open in milestone 9, 11 in 10, 9 in 11,
-9 in 12.
-
-**The delivered build is `8efcae94`.** APK 13,134,110 bytes, AAB 14,075,963
-bytes, hashes and the walk on #395, and the last comment there is the live one. **The Pixel 8 holds it**, which is B9.
+**Counts as of 2026-08-27:** 127 open. Milestone 13 has 10 open, milestone 9 has
+3, milestone 10 has 11, milestone 11 has 9, milestone 12 has 9. **Count with
+`--limit 200 --json number -q '.[].number' | wc -l`**; a bare `gh issue list`
+truncates and reported the wrong number three times in one session.
 
 | Milestone | What it is | Why it is where it is |
 |---|---|---|
-| **9. The record survives** | 18 issues, #407 to #420, #451, #454, #455, #457 | The app deletes its own database on corruption, the declared journal mode has never been applied, restore replaces the live file with a stream copy, and anything but a lost key crashes at launch forever. Two archive import holes ride along because the same file reaches them. |
-| **10. The wiring under the screens** | 18 issues, #421 to #434, #452, #453, #458, #459 | Columns with a reader and no writer. Transactions claimed in a comment and absent from the code. Filing that happens only at capture, so nothing can be re-filed. |
-| **11. What the notebook still needs** | 9 issues, #435 to #442, #456 | The nine additions agreed in **D208**. Two need schema first. |
-| **12. One chrome, one motion** | 8 issues, #443 to #450 | Seven header implementations become one. Then the repeats. |
+| **13. v1.1** | 10 issues, #462 to #471 | The owner's four bugs from using 1.0, the polish pass, the settings reorganization, the repository cleanup, and the release |
+| **9. The record survives** | 3 open of 19 | The app deleted its own database on corruption, the declared journal mode had never applied, restore replaced the live file with a stream copy. Mostly closed 2026-08-19 |
+| **10. The wiring under the screens** | 11 open of 18 | Columns with a reader and no writer, which read on screen as a section that is merely unfilled. Transactions claimed in a comment and absent from the code |
+| **11. What the notebook still needs** | 9 issues, #435 to #442, #456 | The nine additions agreed in **D208**. Two need schema first |
+| **12. One chrome, one motion** | 9 issues, #443 to #450, #460 | Seven header implementations become one. Then the repeats. **#450 is the live fidelity structure**, and #466's overflow files against it |
 
-**That paragraph is gone because the work is done.** It said
-`HealthTrailDatabase.kt:101` passing `null` as the `DatabaseErrorHandler` meant
-the library deletes the notebook on corruption. Measured on 2026-08-19: the
-library's default returns before deleting when `hasCodec()` is true, which it is
-here. The open names its own handler now regardless, and the real defect, that
-nothing routed an unopenable file anywhere, is #410.
-
-**`docs/TRAPS.md` section 8 is new** and is the shapes all of this takes: a
-comment claiming a transaction, a pragma silently ignored inside a transaction,
-`runCatching` swallowing `Throwable`, a column with a reader and no writer,
-`-1` passing a `>` comparison. **Read it before touching a write path.**
-
-**Verified by the main session rather than taken on report**, because two claims
-were wrong and both mattered:
-
-- `requireSafeName` does **not** reject `..`, so it is not a path check and
-  reusing it does not close #414.
-- Subject scoping **holds** at the query layer. The two unscoped reads,
-  `ownTemplates` and `organizationNamed`, hold shared reference data rather than
-  one person's records, and the dedup in the second reads as deliberate. No
-  medical record crosses between people.
-
-**The owner, 2026-08-18: breaking the app is not an option.** Every new issue
-carries a risk of fix. Anything marked SCHEMA stops and goes to `DECISIONS.md`
-BLOCKED, rule 3.
-
-**53 issues were opened, #407 to #459. 120 are open as of 2026-08-19**, after
-the overnight run closed 19 and opened three: #460 the tips panel, #461 export
-from the stuck screen, and the owner's two additions to #395. 85 were open before this work and most are
-open on purpose: 28 owner review, 13 deferred by D141 and D180 which **must not
-be closed**, 9 beyond v1, 8 release blocking (#1, #9, #15, #44, #210, #211,
-#212, #319), and the maintenance tail. **Count with
-`--limit 100 --json number -q '.[].number' | wc -l`**; a bare `gh issue list`
-truncates and reported the wrong number three times in one session.
+**The owner, 2026-08-18: breaking the app is not an option.** Anything marked
+SCHEMA stops and goes to `DECISIONS.md` BLOCKED, rule 3. The one exception so
+far is the permanent delete, which he ordered along with the contract amendment
+it needed.
 
 ## 3. Blocked
 
-**Read this first if you are about to run a test.** The Pixel 8 currently holds
-the **signed release build**, installed for #395's walk. No instrumented test
-can run until it is uninstalled **by hand**, because a debug build cannot
-replace a release one and every uninstall command is refused by the guard.
-**B9** in `DECISIONS.md`. It is ten seconds of the owner's time and nothing else
-is blocked by it.
+**B9, and read it before running any test.** The Pixel 8 holds the **signed
+release build**, installed for #395's walk. No instrumented test can run until
+it is uninstalled **by hand**: a debug build cannot replace a release one, and
+every uninstall command is refused by the guard, which is D210 working as
+intended. It is ten seconds of the owner's time. **It gates #465's acceptance**,
+which names the coverage and regeneration tests, and #471's new test.
 
+**A release build can still be installed over it**, same signature, so the visual
+and behavioral walk is not blocked by B9. Only the instrumented suite is.
 
-**B8, and it is the only one.** #451: the capture screen is not restored after
-process death, and the mirror that should restore it arrives null while
-`captureDraft` beside it arrives intact. Three attempts, all reverted, nothing
-of them in the repository. `DECISIONS.md` B8 has what was tried and the one
-question to answer before a fourth.
+**B10, and it is one minute of the owner's time.** The private Telegram invite
+link is out of the tree and is in four commits. It is a bearer credential:
+whoever reads those commits joins the group. **Revoking it in Telegram makes the
+history harmless**, which rewriting would not do as reliably. Nothing else in
+B10's list is more than a serial number and a folder name.
+
+**B8. #451**: the capture screen is not restored after process death, and the
+mirror that should restore it arrives null while `captureDraft` beside it
+arrives intact. Three attempts, all reverted, nothing of them in the repository.
+`DECISIONS.md` B8 has the one question to answer before a fourth.
+
+**B7 is unchanged** and is the history rewrite. The honest recommendation there
+applies to B10 too: the current files are what anybody reads.
 
 Otherwise nothing is blocked. The phone is unlocked and at baseline: font 1.0,
 animator 1.0, no reader, night mode `no`, appearance "Follow the phone".
@@ -193,7 +174,7 @@ animator 1.0, no reader, night mode `no`, appearance "Follow the phone".
 **Material 3 Expressive is the floor, not the finish.** Built out of Material's
 own components and Google's own assets, D196, with our polish on top: color
 identity, copy, arrangement, motion, what leads. **Nothing here is being
-replaced.** The rebuild is finished; #388 enhances it.
+replaced.**
 
 | This | Not this |
 |---|---|
@@ -214,55 +195,34 @@ project's road (`ui/v4/RoadStrip.kt`), a measure's line (`ui/v4/Trace.kt`), and
 1. A mark is `TabHue.base` with `TabHue.onBase` on top. Never a faded base.
 2. Surfaces stay neutral. **No page is overwhelmingly one color.**
 3. One tonal block per page, never full height.
-4. Entry lists carry the kind's color. **Never a second mapping.**
+4. Entry lists carry the kind's color. **Never a second mapping.** `entryHue` is
+   that one mapping, and the capture bloom reads it now, #463.
 5. Identity, never state. Rule 2. `hueFor` is the owner's mapping.
 6. A color never carries meaning alone: the mark and the words together.
 
-## 5. What this session added that the next one builds on
+## 5. What this run added that the next one builds on
 
-- **D205, the projects list.** One project leads, whichever live one has the
-  nearest date somebody else set, drawn as a tonal block with the road at full
-  width and its labels on. Everything else is a dense row in a `Block` with the
-  scheme's hairline. **The uppercase status tag above every name is gone**:
-  GOV.UK spent two years and three services on that exact pattern and came out
-  at plain sentence case. Sources on #399.
-- **`ListRow` takes an `overline`, and it is a layout decision.** Material
-  top-aligns a row's leading mark only once the row is three lines; at two, a
-  title that wraps leaves the disc floating between the words. The owner named
-  it: "the text doesn't align with the icon".
-- **The four destinations arrive rather than cut.** `ProjectsScreen` was the
-  first; `Page` had given every interior screen `arrives` and no destination
-  had it, so the screens opened most were the ones that cut into place.
-- **D206, inside a project.** Where it stands and the next date are one tonal
-  block, because they were two a gap apart with the second drawn louder. The
-  file is four tiles, rule 22's component for a fixed set of destinations.
-  Setup, the name and the removal are in a Material overflow in the top bar.
-- **"Who has it now" replaced "Update where it stands"**, and the lapse block
-  lost its button. Three controls looked like the same verb and two of them
-  were the same action.
-- **`DateRow` has a `flat` mode**, for a caller that is already a container.
-  Its rounded clip ate the first letter of its top and bottom lines, so flat is
-  square and the block around it owns the corners.
-- **"Stalled" is "Nothing moving" and "Left alone" is "Set aside"**, in all four
-  catalogs. **The five stored values did not move**, rule 3.
-- **#402 is open and release-blocking**: six merge resolutions are recorded and
-  the door on More that opens them never appears. Everything ruled out is
-  written on the issue so nobody repeats the diagnosis.
-- **New issues this session**: #401 and #404 are the rule 12 design reviews,
-  #402 the conflict door, #403 the three tracked-thing shapes the schema cannot
-  carry, #405 the universal trash can.
-- **`ListRow` takes `overline`** and `Field` takes `minLines`. Both exist
-  because Material's own behavior needed them: a row top-aligns its mark only at
-  three lines, and a field somebody writes paragraphs into should not stand at
-  the height of one asking for a name.
-- **An open question the owner has to settle**: "get rid of the mic completely"
-  was read as this screen rather than app-wide. **If it was app-wide, #396 is
-  the issue that changes**, because it says every text area should offer
-  dictation.
+- **`Page` takes a `tipKey`**, so a page keeps its section's ink and states its
+  own subject. Written because the people switcher wore the care team's tip.
+- **`TodayFieldScreen` computes from `drawn`**, one list, and every move, every
+  removal and every position reads it. A stored index and a screen position are
+  two different numbers on that surface and always were.
+- **`CardOptionsSheet` takes a nullable `onPromote` and `onRemove`**, so nothing
+  is offered a promotion to where it already is.
+- **`Repository.purge(table, rowId)`**, and `childrenOf` reads the dependency
+  graph out of `PRAGMA foreign_key_list` rather than a list that goes stale.
+- **`Attachments.remove(hash)`**, the only thing in that class that deletes, and
+  it is called only after checking no row still names the hash.
+- **`Discarded` carries its table**, because `Section` is a screen's idea of the
+  notebook and there are fourteen of them over eleven tables.
+- **`SUPPORT_URL` is one internal declaration**, having been written down twice
+  while its own comment claimed to be the only place in the app that wrote it.
+- **`DESIGN.md` 24** is More's grouping, the reasoning for the order, and the
+  four rules a row added later follows.
 
 ## 6. Blocked, and section 3 is the live one
 
-**Section 3.** B8 only, and it is #451.
+**Section 3.** B7, B8, B9, B10.
 
 ## 7. Rules that get broken
 
@@ -273,62 +233,69 @@ project's road (`ui/v4/RoadStrip.kt`), a measure's line (`ui/v4/Trace.kt`), and
 5. The fixture must only produce rows the app itself can write.
 6. **Look at the screen before closing anything.**
 7. A check passing is not the design being done.
+8. **`HANDOFF.md` lands in the same commit as the work it describes.** Ten
+   commits went by on 2026-08-27 without it, which is how this file goes stale.
 
 ## 8. Traps that cost real time (full set: `docs/TRAPS.md`)
 
-- **The caller's `testTag`, the tap and the reader's sentence must be on one node.** Put `combinedClickable` and `semantics { contentDescription }` on the `Card`'s own modifier, not on a column inside it. Twenty two tests read an empty description off the node they were handed.
+- **A stored index is not a screen position on Today.** `digest` and `next_up` are in the layout and are never drawn, so `draft[0]` is a row nobody has seen. Anything meaning "the first one" or "the one above" reads the drawn list. #462.
+- **A catalog key built from an enum name is invisible to `check_string_keys.py`**, which says so in its own docstring. `check_tips.py` goes the other way and enumerates the enum. #464.
+- **`Section` is not a table.** Fourteen sections over eleven tables, and `TRAIL` and `NOTES` are both `entry`. Anything iterating `Section.entries` over rows lists memos twice. #465.
+- **The caller's `testTag`, the tap and the reader's sentence must be on one node.** Put `combinedClickable` and `semantics { contentDescription }` on the `Card`'s own modifier, not on a column inside it.
 - **This scheme's `surfaceContainerLow` is the canvas in light.** A card drawn on it is invisible. Use `surfaceContainer`.
-- **A row that promises a door may not have one.** `MedicationRow` took an
-  `onOpen` and never called it, and the whole medications list had two clickable
-  nodes on it. `check_uncalled_callbacks.py` holds this now. **Dump the screen
-  and count clickable nodes**; it is one line and it does not lie the way
-  reading the file does.
-- **Three files are frozen and must not be edited**, `docs/REMOVAL-LEDGER.md`:
-  `ProjectDetailScreen.kt`, `CaptureSheet.kt`, `PinnedGroup.kt`. Retiring a
-  component they import means repointing their import, which is extending a
-  frozen screen. D199 says what to do instead.
-- **`git rm` stages immediately.** Run it at the moment you commit, not when you
-  start the rewrite, or the deletion lands in whatever commit goes out next and
-  that commit does not build.
-- **A `LazyColumn` does not compose off-screen rows.** Tests that walked a scrolling `Column` break: scroll by the list's own item key, `performScrollToKey`.
-- **A floating action button is on the scaffold, not in the list.** Do not scroll a list to reach it.
-- **`tools/seed.sh` walks the restore screen by text** and taps the password field by `=Password`. Its last line says "Restored." or every capture after it is of an empty notebook.
-- **`walk.sh see` reports what is laid out, not what is on the screen, and More
-  scrolls.** A row below the fold is absent from the dump, and reading that as
-  "the row is missing" cost most of a session: **#402 was filed as a bug and was
-  not one.** The conflict door and the bin door both sit at the foot of More's
-  "keeping a copy" group, and both looked absent until the screen was scrolled.
-  **Scroll before concluding a row does not exist**, or dump after
-  `input swipe`.
-- **`tools/sweep.sh`'s closing list globs the prefix, so it lists files an
-  older run with the same name left behind.** `after-setup-light.png` was
-  printed by a sweep that never visited setup and was four hours old. Check
-  the timestamp before reading a capture as today's.
-- **`tools/walk.sh tap` matches the first node containing the word.** Navigate the five destinations by nav bar position: **x = 107 / 323 / 540 / 755 / 971, y = 2302**, which is Today, Notebook, Projects, Notes, More. **These changed on 2026-08-18** when notes joined the bar, #397: five items share the width four had, so every one of them moved. The old 133 / 400 / 670 / 940 at y=2252 taps the wrong tab now.
-- **Screenshot coordinates are not device coordinates.** `tools/screenshot.sh` crops 132px of status bar; add it back before `adb shell input tap`.
+- **A row that promises a door may not have one.** `check_uncalled_callbacks.py` holds this now. **Dump the screen and count clickable nodes.**
+- **Three files are frozen and must not be edited**, `docs/REMOVAL-LEDGER.md`: `ProjectDetailScreen.kt`, `CaptureSheet.kt`, `PinnedGroup.kt`.
+- **`git rm` stages immediately.** Run it at the moment you commit.
+- **A `LazyColumn` does not compose off-screen rows.** Scroll by the list's own item key, `performScrollToKey`.
+- **A floating action button is on the scaffold, not in the list.**
+- **`tools/seed.sh` walks the restore screen by text.** Its last line says "Restored." or every capture after it is of an empty notebook.
+- **`walk.sh see` reports what is laid out, not what is on the screen, and More scrolls.** **Scroll before concluding a row does not exist.** #402 was filed as a bug and was not one.
+- **`tools/sweep.sh`'s closing list globs the prefix**, so it lists files an older run left behind. Check the timestamp.
+- **`tools/walk.sh tap` matches the first node containing the word.** Navigate the five destinations by nav bar position: **x = 107 / 323 / 540 / 755 / 971, y = 2302**, which is Today, Notebook, Projects, Memos, More.
+- **Screenshot coordinates are not device coordinates.** `tools/screenshot.sh` crops the status bar; add it back before `adb shell input tap`.
 - `onNodeWithText` does not see a `contentDescription`. Use `onNodeWithContentDescription`.
 - **A `SlotWriter` `ArrayIndexOutOfBoundsException` mid-suite is the Compose alpha.** Re-run the class alone.
-- **A scan that reads declaration names calls an extension function dead.** `fun Modifier.arrivesInOrder` scans as `Modifier`. `git show HEAD:<path> > <path>` brings a file back; rule 6 needs no destructive command.
-- **A road goes in one lazy item**, or the page's air puts gaps in the line.
 - **New optional parameters go after `modifier`** or lint `ModifierParameter` fails.
 - `connectedDebugAndroidTest` uninstalls the app. Reinstall and reseed after a suite.
 - **Do not compile while the instrumented suite runs.**
 - The destructive-command hook matches prose. Some verbs cannot be written into a file. #323.
 
-## 9. The phone
+## 9. The phone, and it is shared
 
-- Pixel 8, Android 17, USB. **A development device, not the owner's daily driver.**
-  Its serial is not written down here: `adb devices` says it, and a device
-  identifier in a public repository is one of the things `check_no_pii.py` refuses.
+**Another session on this machine is building a different app and drives the
+same device.** Rules of the road, owner, 2026-08-27:
+
+- **Before any install, launch, test run or screenshot, check the foreground and
+  check for an install in flight.** If the other app is in the foreground or
+  mid-operation, wait and check again. That session takes long thinking breaks
+  between bursts of device work, so waiting several minutes is normal. **Never
+  race it.**
+- **A `PackageUpdateActivity` in the foreground is that session installing**, not
+  leaving. A watch that fires on it fires on a false positive. Require several
+  consecutive clear samples.
+- **Never uninstall, force stop or clear the other package**, and never reboot
+  the device or change a global setting to resolve a conflict.
+- **Nothing from it enters this project.** No reference, no string, no capture
+  containing its interface. A capture that catches it is retaken.
+- **Device contention is never a reason to skip verification.** Do non-device
+  work from the board and come back.
+
+Then:
+
+- Pixel 8, Android 17, USB. **A development device, not the owner's daily
+  driver.** Its serial is not written down here, #470: `adb devices` says it, and
+  `check_no_pii.py` refuses one in the tree.
 - **Switching Android user profiles re-locks it** and there is no way past a
-  secure keyguard from here, #316. **Never switch users**, and check before
-  planning device work: `adb shell dumpsys window | grep isKeyguardShowing`.
+  secure keyguard from here, #316. **Never switch users.**
 - `adb` may not be on `PATH`. The four scripts under `tools/` find it through
   `$ADB`, then `command -v adb`, then `$ANDROID_HOME`, then
   `$HOME/Android/Sdk/platform-tools/adb`.
-- Baseline: font 1.0, animator 1.0, touch exploration 0, night mode `no`. Rule 19 lets these change **only** if the prior value is recorded first and restored exactly.
-- **Never screenshot**: the share sheet, the calendar app, any screen with a password field.
-- Reinstall + reseed after a suite.
+- Baseline: font 1.0, animator 1.0, touch exploration 0, night mode `no`. Rule
+  19 lets these change **only** if the prior value is recorded first and restored
+  exactly.
+- **Never screenshot**: the share sheet, the calendar app, any screen with a
+  password field, or anything belonging to the other session's app.
+- Reinstall and reseed after a suite.
 
 Fixture variants:
 
@@ -343,12 +310,14 @@ Fixture variants:
 
     tools/sweep.sh audit                # seed once, walk every screen, capture each
     tools/sweep.sh --no-seed audit      # reuse what is on the phone
-    python3 tools/checks/run_all.py     # 29 checks, seconds
+    python3 tools/checks/run_all.py     # 34 checks, seconds
     tools/verify.sh                     # the honest runner, includes lintDebug
     cd android && ./gradlew :app:connectedDebugAndroidTest                  # ~16 min
     cd android && ./gradlew :app:connectedDebugAndroidTest \
       -Pandroid.testInstrumentationRunnerArguments.class=<FQCN>             # one class, <1 min
     cd android && ./gradlew :app:assembleRelease                            # signed, D160
+    cd android && ./gradlew :app:bundleRelease                              # the AAB Play takes
+    tools/store/check-bundle.sh <path.aab>  # 16 KB alignment, size, hash, signature
 
 **`adb install -r` does not keep the notebook on this build.** A sweep that needs data seeds.
 
@@ -368,9 +337,9 @@ Read on demand, never in bulk.
 
 | Need | Read |
 |---|---|
-| What each tracked thing is, before drawing its screen | **`docs/TRACKED-THINGS.md`**. Researched, with sources, and it is mostly about what rule 2 rules out |
-| The prompt that starts a cleared session | **`docs/COLD-START.md`**. Written to run unattended to a finish line, and kept so it can be corrected rather than rewritten from memory |
-| What to do next | `gh issue view 321`, then this file. Then `gh issue list --milestone "FINISH THE APP"` |
+| What each tracked thing is, before drawing its screen | **`docs/TRACKED-THINGS.md`** |
+| The prompt that starts a cleared session | **`docs/COLD-START.md`** |
+| What to do next | `gh issue view 321`, then this file |
 | The design and the polish bar | **`docs/V4.md`** |
 | What the approved design looks like | `docs/screenshots/m3v4-{0..5}-light.png`. **Open them** |
 | What will bite me | `docs/TRAPS.md`, **one section**, from its own table |
@@ -382,43 +351,35 @@ Read on demand, never in bulk.
 
 Precedence: verified code > `docs/V4.md` (visual) > this file > `DECISIONS.md` > `contract/DATA-CONTRACT.md` (data) > `RUN-SAFETY.md`/`AGENTS.md` > `PROJECT-DELTAS.md` > `MASTER_SPEC.md` > template.
 
-`DESIGN.md` is superseded by `docs/V4.md` on anything visual. It still holds the accessibility gate, section 12.
+`DESIGN.md` is superseded by `docs/V4.md` on anything visual. It still holds the accessibility gate, section 12, and section 24, which is More's grouping.
 
 ## 13. Facts a session re-derives if they are not written down
 
-- **A classfile listing is not an API.** Kotlin's `internal` lives in the metadata, so `javap` shows it public. Only compiling against it answers "can this build call it". D179.
+- **A classfile listing is not an API.** Kotlin's `internal` lives in the metadata, so `javap` shows it public. D179.
 - 63 remote branches survive, all ancestors of `main`. **Never `git branch --merged`** here: squash-merge gives new shas. D144.
-- Guard 2, the pre-compaction state save, has never fired. Keep this file current by hand.
 - D143: ten cross-references point at `DESIGN.md` sections that no longer exist. **They stay.**
 - #308 is reopened. Its class shares state through one installed app; a green run proves nothing.
+- **`LocalPageSection` has a writer and no reader.** `Page.kt` provides it and its comment says a page's own groups can wear its section. Nothing consumes it. The shape `docs/TRAPS.md` section 8 opens with, found 2026-08-27 and not yet filed.
 
 ## 14. Live lists that must not be lost
 
 **Screens composed rather than drawn** (rule 12): `gh issue list --label needs-design-review`. No second copy here.
 
-**Newest, 2026-08-18, #401**: the projects list's lead block, and a project's
-file as four tiles with the housekeeping moved to a top-bar overflow. Both are
-composed from existing components; the grid draws screens 02 and 05 and carries
-neither. D205, D206.
+**Newest, 2026-08-27**: Today's empty field state, and Deleted Items with a
+permanent delete on it. Both are composed from existing components and neither
+is drawn in any grid.
 
-**And #404**: one tracked thing's own screen, and Progress as a lead plus rows.
-The grid draws screen 24 and carries neither how it is reached nor what happens
-to the rest of the page. #398.
+**#401**: the projects list's lead block, and a project's file as four tiles.
+**#404**: one tracked thing's own screen, and Progress as a lead plus rows.
+**#406**: the memo screen, the memos page, `MemosAbout` on six kinds of thing,
+Memos as the fourth destination, and Deleted Items. **The grid draws none of
+them.**
 
-**And #406**: the memo screen, the memos page, `MemosAbout` on six kinds of
-thing, Memos as the fourth destination, and what you took out. **The grid draws
-none of them**, because neither notes nor a bin existed before 2026-08-18.
-#397, #405, D207.
+**Reachable only from a test, not from any seed** (each on its own issue): paperwork an incident produced; the care team card's sparse rung and the trail spine's gap markers; the digest's corrected and removed counts; #273's two template hands; **the month review's `Hero` block**, which draws only when a month holds a milestone.
 
-**Reachable only from a test, not from any seed** (each on its own issue): paperwork an incident produced; the care team card's sparse rung and the trail spine's gap markers; the digest's corrected and removed counts; #273's two template hands; **the month review's `Hero` block**, which draws only when a month holds a milestone, and no month in the `year2` fixture does. Checked June, April and March on 2026-08-18 rather than assumed.
+**`EmptyDrawing` has no live drawing caller left.** The one file that still draws it is `ProjectDetailScreen`, which is frozen.
 
-**`EmptyDrawing` has no live drawing caller left.** `SectionEmpty` draws the
-section's own saturated mark now, and the three remaining callers all pass
-`section = null`, which draws nothing. The one file that still draws it is
-`ProjectDetailScreen`, which is frozen.
-
-**A second person is the cheapest empty notebook there is.** More, people in
-this notebook, add another person, start their notebook: every section is
-empty behind it and nothing in the first person's notebook is touched. That
-is how every `empty3-*` and `empty4-*` capture in `docs/screenshots` was
-taken.
+**A second person is the cheapest empty notebook there is.** More, Profiles, add
+another person: every section is empty behind it and nothing in the first
+person's notebook is touched. That is how every `empty3-*` and `empty4-*`
+capture in `docs/screenshots` was taken.
