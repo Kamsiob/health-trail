@@ -11,6 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.kamsiob.healthtrail.i18n.LocalStrings
 import com.kamsiob.healthtrail.ui.components.Symbols
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
+import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.Block
 import com.kamsiob.healthtrail.ui.v4.Body
 import com.kamsiob.healthtrail.ui.v4.Eyebrow
@@ -40,25 +44,39 @@ object MoreTags {
     const val BIN = "more_bin"
     const val SITUATION = "more_situation"
     const val SUBJECT = "more_subject"
+
+    /**
+     * The donate link at the foot of the scroll.
+     *
+     * `MASTER_SPEC.md` 2 puts it in three places: the gate, the bottom of
+     * Settings, and About. It was in two, and this is the third. #467.
+     */
+    const val SUPPORT = "more_support"
 }
 
 /**
- * More.
+ * More: everything that is not a record.
  *
- * **Appearance is the only thing in it, so it shows Appearance directly** rather
- * than a menu of one item pointing at it. A list with a single entry is a tap
- * the person pays for nothing, and rule 18 counts taps. It becomes a real list
- * the moment there is a second thing, which is a change to make then rather
- * than a structure to build in advance of it.
+ * **Five groups, ordered by how often somebody needs them**, #467, and the
+ * order is the argument. Search leads the page because it is the one thing here
+ * reached weekly. Then the notebook and the people in it, because switching
+ * profiles is the only other row a two person household touches often. Then
+ * keeping a copy, which is monthly at most but is what somebody comes here in a
+ * hurry for. Then the theme, changed once. Then what this app is, read once.
  *
- * **It says what else is coming, and that is not filler.** Three cards and then
- * two thirds of an empty screen reads as unfinished, which rule 14 forbids, and
- * the honest fix is not to invent a fourth setting. It is to say plainly what
- * this destination is going to hold. D44: an interface may offer something it
- * has not built, and it may not go quiet about it.
+ * **This is arrangement rather than redesign.** Every row that was here is
+ * still here and still opens the same place. What moved is which rows sit
+ * together and in what order, and the one thing added is the support link the
+ * specification has always placed at the bottom of Settings and that this
+ * screen never carried.
  *
- * Carries `ShellTags.NOT_BUILT` so the note stays greppable and cannot survive
- * to release once the things it names exist.
+ * **It still borrows `AppearanceScreen`'s frame**, because the theme choice is
+ * a group on this page rather than a destination off it, and that screen owns
+ * the control. The groups above the theme arrive as its header and the two
+ * below it as its footer, which is what puts the theme fourth.
+ *
+ * Carries `ShellTags.NOT_BUILT` on the note about what is still coming, so it
+ * stays greppable and cannot survive to release once those things exist.
  */
 @Composable
 fun MoreScreen(
@@ -73,7 +91,7 @@ fun MoreScreen(
     onSituation: () -> Unit = {},
     /** Opens the correction for who this notebook is about. #371. */
     onSubject: () -> Unit = {},
-    /** Who this notebook is about, and anyone else it holds. #379. */
+    /** Profiles: who this notebook is about, and anyone else it holds. #379, #468. */
     onPeople: () -> Unit = {},
     onConflicts: () -> Unit = {},
     /**
@@ -106,7 +124,6 @@ fun MoreScreen(
         // reach.** The theme is changed once; search and export are not.
         header = {
             MoreDestinations(
-                onAbout = onAbout,
                 onExport = onExport,
                 onRestore = onRestore,
                 onSearch = onSearch,
@@ -119,21 +136,80 @@ fun MoreScreen(
                 onBin = onBin,
             )
         },
-        footer = { ComingHere() },
+        // **What this app is comes last, and the offer is the last thing on
+        // it.** D59 and D93: the support link sits after the sentence saying
+        // the app asks for nothing, is never the filled weight, and is the end
+        // of the scroll rather than something somebody has to pass.
+        footer = {
+            ComingHere()
+            ThisApp(onAbout = onAbout)
+        },
     )
 }
 
 /**
- * What sits under Appearance in More.
+ * What this app is, and the one offer it makes.
  *
- * **About is a real destination now, so it is offered rather than promised.**
- * The note about what is still coming shrank to what is actually still coming,
- * which is the point of D44: the interface may say it has not built something,
- * and it may not keep saying so once it has.
+ * **The specification has put a support link at the bottom of Settings since
+ * `MASTER_SPEC.md` 2 was written, and this screen has never had one.** D93 says
+ * it "already sits at the bottom of Settings and About", which was true of
+ * About and of the gate and was not true here. One destination, one label, in
+ * three places, is what D59 asked for; this is the third.
+ */
+@Composable
+private fun ThisApp(onAbout: () -> Unit) {
+    val strings = LocalStrings.current
+    val context = LocalContext.current
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        Spacer(Modifier.height(Space.sectionGap))
+        Eyebrow(text = strings["more.group.app"])
+        Block(padding = Space.none) {
+            ListRow(
+                // bidi-ok: a catalog label, in the app's own words.
+                title = strings["more.about"],
+                mark = Symbols.tips,
+                markHue = goldHue(),
+                isDoor = true,
+                onClick = onAbout,
+                clickLabel = strings["open.action"],
+                modifier = Modifier.testTag(MoreTags.ABOUT),
+            )
+        }
+        // **The quiet weight, never the filled one**, and it leaves the app,
+        // which is what makes it the only outbound link on this screen.
+        // Nothing is sent and nothing is recorded about the tap.
+        Action(
+            label = strings["disclaimer.support"],
+            onClick = {
+                context.startActivity(Intent(Intent.ACTION_VIEW, SUPPORT_URL.toUri()))
+            },
+            modifier = Modifier.testTag(MoreTags.SUPPORT),
+        )
+    }
+}
+
+/**
+ * The three groups above the theme, in the order somebody needs them. #467.
+ *
+ * **Grouped by what somebody came for**, owner, 2026-08-17: eight doors in one
+ * block is a list to read rather than a place to look. **Ordered by how often
+ * they are needed**, owner, 2026-08-27, which is what moved: finding things led
+ * because search led, and search is not in a group at all. It is the door under
+ * the title, `m3v4-1`, and `MASTER_SPEC.md` 4.8 puts it there and at the top of
+ * Today.
+ *
+ * So the notebook and its people lead the groups. **Profiles first inside it**:
+ * a household with two people in one notebook switches often, and the other two
+ * rows are set once and corrected rarely. Then finding things. Then keeping a
+ * copy, which somebody reaches for either monthly or in a hurry, and which
+ * holds the way back from a mistake.
  */
 @Composable
 private fun MoreDestinations(
-    onAbout: () -> Unit,
     onExport: () -> Unit,
     onRestore: () -> Unit,
     onSearch: () -> Unit,
@@ -143,45 +219,32 @@ private fun MoreDestinations(
     onPeople: () -> Unit,
     onConflicts: () -> Unit,
     conflicts: Int,
-    /** Opens what was taken out. #405. */
+    /** Opens Deleted Items. #405, renamed by the owner in #465. */
     onBin: () -> Unit = {},
 ) {
     val strings = LocalStrings.current
 
-    // **Destinations, so rows with a mark and a chevron rather than pills.**
-    //
-    // These were five full width outlined buttons and every one of them opens a
-    // screen. A container with a chevron is what this app gives a door; the
-    // action shape belongs to a verb that does something now.
-    //
-    // **Grouped by what somebody came for**, owner, 2026-08-17: eight doors in
-    // one block is a list to read rather than a place to look. Finding things,
-    // the notebook itself, keeping a copy, and what this app is. Four short
-    // groups, each with its own quiet label, which is rule 15 applied to a
-    // screen that is nothing but destinations.
-    //
-    // **Search leads its group**, because `MASTER_SPEC.md` 4.8 puts it here and
-    // at the top of Today, and of these it is the one reached weekly rather
-    // than once.
     // Gold is what `hueFor` gives a surface belonging to no section.
     val gold = goldHue()
     val groups = listOfNotNull(
-        strings["more.group.find"] to listOf(
-            Destination(strings["more.library"], onLibrary, MoreTags.LIBRARY, Symbols.notebook, gold),
-        ),
-        // **How the notebook is set up, which had no door at all.** The
-        // situation picker ran once during setup and was then unreachable
-        // forever, so a family whose care moved could not tell the app. Law 5
-        // promises this is "all of it changeable afterward from one screen,
-        // without penalty". This is that screen's door.
+        // **1. The notebook and the people in it.**
         //
-        // **Who the notebook is about, which had no door either.** #371: the
-        // name was typed once at setup, appears on no screen inside the app,
-        // and is printed on everything shared out of it, so a typo was
-        // invisible until a clinician was holding it. Beside the situation,
-        // because both are how this notebook was set up, and **more than one
-        // person**, #379, because that is the same question one step on.
+        // **Profiles had no door at all until #379**, and the situation picker
+        // had none until #371: it ran once during setup and was then
+        // unreachable forever, so a family whose care moved could not tell the
+        // app. Law 5 promises this is "all of it changeable afterward from one
+        // screen, without penalty". **Who the notebook is about** had no door
+        // either: the name was typed once at setup, appears on no screen inside
+        // the app, and is printed on everything shared out of it, so a typo was
+        // invisible until a clinician was holding it.
         strings["more.group.notebook"] to listOf(
+            Destination(
+                strings["people.open"],
+                onPeople,
+                MoreTags.PEOPLE,
+                Symbols.addPerson,
+                hueFor(Repository.Section.CARE_TEAM),
+            ),
             Destination(
                 strings["more.situation"],
                 onSituation,
@@ -196,14 +259,13 @@ private fun MoreDestinations(
                 Symbols.careTeam,
                 hueFor(Repository.Section.CARE_TEAM),
             ),
-            Destination(
-                strings["people.open"],
-                onPeople,
-                MoreTags.PEOPLE,
-                Symbols.addPerson,
-                hueFor(Repository.Section.CARE_TEAM),
-            ),
         ),
+        // **2. Finding things**, under the door that is the other half of it.
+        strings["more.group.find"] to listOf(
+            Destination(strings["more.library"], onLibrary, MoreTags.LIBRARY, Symbols.notebook, gold),
+        ),
+        // **3. Keeping a copy**, which is export, restore and the way back from
+        // a mistake.
         strings["more.group.copy"] to (
             listOf(
                 Destination(
@@ -220,15 +282,16 @@ private fun MoreDestinations(
                     Symbols.documents,
                     hueFor(Repository.Section.DOCUMENTS),
                 ),
-                // **The bin is always here, unlike the conflict door.** The
-                // two look alike and the reasoning is opposite: a resolution
-                // notice appears only when a merge decided something, because a
-                // permanent "nothing to look at" teaches somebody to ignore a
-                // row that will one day matter. **A bin is different: its value
-                // is knowing it exists before you need it.** Somebody who has
-                // just removed the wrong thing has to be able to find their way
-                // back without having read a manual, and a row that appears only
-                // after the mistake is a row they have never seen.
+                // **Deleted Items is always here, unlike the conflict door.**
+                // The two look alike and the reasoning is opposite: a
+                // resolution notice appears only when a merge decided
+                // something, because a permanent "nothing to look at" teaches
+                // somebody to ignore a row that will one day matter. **This one
+                // is different: its value is knowing it exists before you need
+                // it.** Somebody who has just removed the wrong thing has to be
+                // able to find their way back without having read a manual, and
+                // a row that appears only after the mistake is a row they have
+                // never seen.
                 Destination(
                     strings["bin.open"],
                     onBin,
@@ -253,9 +316,6 @@ private fun MoreDestinations(
                 emptyList()
             }
             ),
-        strings["more.group.app"] to listOf(
-            Destination(strings["more.about"], onAbout, MoreTags.ABOUT, Symbols.tips, gold),
-        ),
     )
 
     Column(

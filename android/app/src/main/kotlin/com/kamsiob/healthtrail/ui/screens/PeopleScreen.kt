@@ -40,8 +40,8 @@ object PeopleTags {
 }
 
 /**
- * Who this notebook is about, and switching between them. #379. Rewritten onto
- * `ui/v4`, #386.
+ * Profiles: who this notebook is about, and switching between them. #379,
+ * renamed by the owner in #468. Rewritten onto `ui/v4`, #386.
  *
  * **"If my mom and my dad are both in a nursing home."** One family, one phone,
  * two people whose care is entirely separate: two care teams, two medication

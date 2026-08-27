@@ -38,9 +38,6 @@ object AboutTags {
  */
 private const val PRIVACY_URL = "https://kamsiob.com/health-trail.html#privacy"
 
-/** The same support link the gate and the README carry. `MASTER_SPEC.md` 4.1. */
-private const val SUPPORT_URL = "https://buymeacoffee.com/kamsiob"
-
 /**
  * About: what this app is, what it does with what you write, and who made it.
  * Rewritten onto `ui/v4`, #386.

@@ -214,10 +214,14 @@ private const val BLOCK_COUNT = 3
 
 /**
  * The canonical support link, the same one the README and the website carry.
- * `MASTER_SPEC.md` section 4.1 names it, and this is the only place in the app
- * that writes it down.
+ *
+ * `MASTER_SPEC.md` section 4.1 names it and puts it in three places: the gate,
+ * the bottom of Settings, and About. **It said this was the only place in the
+ * app that wrote it down and that was not true**: `AboutScreen` had its own
+ * copy of the same string, and #467 was about to add a third. Internal now, and
+ * this is the declaration all three read.
  */
-private const val SUPPORT_URL = "https://buymeacoffee.com/kamsiob"
+internal const val SUPPORT_URL = "https://buymeacoffee.com/kamsiob"
 
 @Composable
 private fun DisclaimerBlock(title: String, body: String, modifier: Modifier = Modifier) {

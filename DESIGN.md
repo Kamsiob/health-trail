@@ -59,6 +59,7 @@ Two things this direction does not override and cannot. `contract/DATA-CONTRACT.
 | 21 | Today |
 | 22 | The voice rule these two grids make global |
 | 23 | Verifying the two surfaces |
+| 24 | More, and the order of its groups |
 
 ---
 
@@ -1150,3 +1151,62 @@ The costume audit, 16.1, and the overflow audit, 16.2, run on every screen in bo
 **The road strip, the edit mode drag, and the card field must mirror correctly right to left.** **Reorder must work by drag and by Move up and Move down**, so it works one-handed, with the reader on, and with switch access.
 
 Everything on the phone, on a real build. No emulator.
+
+---
+
+## 24. More, and the order of its groups
+
+**Recorded here because the owner settled it, 2026-08-27, #467.** More is the
+one screen in the app that is nothing but destinations, so the only design
+decision it carries is which rows sit together and in what order. This is that
+decision, written down so the next person to add a row knows where it goes.
+
+### 24.1 The five groups
+
+| | Group | What is in it |
+|---|---|---|
+| lead | **Search** | The door under the title rather than a row in a group. `m3v4-1` draws it there, and `MASTER_SPEC.md` 4.8 puts search here and at the top of Today |
+| 1 | **This notebook** | Profiles, How this notebook is set up, Who this is about |
+| 2 | **Finding things** | Templates |
+| 3 | **Keeping a copy** | Export your notebook, Restore from a file, Deleted Items, and What the merge decided when there is one |
+| 4 | **Theme** | Follow the phone, Light, Dark |
+| none | *Also coming here*, the `ShellTags.NOT_BUILT` note | |
+| 5 | **This app** | About this app, then Support this work |
+
+### 24.2 Why that order, which is the part that matters
+
+**Most used first.** Not most important, and not the order the sections happen
+to be declared in.
+
+- **Search leads** because it is the only thing on this screen somebody reaches
+  weekly. It is not in a group because a group of one under an eyebrow is a row
+  pretending to be a category, and because rule 15 needs something on the page
+  to lead.
+- **This notebook is first** on the strength of one row: a household keeping two
+  people in one notebook switches profiles often. The other two rows in it are
+  set once at setup and corrected rarely, and they sit under Profiles for that
+  reason.
+- **Finding things is second.** Templates is opened when a project is started,
+  which is a few times a year.
+- **Keeping a copy is third.** Export is monthly at most, but this group is what
+  somebody comes here for in a hurry, and it holds the way back from a mistake.
+  Deleted Items is always drawn, unlike the conflict door, because the value of
+  a bin is knowing it exists before you need it.
+- **Theme is fourth.** It is changed once, and it is a control rather than a
+  door, which is why it keeps `AppearanceScreen`'s own group rather than
+  becoming a row.
+- **This app is last**, read once, and **Support this work is the last thing on
+  the scroll**, which D59 and D93 require: after the sentence saying the app
+  asks for nothing, never the filled weight, and never something somebody has to
+  pass to reach a setting.
+
+### 24.3 The rules a new row follows
+
+1. **A row goes in the group whose question it answers**, not in the group whose
+   code is easiest to reach.
+2. **Nothing is added below Support**, ever. D59.
+3. **A group's order inside itself is frequency too.**
+4. **A row that only sometimes applies appears only when it applies**, like the
+   conflict door, unless its value is knowing it exists in advance, like Deleted
+   Items. Those are the only two shapes, and a new row picks one of them out
+   loud.

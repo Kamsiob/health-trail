@@ -459,11 +459,18 @@ private fun Masthead(
                 modifier = Modifier
                     .clickable(
                         role = Role.Button,
-                        onClickLabel = strings["people.open"],
+                        // **A verb for the tap and the subject in the
+                        // description**, which is the shape every row in the
+                        // app uses. #468 renamed `people.open` to "Profiles",
+                        // and "double tap to Profiles" is not a sentence.
+                        onClickLabel = strings["open.action"],
                         onClick = onPeople,
                     )
                     .testTag(TodayTags.PEOPLE)
-                    .semantics { contentDescription = strings["people.open"] },
+                    .semantics {
+                        contentDescription =
+                            strings("people.avatar", "name" to name)
+                    },
             )
         }
     }

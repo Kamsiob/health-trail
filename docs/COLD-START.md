@@ -167,7 +167,7 @@ a worktree and run the same class:
   cd /tmp/baseline/android && ./gradlew :app:connectedDebugAndroidTest \
     -Pandroid.testInstrumentationRunnerArguments.class=<FQCN>
 
-AN EMPTY NOTEBOOK COSTS THREE TAPS: More, people in this notebook, add another
+AN EMPTY NOTEBOOK COSTS THREE TAPS: More, Profiles, add another
 person. Every section is empty behind it and the first person's notebook is
 untouched.
 
