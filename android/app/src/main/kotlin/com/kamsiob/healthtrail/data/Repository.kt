@@ -1344,7 +1344,17 @@ class Repository private constructor(
      */
     suspend fun deleteMilestone(id: String) = deleteRow("milestone", id)
 
-    suspend fun deleteReading(id: String) = deleteRow("reading", id)
+    /**
+     * A reading, which lives in `measurement`. #471.
+     *
+     * **It named a table that does not exist**, so removing a reading typed
+     * twice threw "no such table: reading" from `execSQL` rather than removing
+     * it. `Digest.kt` records the same word being got wrong once before: the
+     * screens and the model call these readings and the schema calls them
+     * measurements, and nothing in the language stops a writer from reaching
+     * for the wrong one. A table name in a string is a name nothing checks.
+     */
+    suspend fun deleteReading(id: String) = deleteRow("measurement", id)
 
     /**
      * Its readings stay in the table and vanish from every screen with it,

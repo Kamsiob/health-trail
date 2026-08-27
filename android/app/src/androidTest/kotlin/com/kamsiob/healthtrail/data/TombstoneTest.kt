@@ -116,6 +116,41 @@ class TombstoneTest {
     }
 
     @Test
+    fun removingAReadingTombstonesTheMeasurementItActuallyIs() = runBlocking {
+        // #471. `deleteReading` named a table called `reading`, and there is no
+        // such table: readings are `measurement`. `execSQL` throws on that, so
+        // the one control that takes back a reading typed twice failed rather
+        // than working, and nothing exercised it.
+        val repository = Repository.open(context)
+        val subjectId = repository.createSubject(displayName = "Reading subject")
+        val weight = TemplateCatalog.presets(context).first { it.id == "weight" }
+        val measureId = repository.createMeasure(subjectId, weight, unit = "lb")
+        val readingId = repository.recordMeasurement(
+            measureId = measureId,
+            number = 168.0,
+            unit = "lb",
+        )
+
+        assertTrue(
+            "the reading was not recorded",
+            repository.readings(subjectId).any { it.id == readingId },
+        )
+
+        repository.deleteReading(readingId)
+
+        assertTrue(
+            "a removed reading is still offered",
+            repository.readings(subjectId).none { it.id == readingId },
+        )
+        // allow-base-table: a tombstone is what this asserts, so the view
+        // cannot answer it.
+        assertTrue(
+            "the reading was removed rather than tombstoned",
+            repository.rowExistsForTest("measurement", readingId),
+        )
+    }
+
+    @Test
     fun deletingIsATombstoneRatherThanARemoval() = runBlocking {
         // The row has to still be there, or there is nothing to tell another
         // device it was deleted and the deletion undoes itself on the next sync.
