@@ -39,11 +39,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.kamsiob.healthtrail.i18n.LocalStrings
-import com.kamsiob.healthtrail.ui.v4.IconTile
 import com.kamsiob.healthtrail.ui.theme.LocalMotion
 import com.kamsiob.healthtrail.ui.theme.HealthTrail
-import com.kamsiob.healthtrail.ui.components.Symbols
-import com.kamsiob.healthtrail.ui.theme.goldHue
 import com.kamsiob.healthtrail.ui.theme.Space
 
 /**
@@ -94,8 +91,6 @@ fun CaptureBloom(
     modifier: Modifier = Modifier,
 ) {
     val strings = LocalStrings.current
-    val colors = HealthTrail.colors
-    val motion = LocalMotion.current
 
     // **Each choice is released in turn**, nearest the thumb first, which is
     // what makes it read as one thing unfolding rather than six appearing. The
@@ -238,27 +233,32 @@ private fun BloomChoice(
             modifier = Modifier.weight(1f),
         )
         Spacer(Modifier.width(Space.s))
-        // The section's own mark, in its own hue, so a choice looks like the
-        // place it writes to rather than like a generic menu item.
-        if (kind != null) {
-            IconTile(
-                kind = kind,
-                tint = colors.ink,
-                background = colors.sand,
-                tileSize = BLOOM_MARK,
-                iconSize = BLOOM_DRAWING,
-                modifier = Modifier.clearAndSetSemantics { },
-            )
-        } else {
-            // **A note belongs to no section**, so it takes the mark every
-            // whole-app surface takes rather than borrowing somebody else's.
-            HueMark(
-                hue = goldHue(),
-                mark = Symbols.notebook,
-                size = BLOOM_MARK,
-                modifier = Modifier.clearAndSetSemantics { },
-            )
-        }
+        // **The section's own mark, in its own hue**, so a choice looks like
+        // the place it writes to rather than like a generic menu item.
+        //
+        // **That sentence was here and the code under it was not.** #463, the
+        // owner: only the memo carried color. Six of the seven took a branch
+        // that hardcoded `ink` on `sand`, so the one option that belongs to no
+        // section was the only one wearing one, and the six that name a section
+        // were drawn in the app's neutral. Grid screen 04 draws six marks in
+        // six hues and always did.
+        //
+        // **One call now, and it is `entryHue`**, which is the same map the
+        // trail's rows and a thread's entries already read: what a capture
+        // writes is the color it will wear once it is written down. D198's
+        // "never a second mapping" is a rule this branch was breaking twice
+        // over, once by having no mapping and once by having its own.
+        //
+        // `entryHue` and `entryMark` both answer gold and the note stack for
+        // anything they do not recognize, so the note keeps the color it had
+        // and gains the drawing the rest of the app gives a memo.
+        val slug = kind?.name?.lowercase() ?: "note"
+        HueMark(
+            hue = entryHue(slug),
+            mark = entryMark(slug),
+            size = BLOOM_MARK,
+            modifier = Modifier.clearAndSetSemantics { },
+        )
     }
     }
 }
@@ -287,4 +287,3 @@ private const val BLOOM_SCRIM_ALPHA = 0.62f
 private const val BLOOM_STEP_MILLIS = 26
 
 private val BLOOM_MARK = Space.bloomMark
-private val BLOOM_DRAWING = Space.bloomDrawing

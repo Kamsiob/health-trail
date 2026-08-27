@@ -291,7 +291,9 @@ object Space {
      * scales with the person's font.
      */
     val bloomMark: Dp = 32.dp
-    val bloomDrawing: Dp = 20.dp
+    // `bloomDrawing` was the glyph inside it and is gone: the bloom draws a
+    // `HueMark` now, #463, and that component derives its glyph from the disc
+    // rather than taking a second measurement that could disagree with it.
     val fabGap: Dp = 12.dp
     val fabScrollClearance: Dp = 56.dp + 12.dp + 16.dp
     /**
