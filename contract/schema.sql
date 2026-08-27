@@ -36,12 +36,21 @@
 --    nothing left to tell a peer it was deleted, so the peer resurrects it on
 --    the next sync and the deletion appears to undo itself, forever.
 --
---    Two exceptions, both explicit. The full data wipe genuinely removes
+--    Three exceptions, all explicit. The full data wipe genuinely removes
 --    everything including tombstones, which is the point of it. The tombstone
 --    purge may remove tombstones older than the retention window below, and
 --    only after every known paired device has acknowledged them. Until direct
 --    sync exists there are no peers, so nothing is ever purged and that code
 --    path is dead.
+--
+--    The third is the permanent delete of one row at the person's explicit
+--    request, owner decision 2026-08-27, issue #465. It is reached from the
+--    Deleted Items screen only, on a row already deleted once, behind a
+--    confirmation that says it cannot be undone. It takes the row, every row
+--    that only existed because of it, its change_log entries, and its
+--    attachment bytes where nothing else names them. DATA-CONTRACT.md 3 has
+--    the full rule and the sync consequence. This is also the only place the
+--    append-only rule on change_log is set aside.
 --
 -- 3. TOMBSTONE RETENTION WINDOW: 730 days.
 --

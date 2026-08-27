@@ -128,6 +128,23 @@ class Attachments private constructor(private val root: File) {
     }
 
     /** Removes any half written file left behind by a crash mid-write. */
+    /**
+     * Deletes one file, and only when a permanent delete has asked for it.
+     *
+     * **Nothing else in this class removes anything, and that is the rule.**
+     * The store is content addressed and two rows can name one file, so a row
+     * disappearing never means the bytes should. #465 is the one caller: it
+     * checks that no `attachment` row still names the hash, tombstones
+     * included, before asking.
+     *
+     * Returns whether a file was actually there to delete, so a purge can say
+     * plainly what it took.
+     */
+    suspend fun remove(hash: String): Boolean = withContext(Dispatchers.IO) {
+        val file = fileFor(hash)
+        file.isFile && file.delete()
+    }
+
     suspend fun sweepIncomplete(): Int = withContext(Dispatchers.IO) {
         root.listFiles()
             ?.filter { it.isFile && (it.name.endsWith(".part") || it.name.startsWith("incoming")) }

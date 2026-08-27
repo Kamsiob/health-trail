@@ -62,12 +62,27 @@ These columns exist on every user data table. Not most tables. Every one.
 
 Sortable time-ordered UUIDs are preferred over fully random ones, because they index better and give a stable natural ordering, but any collision-safe unique id generated locally satisfies the contract.
 
-**Deletion is always a tombstone.** Set `deleted_at` and bump `rev`. Never issue a DELETE against a user data table outside of the tombstone purge described below. Every query filters on `deleted_at IS NULL`. Enforce this with views or a repository layer, not with discipline, because one forgotten filter is a data leak of something the user thought they deleted.
+**Deletion is always a tombstone.** Set `deleted_at` and bump `rev`. Never issue a DELETE against a user data table outside of the three exceptions below. Every query filters on `deleted_at IS NULL`. Enforce this with views or a repository layer, not with discipline, because one forgotten filter is a data leak of something the user thought they deleted.
 
-Two exceptions to the tombstone rule, both explicit:
+Three exceptions to the tombstone rule, all explicit:
 
 - **Full data wipe** genuinely deletes everything, including tombstones. That is the point of it.
 - **Tombstone purge** may remove tombstones older than a long retention window, only after every known paired device has acknowledged them. Until direct sync exists there are no peers, so nothing is purged and this is dead code. Write the retention window into the schema comments now so the future implementation does not have to guess.
+- **Permanent delete of one row, at the person's explicit request.** Owner decision, 2026-08-27, issue #465. Reachable from exactly one place, the Deleted Items screen, on a row the person has already deleted once, behind a confirmation that says plainly that it cannot be undone. It is never bulk: a control that empties the whole screen, if one is ever added, carries its own separate confirmation.
+
+  **What it removes, and all five are required or the promise is not kept:**
+
+  1. The row.
+  2. Every row that only existed because of it. Foreign keys are `NO ACTION` and enforced, and a tombstoned child is still a row, so a parent with any surviving child cannot be deleted at all. Children are discovered from `PRAGMA foreign_key_list` rather than from a list in the code, which cannot go stale.
+  3. A reference that is allowed to be absent is cleared rather than followed. A nullable foreign key means "this may point at nothing", so a live row that merely cited the deleted one loses the citation and keeps everything else. Following it would delete things the person never asked about.
+  4. Its `change_log` rows. They carry no content and they are still a durable record that a row with that id existed, was written *n* times, and was deleted at a particular moment, and `sqlcipher_export` copies them into every archive. "Absent from any export" is not true while they are there. **This is the one place the append-only rule in section 4 is set aside, and only for rows belonging to something being purged.**
+  5. The attachment bytes, when no `attachment` row still names the same hash, tombstones included. The store is content addressed and two rows can name one file.
+
+  **Nothing is logged and no trigger fires.** There is no `AFTER DELETE` trigger in the schema, which is what makes this possible, and it is also correct: a log entry saying a row was purged is exactly the residue this exists to remove.
+
+  **All of it in one transaction.** A half applied purge is a row with its children gone or a change log pointing at nothing.
+
+  **The sync consequence, stated rather than discovered later.** A purged row that a paired device has already seen will be resurrected by that device on the next sync, because there is no longer anything saying it was deleted. That is the failure the tombstone rule exists to prevent, and it is accepted here because the person asked for the row to stop existing and because direct sync does not exist yet. When it does, a purge must either be refused for rows a peer has acknowledged or carry its own purge record, and that is a decision for the release that builds sync.
 
 **Attachments are content addressed.** A photographed bill is stored as a file named by the hash of its bytes, plus a database row holding the hash, the original filename, the mime type, and the size. Consequences, all good: an attachment can never conflict because identical bytes are the same file, transferring one twice is free, and a corrupt transfer is detectable by rehashing.
 

@@ -173,6 +173,7 @@ import com.kamsiob.healthtrail.ui.screens.EntryCorrection
 import com.kamsiob.healthtrail.ui.screens.PersonDraft
 import com.kamsiob.healthtrail.ui.screens.SectionCount
 import com.kamsiob.healthtrail.ui.screens.TrailScreen
+import com.kamsiob.healthtrail.ui.v4.ConfirmForeverSheet
 import com.kamsiob.healthtrail.ui.v4.ConfirmRemoveSheet
 import com.kamsiob.healthtrail.ui.screens.labelKey
 import com.kamsiob.healthtrail.ui.screens.kindNameKey
@@ -1562,13 +1563,41 @@ fun NotebookShell(
                 BinScreen(
                     discarded = discarded,
                     onRestore = { restoring = it },
+                    onForever = { deletingForever = it },
                     onBack = { binOpen = false },
                 )
             }
 
+            // **The one confirmation in the app for something that cannot be
+            // undone.** #465. Its own sheet, never the removal one: that sheet
+            // says the thing is waiting in Deleted Items, and this is what
+            // happens to the promise.
+            deletingForever?.let { thing ->
+                ConfirmForeverSheet(
+                    what = thing.label.takeIf { it.isNotBlank() }
+                        ?: strings["bin.untitled"],
+                    onConfirm = {
+                        purging = thing
+                        deletingForever = null
+                    },
+                    onDismiss = { deletingForever = null },
+                )
+            }
+
+            purging?.let { thing ->
+                LaunchedEffect(thing) {
+                    Repository.open(context).purge(thing.table, thing.id)
+                    purging = null
+                    // Reread, like the restore beside it, so Deleted Items and
+                    // anything that pointed at the row both show the truth
+                    // without either being told.
+                    revision += 1
+                }
+            }
+
             restoring?.let { thing ->
                 LaunchedEffect(thing) {
-                    Repository.open(context).restore(thing.section, thing.id)
+                    Repository.open(context).restore(thing.table, thing.id)
                     restoring = null
                     // **Reread rather than patched**, so the bin and whatever
                     // the thing went back to both show the truth without either

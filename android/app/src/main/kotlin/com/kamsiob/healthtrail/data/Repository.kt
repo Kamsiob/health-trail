@@ -1387,58 +1387,131 @@ class Repository private constructor(
         )
     }
 
-    /** One thing taken out, as the person would recognize it. #405. */
+    /** One thing deleted, as the person would recognize it. #405, #465. */
     data class Discarded(
+        /**
+         * The section whose mark and hue it wears.
+         *
+         * **Display only.** It used to be the identity too, and that was the
+         * defect: `Section` and table are not one to one, so a deleted memo
+         * arrived twice, once as the trail and once as memos, both pointing at
+         * the same row. Restoring either restored the same thing and the second
+         * row stayed on screen naming something that was already back. #465.
+         */
         val section: Section,
+        /** The table the row is actually in, which is what a write needs. */
+        val table: String,
         val id: String,
         /** What it was, in their words rather than a table name or a row id. */
         val label: String,
-        /** When it was taken out. */
+        /** When it was deleted. */
         val deletedAt: Long,
     )
 
     /**
-     * Everything taken out of the notebook and not yet put back. #405.
+     * What a permanent delete took, so the screen can say it plainly.
+     *
+     * Rows includes everything that had to go with it: a row nothing points at
+     * is rare in this schema.
+     */
+    data class Purged(
+        val rows: Int,
+        val logEntries: Int,
+        val files: Int,
+    )
+
+    /**
+     * The tables Deleted Items lists, the column that names a row in each, and
+     * the mark it wears.
+     *
+     * **Driven by table rather than by `Section`**, which is what fixes two
+     * defects at once. `Section` is a screen's idea of the notebook and there
+     * are fourteen of them over eleven tables: `TRAIL` and `NOTES` are both
+     * `entry`, so iterating sections listed every deleted memo twice. And five
+     * things a person can delete are in tables no `Section` names as its own:
+     * a milestone, a reading, a chapter, a care thread and a tracked measure
+     * were all deleted into a screen that could not show them, which means they
+     * could not be put back. #465.
+     *
+     * **The order is the order they are listed in**, before the sort by date.
+     */
+    private data class BinTable(
+        val table: String,
+        /** SQL that names one row in the person's own words. */
+        val label: String,
+        /** SQL that limits the table to one notebook, with one `?` for its id. */
+        val mine: String,
+        val section: Section,
+    )
+
+    private val BIN_TABLES = listOf(
+        BinTable("entry", "title", "subject_id = ?", Section.TRAIL),
+        BinTable("person", "display_name", "subject_id = ?", Section.CARE_TEAM),
+        BinTable("medication", "name", "subject_id = ?", Section.MEDICATIONS),
+        BinTable("appointment", "title", "subject_id = ?", Section.APPOINTMENTS),
+        BinTable("question", "text", "subject_id = ?", Section.ASK_NEXT_TIME),
+        BinTable("document", "title", "subject_id = ?", Section.DOCUMENTS),
+        BinTable("bill", "description", "subject_id = ?", Section.MONEY),
+        BinTable("project", "name", "subject_id = ?", Section.PROJECTS),
+        BinTable("chapter", "name", "subject_id = ?", Section.CHAPTERS),
+        BinTable("care_thread", "label", "subject_id = ?", Section.THREADS),
+        BinTable(
+            "standing_instruction",
+            "name",
+            "subject_id = ?",
+            Section.STANDING_INSTRUCTIONS,
+        ),
+        BinTable("measure", "name", "subject_id = ?", Section.PROGRESS),
+        BinTable("milestone", "label", "subject_id = ?", Section.CHAPTERS),
+        // **A reading is named by the entry it wrote**, which is where its
+        // number lives, #428. Its own columns are a value and an optional note,
+        // and "168" alone says nothing about what was weighed.
+        BinTable(
+            "measurement",
+            // allow-base-table: a reading's own entry may itself have been
+            // deleted, and a row in Deleted Items with no name at all is worse
+            // than one named by a title the live view is hiding.
+            "(SELECT e.title FROM entry e WHERE e.id = measurement.entry_id)",
+            // allow-base-table: the measure a reading belongs to may be
+            // deleted too, and its readings still have to be findable here.
+            "measure_id IN (SELECT id FROM measure WHERE subject_id = ?)",
+            Section.PROGRESS,
+        ),
+    )
+
+    /**
+     * Everything deleted from the notebook and not yet put back. #405, #465.
      *
      * **This is a reader over rows the app already keeps.** Rule 3 and 3.1:
      * deletion is always a tombstone, and every screen reads a `live_*` view
      * that filters `deleted_at IS NULL`. So nothing had to be stored for this
      * to be possible; the record was already there and nothing could read it.
      *
-     * **Named in the person's own words**, through the same heading columns the
-     * conflict screen already uses, because rule 20 says a table name and a row
-     * id never reach the screen.
+     * **Named in the person's own words**, because rule 20 says a table name
+     * and a row id never reach the screen.
      *
-     * **Most recently taken out first**, which is the order somebody looking
-     * for something they just lost is thinking in.
+     * **Most recently deleted first**, which is the order somebody looking for
+     * what they just did needs.
      */
     suspend fun discarded(subjectId: String): List<Discarded> = withContext(Dispatchers.IO) {
         val database = db().database
         val out = mutableListOf<Discarded>()
-        for (section in Section.entries) {
-            val column = ABOUT_HEADINGS[section.table] ?: continue
-            // **Only this person's**, because a notebook holds more than one and
-            // one person's bin must never show another's. Every table has
-            // carried `subject_id` since Phase 0.
-            // unordered-query: asking whether a column exists, which is one
-            // fact rather than a list. There is nothing to order and nothing
-            // reaches a render or an export from here.
-            val hasSubject = database.rawQuery(
-                "SELECT 1 FROM pragma_table_info(?) WHERE name = 'subject_id'",
-                arrayOf(section.table),
-            ).use { it.moveToFirst() }
-            if (!hasSubject) continue
+        for (bin in BIN_TABLES) {
+            // A memo is a memo and not the trail, which is the one place a
+            // table maps to two sections, so the kind comes back with the row.
+            val kind = if (bin.table == "entry") "kind" else "NULL"
             database.rawQuery(
                 // allow-base-table: the whole point is the rows the live views
                 // hide, so this cannot read a live view.
-                "SELECT id, \"$column\", deleted_at FROM \"${section.table}\" " +
-                    "WHERE subject_id = ? AND deleted_at IS NOT NULL " +
+                "SELECT id, ${bin.label}, deleted_at, $kind FROM \"${bin.table}\" " +
+                    "WHERE ${bin.mine} AND deleted_at IS NOT NULL " +
                     "ORDER BY deleted_at DESC, id",
                 arrayOf(subjectId),
             ).use { cursor ->
                 while (cursor.moveToNext()) {
                     out += Discarded(
-                        section = section,
+                        section = if (cursor.getString(3) == "note") Section.NOTES else bin.section,
+                        table = bin.table,
                         id = cursor.getString(0),
                         label = cursor.getString(1).orEmpty(),
                         deletedAt = cursor.getLong(2),
@@ -1453,7 +1526,7 @@ class Repository private constructor(
      * Puts one back exactly where it was. #405.
      *
      * **Clearing one column is the whole of it**, and that is the point of
-     * tombstones: the row kept its own `occurred_*` dates, so a thing taken out
+     * tombstones: the row kept its own `occurred_*` dates, so a thing deleted
      * in March goes back in March rather than at the top of the trail. Nothing
      * had to be remembered separately.
      *
@@ -1462,12 +1535,187 @@ class Repository private constructor(
      * `updated_at`: a restore that left the stamp alone would be undone by the
      * next merge with a device that still thinks it is deleted.
      */
-    suspend fun restore(section: Section, rowId: String) = withContext(Dispatchers.IO) {
+    suspend fun restore(table: String, rowId: String) = withContext(Dispatchers.IO) {
         db().database.write(
-            "UPDATE ${section.table} SET deleted_at = NULL, updated_at = ?, rev = rev + 1 " +
+            "UPDATE \"$table\" SET deleted_at = NULL, updated_at = ?, rev = rev + 1 " +
                 "WHERE id = ? AND deleted_at IS NOT NULL",
             arrayOf<Any?>(System.currentTimeMillis(), rowId),
         )
+    }
+
+    /**
+     * Takes one thing out of the record for good, and everything that only
+     * existed because of it. #465, and it is an owner decision.
+     *
+     * **This is the one write in the app that is not a tombstone**, and the
+     * data contract had to be amended for it: `contract/DATA-CONTRACT.md` 3
+     * says deletion is always a tombstone and names its exceptions, and this is
+     * now the third one. It is reachable from exactly one place, Deleted Items,
+     * on a row the person has already deleted once, behind a confirmation that
+     * says it cannot be undone.
+     *
+     * **What "removed from the database entirely" has to mean, exactly**, or
+     * the promise is not kept:
+     *
+     * 1. **The row.**
+     * 2. **Every row that only existed because of it.** Foreign keys here are
+     *    `NO ACTION` and enforced on the connection, so deleting a parent with
+     *    a surviving child throws. A tombstoned child is still a row, so this
+     *    is not a rare case: an entry has twelve child tables and a chapter has
+     *    thirteen. Children are found from the schema itself rather than from a
+     *    list here, which cannot go stale.
+     * 3. **A reference that is allowed to be absent is cleared, not followed.**
+     *    A nullable foreign key means "this may point at nothing", so a live
+     *    project date that happened to cite a deleted entry loses the citation
+     *    and keeps the date. Following it would delete things the person never
+     *    asked about.
+     * 4. **The change log rows.** They carry no content, and they are still a
+     *    durable record that a row with that id existed, was written n times
+     *    and was deleted at a particular moment, and `sqlcipher_export` copies
+     *    them into every archive. "Absent from any export" is not true while
+     *    they are there.
+     * 5. **The attachment bytes**, when nothing else names the same file. The
+     *    store is content addressed and two rows can name one file, so the
+     *    hash is swept only if no `attachment` row is left holding it,
+     *    tombstones included.
+     *
+     * **No trigger fires and nothing is logged.** There is no `AFTER DELETE`
+     * trigger in the schema, which is what makes this possible at all, and it
+     * is also the right answer: a log entry saying a row was purged is the
+     * residue this exists to remove.
+     *
+     * **All of it in one transaction.** A half applied purge is a row with its
+     * children gone or a change log pointing at nothing.
+     */
+    suspend fun purge(table: String, rowId: String): Purged = withContext(Dispatchers.IO) {
+        val database = db().database
+        val children = childrenOf(database)
+
+        // Discovered parents first, so deleting in reverse takes children
+        // first, which is what `NO ACTION` requires.
+        val order = mutableListOf<Pair<String, String>>()
+        val seen = mutableSetOf<Pair<String, String>>()
+        val clear = mutableListOf<Triple<String, String, String>>()
+
+        fun walk(atTable: String, atId: String) {
+            if (!seen.add(atTable to atId)) return
+            order += atTable to atId
+            for (child in children[atTable].orEmpty()) {
+                database.rawQuery(
+                    // allow-base-table: a purge is about rows the live views
+                    // hide, and a tombstoned child still blocks the delete.
+                    // unordered-query: a set of ids to delete, and delete order
+                    // among siblings cannot matter. Nothing renders from here.
+                    "SELECT id FROM \"${child.table}\" WHERE \"${child.column}\" = ?",
+                    arrayOf(atId),
+                ).use { cursor ->
+                    while (cursor.moveToNext()) {
+                        val childId = cursor.getString(0)
+                        if (child.required) {
+                            walk(child.table, childId)
+                        } else {
+                            clear += Triple(child.table, child.column, childId)
+                        }
+                    }
+                }
+            }
+        }
+        walk(table, rowId)
+
+        val hashes = mutableSetOf<String>()
+        for ((atTable, atId) in order) {
+            if (atTable != "attachment") continue
+            database.rawQuery(
+                // allow-base-table: reading a row that is about to stop
+                // existing, so there is no view that can answer this.
+                "SELECT sha256 FROM attachment WHERE id = ?",
+                arrayOf(atId),
+            ).use { if (it.moveToFirst()) hashes += it.getString(0) }
+        }
+
+        var logEntries = 0
+        database.beginTransaction()
+        try {
+            for ((childTable, childColumn, childId) in clear) {
+                database.write(
+                    "UPDATE \"$childTable\" SET \"$childColumn\" = NULL, " +
+                        "updated_at = ?, rev = rev + 1 WHERE id = ?",
+                    arrayOf<Any?>(System.currentTimeMillis(), childId),
+                )
+            }
+            for ((atTable, atId) in order.asReversed()) {
+                logEntries += database.rawQuery(
+                    "SELECT COUNT(*) FROM change_log WHERE table_name = ? AND row_id = ?",
+                    arrayOf(atTable, atId),
+                ).use { if (it.moveToFirst()) it.getInt(0) else 0 }
+                database.write(
+                    "DELETE FROM change_log WHERE table_name = ? AND row_id = ?",
+                    arrayOf<Any?>(atTable, atId),
+                )
+                database.write("DELETE FROM \"$atTable\" WHERE id = ?", arrayOf<Any?>(atId))
+            }
+            database.setTransactionSuccessful()
+        } finally {
+            database.endTransaction()
+        }
+
+        // **Files last, and only once the rows are gone.** A file swept before
+        // the transaction committed would be a photograph deleted for a purge
+        // that then rolled back.
+        var files = 0
+        if (hashes.isNotEmpty()) {
+            val store = Attachments.open(app)
+            for (hash in hashes) {
+                val stillNamed = database.rawQuery(
+                    // allow-base-table: a tombstoned attachment still names the
+                    // file, and its bytes have to survive for a restore.
+                    // unordered-query: whether any row is left, which is one
+                    // fact rather than a list.
+                    "SELECT 1 FROM attachment WHERE sha256 = ? LIMIT 1",
+                    arrayOf(hash),
+                ).use { it.moveToFirst() }
+                if (!stillNamed && store.remove(hash)) files += 1
+            }
+        }
+
+        Purged(rows = order.size, logEntries = logEntries, files = files)
+    }
+
+    /** One table that points at another, and whether it may point at nothing. */
+    private data class ChildRef(val table: String, val column: String, val required: Boolean)
+
+    /**
+     * Which tables point at each table, read out of the schema itself.
+     *
+     * **Never a list written here.** A hand written map of thirteen children
+     * per parent is a map that goes stale the first time a column is added, and
+     * the failure it produces is a purge that throws on a foreign key or, worse,
+     * leaves a child row pointing at nothing.
+     */
+    private fun childrenOf(
+        database: net.zetetic.database.sqlcipher.SQLiteDatabase,
+    ): Map<String, List<ChildRef>> {
+        val out = mutableMapOf<String, MutableList<ChildRef>>()
+        for (table in Backup.userTables(database)) {
+            val required = mutableSetOf<String>()
+            // unordered-query: the shape of a table, not a list anybody reads.
+            database.rawQuery("PRAGMA table_info(\"$table\")", null).use { cursor ->
+                while (cursor.moveToNext()) {
+                    if (cursor.getInt(3) == 1) required += cursor.getString(1)
+                }
+            }
+            // unordered-query: the same, for its references.
+            database.rawQuery("PRAGMA foreign_key_list(\"$table\")", null).use { cursor ->
+                val parentAt = cursor.getColumnIndexOrThrow("table")
+                val fromAt = cursor.getColumnIndexOrThrow("from")
+                while (cursor.moveToNext()) {
+                    val column = cursor.getString(fromAt)
+                    out.getOrPut(cursor.getString(parentAt)) { mutableListOf() } +=
+                        ChildRef(table, column, column in required)
+                }
+            }
+        }
+        return out
     }
 
     /**

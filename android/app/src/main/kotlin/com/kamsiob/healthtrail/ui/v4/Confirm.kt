@@ -27,6 +27,11 @@ object ConfirmTags {
     const val SHEET = "confirm_sheet"
     const val CONFIRM = "confirm_confirm"
     const val KEEP = "confirm_keep"
+
+    /** The second confirmation, the one that cannot be undone. #465. */
+    const val FOREVER_SHEET = "confirm_forever_sheet"
+    const val FOREVER_CONFIRM = "confirm_forever_confirm"
+    const val FOREVER_KEEP = "confirm_forever_keep"
 }
 
 /**
@@ -139,6 +144,86 @@ fun ConfirmRemoveSheet(
  * it cannot be reached without also reaching the confirmation it belongs to.
  * That was the old file's reasoning and it survives the rewrite unchanged.
  */
+/**
+ * Asking before a permanent delete, which is the one thing in this app that
+ * cannot be undone. #465, owner decision.
+ *
+ * **Its own sheet rather than a flag on [ConfirmRemoveSheet]**, because the two
+ * are not the same question and must never look like it. Removing something
+ * puts it in Deleted Items and the app's whole answer to a mistake is that it
+ * is waiting there. This is the other side of that promise, and the wording has
+ * to be the opposite: what happens is final, and it says so before the button
+ * rather than after it.
+ *
+ * **It says what leaves rather than "are you sure".** The record, every backup
+ * made from now on, and the readable copy. Somebody deleting a photograph of a
+ * letter needs to know the picture goes with it.
+ *
+ * **Keeping is listed second and is the calm one**, exactly as in the sheet
+ * above, so the destructive control is not where a reflex lands.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ConfirmForeverSheet(
+    /** What is being deleted, in the person's own words, shown back to them. */
+    what: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val strings = LocalStrings.current
+    val scheme = MaterialTheme.colorScheme
+    val sheetState = rememberSheet()
+
+    Sheet(
+        onDismiss = onDismiss,
+        state = sheetState,
+        modifier = Modifier.testTag(ConfirmTags.FOREVER_SHEET),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = Space.screenHorizontal)
+                .padding(bottom = Space.l),
+        ) {
+            Spacer(Modifier.height(Space.s))
+            Text(
+                text = strings["bin.forever.title"],
+                style = MaterialTheme.typography.headlineMedium,
+                color = scheme.onSurface,
+            )
+            Spacer(Modifier.height(Space.s))
+            Text(
+                text = Bidi.isolate(what),
+                style = MaterialTheme.typography.bodyLarge,
+                color = scheme.onSurface,
+            )
+            Spacer(Modifier.height(Space.s))
+            Text(
+                text = strings["bin.forever.body"],
+                style = MaterialTheme.typography.bodyMedium,
+                color = scheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(Space.l))
+            DestructiveButton(
+                label = strings["bin.forever"],
+                onClick = onConfirm,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(ConfirmTags.FOREVER_CONFIRM),
+            )
+            Spacer(Modifier.height(Space.s))
+            Action(
+                label = strings["bin.forever.keep"],
+                onClick = onDismiss,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(ConfirmTags.FOREVER_KEEP),
+            )
+        }
+    }
+}
+
 @Composable
 private fun DestructiveButton(
     label: String,

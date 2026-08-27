@@ -484,6 +484,16 @@ internal class ShellState {
     /** One thing on its way back, cleared when the write is done. */
     var restoring by mutableStateOf<Repository.Discarded?>(null)
 
+    /**
+     * One thing whose permanent delete is being confirmed, or null. #465.
+     *
+     * **Two variables and not one.** Confirming is a question and purging is a
+     * write, and collapsing them would run the write while the sheet was still
+     * on screen.
+     */
+    var deletingForever by mutableStateOf<Repository.Discarded?>(null)
+    var purging by mutableStateOf<Repository.Discarded?>(null)
+
     /** Incidents, which `MASTER_SPEC.md` 4.7 makes threads rather than events. */
     var incidents by mutableStateOf<List<Repository.Incident>>(emptyList())
     var incidentsOpen by mutableStateOf(false)

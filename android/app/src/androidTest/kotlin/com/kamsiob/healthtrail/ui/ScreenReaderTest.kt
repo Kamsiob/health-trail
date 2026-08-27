@@ -1581,7 +1581,7 @@ class ScreenReaderTest {
         assertEverythingIsLabeled("notes-empty")
     }
 
-    /** What was taken out, with something in it and with nothing. #405. */
+    /** Deleted Items, with something in it and with nothing. #405, #465. */
     @Test
     fun theBinLabelsEverything() {
         compose.show {
@@ -1589,6 +1589,7 @@ class ScreenReaderTest {
                 discarded = listOf(
                     Repository.Discarded(
                         section = Repository.Section.MEDICATIONS,
+                        table = "medication",
                         id = "m1",
                         label = "Vitamin D",
                         deletedAt = 1_785_000_000_000L,
@@ -1597,6 +1598,7 @@ class ScreenReaderTest {
                     // state: an entry can be a body and no title.
                     Repository.Discarded(
                         section = Repository.Section.TRAIL,
+                        table = "entry",
                         id = "e1",
                         label = "",
                         deletedAt = 1_784_000_000_000L,

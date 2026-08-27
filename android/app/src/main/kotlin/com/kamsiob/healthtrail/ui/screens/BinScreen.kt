@@ -26,7 +26,8 @@ object BinTags {
 }
 
 /**
- * Everything taken out of the notebook, and the way to put it back. #405.
+ * Deleted Items: everything deleted, and the two things that can happen to it.
+ * #405, renamed and given a permanent delete by the owner in #465.
  *
  * **The owner, 2026-08-18: "a universal trashcan feature in more where they can
  * restore anything deleted from anywhere in the app and have it go back to
@@ -42,10 +43,14 @@ object BinTags {
  * March returns to March rather than to the top. Nothing is remembered
  * separately and nothing can drift.
  *
- * **There is no "delete forever" and that is deliberate.** The archive is the
- * record, D24, and a second permanent deletion is a way to lose something that
- * rule 3 exists to prevent. If the owner ever wants one it is his call and it
- * is not the default.
+ * **There is a delete forever now, and it was the owner's call.** #465. It said
+ * here that there would not be one, "if the owner ever wants one it is his call
+ * and it is not the default", and he wants one. It is not the default: putting
+ * something back is the control on the row, and deleting for good is reached by
+ * opening the row and confirming a sheet that says plainly it cannot be undone.
+ *
+ * **Nothing bulk.** There is no "empty it", and if one is ever added it gets its
+ * own confirmation rather than borrowing this one.
  *
  * **Each thing says what it is in the person's own words**, never a table name
  * or a row id, which is rule 20.
@@ -60,6 +65,8 @@ fun BinScreen(
     onRestore: (Repository.Discarded) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Opens the confirmation for a delete that cannot be undone. #465. */
+    onForever: (Repository.Discarded) -> Unit = {},
 ) {
     val strings = LocalStrings.current
 
@@ -122,6 +129,20 @@ fun BinScreen(
                                 modifier = Modifier.testTag(BinTags.restore(thing.id)),
                             )
                         },
+                        // **Putting it back is the control; deleting for good
+                        // is behind the row.** #465 asked for a permanent
+                        // delete and `ui/v4/Confirm.kt` says why it is not a
+                        // second button here: a destructive control resting on
+                        // every row of a list is the thing that file exists to
+                        // avoid, and two controls in one row's trailing slot do
+                        // not survive font scale 2.0 in the longest language.
+                        //
+                        // So the row opens the confirmation, and its click
+                        // label names exactly what opening it is for, which is
+                        // what a reader hears. The subtitle says it in words
+                        // for everybody else, per `DESIGN.md` 13.5.
+                        onClick = { onForever(thing) },
+                        clickLabel = strings["bin.forever"],
                         modifier = Modifier.testTag(BinTags.row(thing.id)),
                     )
                 }
