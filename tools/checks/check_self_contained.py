@@ -53,6 +53,16 @@ SKIP_DIRS = {".git", "build", ".gradle", "node_modules", "__pycache__", ".venv"}
 # Files inherited with the project brief rather than written for it. They are
 # committed as the public record of what was handed over and are not edited to
 # suit a rule introduced afterward.
+#
+# **The exemption is doing real work and it should be looked at.** #470: this
+# check passed green on 2026-08-27 with three other product names sitting at
+# line 383 of the file it exempts, which is exactly the shape its own docstring
+# refuses. And the "not edited" half of the reason above is no longer true: a
+# private invite link and a cloud service account address were taken out of
+# that file the same day, because a public repository is not the place for
+# either. Whether the file belongs in this repository at all is the owner's
+# call and is written up in the #470 report; `PROJECT-DELTAS.md` already
+# carries every override this project takes from it.
 EXEMPT = {
     "kamsiob-project-template.md",
     "tools/checks/check_self_contained.py",

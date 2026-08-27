@@ -43,7 +43,7 @@ MUST_REFUSE = [
     "git push --force",
     "git push origin +main:main",
     "adb uninstall com.kamsiob.healthtrail",
-    "adb -s 39151FDJH00506 uninstall com.kamsiob.healthtrail",
+    "adb -s SERIALNUMBER uninstall com.kamsiob.healthtrail",
     "adb shell pm uninstall com.kamsiob.healthtrail",
     "adb shell pm clear com.kamsiob.healthtrail",
     "gh repo delete Kamsiob/health-trail",

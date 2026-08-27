@@ -2,8 +2,8 @@
 """Every hook command that interpolates a path is quoted, and every script it
 names exists and is executable.
 
-**This project lives at a path containing spaces.** `/var/home/Kamsiob/Kamiob
-Apps/-- Android/Health Trail`. An unquoted `${CLAUDE_PROJECT_DIR}/...` in a hook
+**This project is checked out at a path containing spaces.** An unquoted
+`${CLAUDE_PROJECT_DIR}/...` in a hook
 command is split by the shell on those spaces, the executable is never found,
 and the hook exits 127.
 

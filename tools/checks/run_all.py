@@ -58,6 +58,10 @@ CHECKS = [
     ),
     ("check_ink3_is_not_text.py", "ink3 is non-text only, so no label is drawn at 2.37:1"),
     ("check_self_contained.py", "nothing outside this project is named in the repository"),
+    (
+        "check_no_pii.py",
+        "nothing in the tracked tree identifies a person, a machine, or a secret",
+    ),
     ("check_i18n.py", "the four locale catalogs against each other and their rules"),
     (
         "check_concatenation.py",

@@ -943,7 +943,7 @@ They are restored above from the commit messages and pull request bodies that qu
 
     ${CLAUDE_PROJECT_DIR}/.claude/hooks/block-destructive.py
 
-This project lives at `/var/home/Kamsiob/Kamiob Apps/-- Android/Health Trail`. The shell splits that on its spaces and tries to run `/var/home/Kamsiob/Kamiob`, which does not exist. The hook exits **127**.
+This project is checked out at a path containing spaces. The shell splits an unquoted expansion of it on those spaces and tries to run the first word as a program, which does not exist. The hook exits **127**.
 
 **A PreToolUse hook blocks on exit 2 and only on exit 2.** Exit 127 means "this hook had nothing to say", so the command proceeds. The guard was a no-op wearing the shape of a guard.
 
@@ -2619,6 +2619,47 @@ Anything only the owner can resolve. Each entry states exactly what he needs to 
 
 **The original note, from when B5 was open:** The four entries before it are all resolved and are kept below with their outcomes rather than deleted, because a BLOCKED section that only ever grows teaches a reader that nothing here gets fixed. **B5 does not stop the work.** A fresh session can build everything on the list without it, exactly as the last two sessions did, on rule 6 followed by hand.
 
+### B10. OPEN. Personal information is out of the working tree and is still in twelve commits
+
+**2026-08-27, #470.** The owner asked for a scan of the whole current tree for
+personal identifying information, for every instance to be removed, and for
+checks so none can return. All three are done, and `check_no_pii.py` is in
+`run_all.py` and fails on a planted example of each pattern.
+
+**What was in the tree and is now out:**
+
+| What | Where it was |
+|---|---|
+| A private Telegram group invite link, which is a bearer credential | `README.md`, `kamsiob-project-template.md` |
+| The Pixel 8's serial, and the retired Pixel 10 Pro XL's | `HANDOFF.md`, `docs/RUN-LOG.md` twice, and inside `check_guard.py`'s own test data |
+| Absolute paths under the owner's home directory, 22 hits | `.claude/settings.json`, four `tools/*.sh`, `DECISIONS.md`, `RUN-SAFETY.md`, `HANDOFF.md`, `docs/TRAPS.md`, `docs/COLD-START.md`, `check_hook_quoting.py` |
+| A Google Cloud service account address and its project id | `kamsiob-project-template.md` |
+
+**No key material was ever committed**, checked across every path that has ever
+existed in this repository rather than only the current tree, and no personal
+email address appears anywhere including in authorship metadata.
+
+**What is still in history, and it is the owner's decision.** The prompt says
+plainly: do not rewrite history, do not force push, report what and where.
+
+| Needle | Commits |
+|---|---|
+| `39151FDJH00506` | `7f0983a3`, `b7712b49`, `c4365ec7` |
+| `57241FDCQ0000H` | `7f0983a3`, `f906c892` |
+| the Telegram invite token | `312d2c7c`, `77f480c0`, `96982b57`, `f906c892` |
+| `kamsiob-503213` | `f906c892` |
+| the checkout path under the owner's home directory | `adadad43`, `b7040c37`, `05c422ba`, `dbabedb1`, `9f2dab52`, `f906c892` |
+
+**The one that is worth acting on today is the Telegram link, and not by
+rewriting anything.** It is a live credential: anyone reading those four commits
+can join the group. **Revoking it in Telegram costs a minute and makes the
+history harmless**, which no amount of rewriting does as reliably. Everything
+else in the list is a serial number and a folder name.
+
+**Rewriting is B7's problem and B7's answer.** It needs the same two guards
+lifted, it changes every commit identifier in the project, and the honest
+recommendation there applies here too: the current files are what anybody reads.
+
 ### B7. OPEN. Purging the review apparatus from git history needs the owner's own two guards lifted
 
 **What was asked, 2026-08-18.** The owner granted an explicit one time permission
@@ -2749,7 +2790,7 @@ mistake the same day. It is a reason to make it skip heredoc bodies.
 **One.** Make a link to the guard at a path with no space in it, because a space in the path is one of the two remaining explanations for why the project level hook never fires:
 
     mkdir -p ~/.claude/hooks
-    ln -s "/var/home/Kamsiob/Kamiob Apps/-- Android/Health Trail/.claude/hooks/block-destructive.py" ~/.claude/hooks/health-trail-guard.py
+    ln -s "<this repository>/.claude/hooks/block-destructive.py" ~/.claude/hooks/health-trail-guard.py
 
 The link points back into the repository, so the guard stays version controlled here and there is still only one copy of it.
 
@@ -2766,7 +2807,7 @@ The link points back into the repository, so the guard stays version controlled 
           {
             "matcher": "Bash",
             "hooks": [
-              { "type": "command", "command": "/home/Kamsiob/.claude/hooks/health-trail-guard.py", "timeout": 20 }
+              { "type": "command", "command": "~/.claude/hooks/health-trail-guard.py", "timeout": 20 }
             ]
           }
         ]

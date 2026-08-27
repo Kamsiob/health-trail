@@ -186,8 +186,8 @@ every `empty3-*` and `empty4-*` capture was taken.
 ## 7. This machine
 
 - **The shell carries no state between tool calls.** Every command starts fresh.
-- **`ANDROID_HOME` is not set.** SDK at `/home/Kamsiob/Android/Sdk`. Gradle finds it through `android/local.properties`, which is gitignored and **absent in a fresh clone**: `sdk.dir=/home/Kamsiob/Android/Sdk`.
-- **`adb` is not on the PATH**: `/home/Kamsiob/Android/Sdk/platform-tools/adb`.
+- **`ANDROID_HOME` is not set on this machine.** Gradle finds the SDK through `android/local.properties`, which is gitignored and **absent in a fresh clone**. Write `sdk.dir=` and the SDK path into it, or set `ANDROID_HOME`.
+- **`adb` may not be on the PATH.** The scripts in `tools/` resolve it through `$ADB`, `command -v adb`, `$ANDROID_HOME`, then `$HOME/Android/Sdk/platform-tools/adb`.
 - **The working directory contains a space and two leading dashes.** Quote every path.
 - **Gradle is fast and it looks broken.** An incremental Kotlin recompile of several files takes about a second. That is real.
 - **`pkill -f <pattern>` matches its own command line and kills the shell running it.** `pkill -f "connectedDebugAndroidTest" ; bash tools/verify.sh ...` killed itself before the redirect created the log: the failure was a missing file and exit 144, not anything about tests. Check for the process and act on what you find.

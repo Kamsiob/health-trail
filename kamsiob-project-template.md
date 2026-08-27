@@ -347,7 +347,7 @@ Every app includes an About screen containing the app mark, the app name, and a 
 YouTube: https://youtube.com/@kamsiob
 GitHub: https://github.com/kamsiob
 Website: https://kamsiob.com
-Telegram, the Kamsiob Lab group: https://t.me/+g5LKm9rUnNcxMjk5
+Telegram, the Kamsiob Lab group. The invite link is a bearer credential and is kept outside every repository.
 Feedback email: hello@kamsiob.com
 Privacy policy: the canonical hosted URL for this app, not a duplicate copy
 Licenses: a screen listing every bundled open source component and its license, plus any content licenses such as CC BY-SA for bundled reference material
@@ -528,7 +528,7 @@ Signing: generate the release keystore in the final phase, store it outside the 
 
 Two distribution paths, both maintained on every release. First, Google Play, using the Play service account and the Android Publisher API for everything the API permits, including listing text, Data Safety declarations, and bundle uploads. Second, a signed universal APK published as a GitHub release asset, for people who avoid the Play Store or run de-Googled devices. Release notes must explain in plain language that the two are signed differently, so switching between them requires uninstalling one first, and that the app's own backup and restore carries data across.
 
-Account and automation details. The Play Console account is an organization account under the legal entity B7 Collective, with the public developer name set to Kamsiob, so B7 Collective is only visible if a user opens the about-the-developer view. The organization account was chosen deliberately because it avoids the closed-testing requirement that personal accounts face. Play automation uses the service account kamsiob@kamsiob-503213.iam.gserviceaccount.com, in Google Cloud project kamsiob-503213 with the Android Publisher API enabled, invited with admin rights in the Play Console. Its JSON key is provided with the project and must never be committed. Separately, identity verification for the industry-wide Android developer verification mandate is already completed under B7 Collective, which matters because that mandate applies to sideloaded applications as well as store-delivered ones.
+Account and automation details. The Play Console account is an organization account under the legal entity B7 Collective, with the public developer name set to Kamsiob, so B7 Collective is only visible if a user opens the about-the-developer view. The organization account was chosen deliberately because it avoids the closed-testing requirement that personal accounts face. Play automation uses a Google Cloud service account with the Android Publisher API enabled, invited with admin rights in the Play Console. Its address, its project id and its JSON key all live outside every repository and must never be committed. Separately, identity verification for the industry-wide Android developer verification mandate is already completed under B7 Collective, which matters because that mandate applies to sideloaded applications as well as store-delivered ones.
 
 Known Play constraints that cannot be automated: the app entry must be created manually in the Play Console, the very first bundle must be uploaded through the web interface before the API can manage releases, and the content rating questionnaire has no API and is always manual. Do not fight these. Produce LAUNCH.md listing the owner's exact remaining clicks in plain numbered steps, and nothing else, since everything else is done.
 

@@ -29,7 +29,7 @@
 # Kamsiob, AGPL-3.0.
 set -euo pipefail
 
-ADB="${ADB:-/home/Kamsiob/Android/Sdk/platform-tools/adb}"
+ADB="${ADB:-$(command -v adb 2>/dev/null || echo "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}/platform-tools/adb")}"
 PACKAGE="${PACKAGE:-com.kamsiob.healthtrail}"
 DUMP=/tmp/health-trail-walk.xml
 

@@ -40,7 +40,7 @@ Record the outcome in DECISIONS.md either way, including a pass.
 
 **Two things that look like evidence and are not.** A command refused by Claude Code's auto mode classifier says nothing about this guard, because the classifier answers first. And feeding the script a payload by hand proves the script rather than the wiring: every line this log has ever held was written that way, which is exactly how the guard looked installed for three sessions while never running once.
 
-**Every hook command that interpolates a path is quoted.** This project lives at a path containing spaces, `/var/home/Kamsiob/Kamiob Apps/-- Android/Health Trail`. An unquoted `${CLAUDE_PROJECT_DIR}/...` is split by the shell, the executable is never found, and the hook exits 127. A PreToolUse hook blocks on exit 2 and only on exit 2, so 127 passes the command straight through. That is D49, and it is the bug this section is warning about rather than a hypothetical.
+**Every hook command that interpolates a path is quoted.** This project is checked out at a path containing spaces. An unquoted `${CLAUDE_PROJECT_DIR}/...` is split by the shell, the executable is never found, and the hook exits 127. A PreToolUse hook blocks on exit 2 and only on exit 2, so 127 passes the command straight through. That is D49, and it is the bug this section is warning about rather than a hypothetical.
 
 **Feeding the script a payload proves nothing about the wiring.** It proves the script. The hook is a separate question and it is the one that failed.
 

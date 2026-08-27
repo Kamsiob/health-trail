@@ -317,11 +317,15 @@ project's road (`ui/v4/RoadStrip.kt`), a measure's line (`ui/v4/Trace.kt`), and
 
 ## 9. The phone
 
-- Pixel 8, `39151FDJH00506`, Android 17, USB. **A development device, not the owner's daily driver.**
+- Pixel 8, Android 17, USB. **A development device, not the owner's daily driver.**
+  Its serial is not written down here: `adb devices` says it, and a device
+  identifier in a public repository is one of the things `check_no_pii.py` refuses.
 - **Switching Android user profiles re-locks it** and there is no way past a
   secure keyguard from here, #316. **Never switch users**, and check before
   planning device work: `adb shell dumpsys window | grep isKeyguardShowing`.
-- `adb` is not on `PATH`: `/home/Kamsiob/Android/Sdk/platform-tools/adb`.
+- `adb` may not be on `PATH`. The four scripts under `tools/` find it through
+  `$ADB`, then `command -v adb`, then `$ANDROID_HOME`, then
+  `$HOME/Android/Sdk/platform-tools/adb`.
 - Baseline: font 1.0, animator 1.0, touch exploration 0, night mode `no`. Rule 19 lets these change **only** if the prior value is recorded first and restored exactly.
 - **Never screenshot**: the share sheet, the calendar app, any screen with a password field.
 - Reinstall + reseed after a suite.

@@ -40,7 +40,7 @@ EXTRA=()
 for a in "$@"; do [ -n "$a" ] && EXTRA+=("$a"); done
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ADB="${ADB:-/home/Kamsiob/Android/Sdk/platform-tools/adb}"
+ADB="${ADB:-$(command -v adb 2>/dev/null || echo "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}/platform-tools/adb")}"
 PACKAGE="${PACKAGE:-com.kamsiob.healthtrail}"
 VARIANT="$(printf '%s' "${EXTRA[*]-}" | tr -c 'a-zA-Z0-9' '-' | sed 's/-*$//')"
 DB="/tmp/health-trail-$HORIZON-$SEED$VARIANT.db"

@@ -25,7 +25,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ADB="${ADB:-/home/Kamsiob/Android/Sdk/platform-tools/adb}"
+ADB="${ADB:-$(command -v adb 2>/dev/null || echo "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}/platform-tools/adb")}"
 PKG="com.kamsiob.healthtrail"
 
 SEED=1
