@@ -43,13 +43,18 @@ android {
         applicationId = "com.kamsiob.healthtrail"
         minSdk = 26
         targetSdk = 36
-        // **1.0.0, cut 2026-08-16 on the owner's order that 1.0 mean
-        // something.** What it means is recorded in D166: the round trip
-        // proven on the minified build, the stranger-test failures closed,
-        // every needs-design-review issue reviewed and closed, 728
-        // instrumented tests green.
-        versionCode = 2
-        versionName = "1.0.0"
+        // **1.1.0, cut 2026-08-30.** Semantic versioning, and the middle number
+        // because this release adds capability without breaking anything a 1.0
+        // notebook holds: a permanent delete, Deleted Items, the settings
+        // reorganization and six tips that were never reachable, alongside the
+        // four defects the owner found using 1.0. No stored value moved and no
+        // schema column changed, so a 1.0 archive restores into it unchanged.
+        //
+        // **versionCode 3 because 2 is live on Play** and Play refuses a code
+        // it has already taken. `check_play_requirements.py` holds the SDK
+        // levels this has to ship at.
+        versionCode = 3
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
