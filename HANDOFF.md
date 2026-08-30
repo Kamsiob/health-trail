@@ -26,13 +26,22 @@ Worked examples, best first: `ui/v4/Arrival.kt`, `ui/v4/Press.kt`,
 
 ## 1. What shipped, and what is shipping
 
-**1.0 is on Google Play**, versionCode 2, versionName 1.0.0, production, status
-completed. The bundle's SHA-256 is
-`182c5823be3904f277f92bcd94b453e17c48baac32d7be78363005556dca8bed`, it is
-signed `CN=Health Trail, O=Kamsiob, C=US`, and the owner holds a copy at
-`~/Desktop/health-trail-1.0.0-versionCode2.aab`. The listing text, eight framed
-screenshots and the feature graphic are live and were set through the Android
-Publisher API with the service account held outside this repository.
+**1.1.0 is on Google Play**, versionCode 3, production, status completed,
+committed 2026-08-30 through the Android Publisher API. Bundle SHA-256
+`1d4d29e764f37b98a587e33513ffcac4a246989faad098afbfc270d40cc9b354`, signed
+`CN=Health Trail, O=Kamsiob, C=US`, all eight native libraries 16 KB aligned.
+
+**The GitHub release is `v1.1.0`** and its asset is the **Google-signed
+universal APK** pulled back from Play through `generatedapks`, SHA-256
+`1e83cc401b9001c6bc1df4829c91d279346f48ca091a6236edd970d2014b78bb`, signed
+`CN=Android, O=Google Inc.` rather than by the upload key. That is
+`PROJECT-DELTAS.md` 17 to 19 followed exactly: one signature, two paths, and the
+release asset never built locally.
+
+**The whole pipeline is automated and needs no Play Console clicks.** Upload,
+track, release notes, validate, commit, and the universal APK download all go
+through the service account held outside this repository. 1.0's listing text,
+eight framed screenshots and feature graphic are still live and unchanged.
 
 **Milestone 13 is v1.1**, opened 2026-08-27 out of the owner's own testing.
 Ten issues, #462 to #471.
