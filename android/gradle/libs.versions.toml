@@ -5,7 +5,7 @@
 # was chosen and why, including why the target SDK is what it is.
 
 [versions]
-agp = "9.3.1"
+agp = "9.3.2"
 kotlin = "2.4.10"  # For the Compose compiler plugin only. AGP 9 brings its own Kotlin support.
 # 2026.08.00 rather than 2026.06.01, and the reason is the line below it.
 # material3 1.5.0-alpha26 asks for Compose UI 1.12.0-beta01, and the older bom
