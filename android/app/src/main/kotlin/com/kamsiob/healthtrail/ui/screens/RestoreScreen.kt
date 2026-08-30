@@ -19,6 +19,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.kamsiob.healthtrail.data.ExportContainer
 import com.kamsiob.healthtrail.i18n.LocalStrings
+import com.kamsiob.healthtrail.i18n.Strings
 import com.kamsiob.healthtrail.ui.v4.DictatableField
 import com.kamsiob.healthtrail.ui.v4.Action
 import com.kamsiob.healthtrail.ui.v4.ActionEmphasis
@@ -246,7 +247,7 @@ fun RestoreScreen(
                         Text(
                             text = strings(
                                 "restore.made",
-                                "date" to madeOn(state.manifest.exportedAt),
+                                "date" to madeOn(strings, state.manifest.exportedAt),
                             ),
                             style = HealthTrail.type.bodyS,
                             color = colors.ink2,
@@ -407,8 +408,29 @@ fun RestoreScreen(
     }
 }
 
-/** The day the file was made, in the reader's own locale. */
-private fun madeOn(exportedAt: Long): String =
-    Instant.ofEpochMilli(exportedAt)
-        .atZone(ZoneId.systemDefault())
-        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+/**
+ * The day the file was made, in the reader's own locale.
+ *
+ * **It said that and it did not do it.** The pattern was
+ * `yyyy-MM-dd HH:mm`, hardcoded: not the locale's order, not the locale's month
+ * name, and **a 24 hour clock on an app whose every other time is 12 hour in
+ * English**. The owner asked for 12 hour, 2026-08-29, and this was the one
+ * screen still answering in 24.
+ *
+ * The two patterns and the word between them come from the catalog now, which
+ * is where every other date in this app gets them, so this line reads like the
+ * rest of the notebook and changes with the language rather than with this
+ * file.
+ */
+private fun madeOn(strings: Strings, exportedAt: Long): String {
+    val at = Instant.ofEpochMilli(exportedAt).atZone(ZoneId.systemDefault())
+    return strings(
+        "date.moment",
+        "date" to at.format(
+            DateTimeFormatter.ofPattern(strings["date.format.day"], strings.locale),
+        ),
+        "time" to at.format(
+            DateTimeFormatter.ofPattern(strings["date.format.time"], strings.locale),
+        ),
+    )
+}

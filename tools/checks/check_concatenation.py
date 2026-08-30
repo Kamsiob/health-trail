@@ -42,6 +42,19 @@ GLUED = re.compile(
 # the plus signs hidden.
 TEMPLATED = re.compile(r'"[^"\n]*\$\{?strings[^"\n]*\$\{?strings[^"\n]*"')
 
+# A date or time pattern written into Kotlin instead of taken from the catalog.
+#
+# **The same defect as gluing a sentence, and it hides better.** `RestoreScreen`
+# rendered "the day the file was made, in the reader's own locale" with a
+# hardcoded `yyyy-MM-dd HH:mm`: not the locale's order, not its month name, and
+# a 24 hour clock in an app whose every other English time is 12 hour. Its own
+# doc comment claimed the opposite. The catalog holds `date.format.*` for
+# exactly this, and a pattern in the code cannot follow the language.
+#
+# A filename stamp is not a sentence and is allowed to be sortable, so it says
+# so on the line.
+DATE_PATTERN = re.compile(r'ofPattern\(\s*"[^"]*(?:yyyy|MMMM|MMM|HH|hh|mm|EEEE)[^"]*"')
+
 # **Said on the line, so the reason travels with the code.** The same shape the
 # bidi check uses, per D139: an allowlist of line numbers rots on the next edit
 # and nobody reading the screen ever sees it.
@@ -67,6 +80,15 @@ def main() -> int:
                     f"one catalog key. Add the pieces as placeholders on a "
                     f"single key. If this genuinely is not a sentence, say so "
                     f"with '{ALLOW} <reason>' on the line."
+                )
+            if DATE_PATTERN.search(line):
+                problems.append(
+                    f"{path.relative_to(ROOT)}:{number}: a date or time pattern "
+                    f"is written here rather than read from the catalog's "
+                    f"`date.format.*` keys, so it cannot follow the language "
+                    f"and it cannot follow the 12 hour clock. If this is a "
+                    f"filename stamp rather than something a person reads, say "
+                    f"so with '{ALLOW} <reason>' on the line."
                 )
 
     if problems:

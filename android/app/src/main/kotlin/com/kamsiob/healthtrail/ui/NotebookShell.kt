@@ -3700,7 +3700,13 @@ internal data class Removal(
  */
 private fun exportFileName(): String {
     val now = java.time.LocalDateTime.now()
-    val stamp = now.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmm"))
+    // A filename, not a sentence. `contract/EXPORT-FORMAT.md` fixes this shape
+    // so a folder of exports sorts by name into date order, which a localized
+    // or 12 hour stamp would break. The one date in this app that is
+    // deliberately not the catalog's.
+    val stamp = now.format(
+        java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmm"), // concat-ok: a filename
+    )
     return "healthtrail-export-$stamp.zip"
 }
 
